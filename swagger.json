@@ -1,0 +1,818 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Personal Project - Outline",
+    "description": "Implementation of Swagger with JavaScript"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "servers": [
+    {
+      "url": "https://outline",
+      "description": ""
+    },
+    {
+      "url": "http://localhost",
+      "description": ""
+    }
+  ],
+  "paths": {
+    "/api/restaurants": {
+      "post": {
+        "tags": [
+          "restaurants"
+        ],
+        "summary": "create new restaurant",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "example": "nonstops"
+                  },
+                  "address": {
+                    "example": "台北市大安區"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Create restaurant successfully"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/tables": {
+      "post": {
+        "tags": [
+          "tables"
+        ],
+        "summary": "For vendor, create tables and their scheduled time",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableName": {
+                    "example": "A3"
+                  },
+                  "seatQty": {
+                    "example": 4
+                  },
+                  "availableTime": {
+                    "type": "array",
+                    "example": ["11:00", "12:30"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "tables"
+        ],
+        "summary": "For vendor, get table list containing table name and schedule",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "types": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "tableName": {
+                            "type": "string"
+                          },
+                          "seatQty": {
+                            "type": "integer"
+                          },
+                          "availableTime": {
+                            "type": "array"
+                          }
+                        }
+                      },
+                      "example": [
+                        {
+                          "id": 1,
+                          "tableName": "A3",
+                          "seatQty": 4,
+                          "availableTime": [
+                            "11:00",
+                            "12:30"
+                          ]
+                        },
+                        {
+                          "id": 2,
+                          "tableName": "A4",
+                          "seatQty": 4,
+                          "availableTime": [
+                            "11:30",
+                            "13:00"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["tables"],
+        "summary": "For vendor, delete table available time",
+        "parameters": [
+          {
+            "name": "tableId",
+            "in": "path",
+            "required": true,
+            "description": "To specify which table is going to be deleted"
+          },
+          {
+            "name": "time",
+            "in": "query",
+            "schema": {
+              "types": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted"
+          },
+          "404": {
+            "description": "The specific table available time is not existed"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/availableSeats": {
+      "get": {
+        "tags": [
+          "availableSeats"
+        ],
+        "summary": "For client, get available time on selected date",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "types": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "types": "object",
+                        "properties": {
+                          "max_person": {
+                            "type": "integer"
+                          },
+                          "available_time": {
+                            "type": "array"
+                          },
+                          "available_table": {
+                            "type": "array"
+                          }
+                        }
+                      },
+                      "example": [
+                        {
+                          "max_person": 2,
+                          "available_time": [
+                            "11:00",
+                            "11:30",
+                            "12:00",
+                            "12:30"
+                          ],
+                          "available_table": [
+                            {
+                              "time": "11:00",
+                              "table_id": 3,
+                              "table_name": "A3"
+                            },
+                            {
+                              "time": "11:30",
+                              "table_id": 4,
+                              "table_name": "A4"
+                            },
+                            {
+                              "time": "12:00",
+                              "table_id": 10,
+                              "table_name": "B3"
+                            },
+                            {
+                              "time": "12:30",
+                              "table_id": 3,
+                              "table_name": "A3"
+                            }
+                          ]
+                        },
+                        {
+                          "max_person": 4,
+                          "available_time": [
+                            "11:30",
+                            "12:00",
+                            "12:30"
+                          ],
+                          "available_table": [
+                            {
+                              "time": "11:30",
+                              "table_name": "A1"
+                            },
+                            {
+                              "time": "12:00",
+                              "table_name": "B1"
+                            },
+                            {
+                              "time": "12:30",
+                              "table_name": "A2"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not available date"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/reservations/restaurant": {
+      "post": {
+        "tags": [
+          "reservations"
+        ],
+        "summary": "client make an online reservation",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "adult": {
+                    "example": 4
+                  },
+                  "child": {
+                    "example": 0
+                  },
+                  "dining_date": {
+                    "example": "2023-12-20"
+                  },
+                  "dining_time": {
+                    "example": "13:30"
+                  },
+                  "name": {
+                    "example": "王小明"
+                  },
+                  "gender": {
+                    "example": "先生"
+                  },
+                  "phone": {
+                    "example": "0912345678"
+                  },
+                  "email": {
+                    "example": "test@gmail.com"
+                  },
+                  "purpose": {
+                    "example": "朋友聚餐"
+                  },
+                  "note": {
+                    "example": "不吃牛肉"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "reservations"
+        ],
+        "summary": "get reservation data to check the upcoming reservation",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "2023-12-20"
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "reservation_id": {
+                            "example": 1
+                          },
+                          "adult": {
+                            "example": 4
+                          },
+                          "child": {
+                            "example": 0
+                          },
+                          "dining_date": {
+                            "example": "2023-12-20"
+                          },
+                          "dining_time": {
+                            "example": "13:30"
+                          },
+                          "table_name": {
+                            "example": "A3"
+                          },
+                          "name": {
+                            "example": "王小明"
+                          },
+                          "gender": {
+                            "example": "先生"
+                          },
+                          "phone": {
+                            "example": "0912345678"
+                          },
+                          "purpose": {
+                            "example": "朋友聚餐"
+                          },
+                          "note": {
+                            "example": "不吃牛肉"
+                          },
+                          "status": {
+                            "example": "not seated"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reservations": {
+      "put": {
+        "tags": [
+          "reservations"
+        ],
+        "summary": "waiter can update the client status to 'cancled', 'no-show'",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reservation_id": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "updated_status": {
+                    "type": "string",
+                    "enum": [
+                      "cancled",
+                      "no-show"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "no token"
+          },
+          "403": {
+            "description": "wrong token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/rules": {
+      "get": {
+        "tags": [
+          "restaurant rules"
+        ],
+        "summary": "To lookup restaurant online reservation rules",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "max_person_per_reserve": {
+                        "example": 8
+                      },
+                      "reservation_start_day": {
+                        "example": 1
+                      },
+                      "reservation_end_day": {
+                        "example": 30
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "no token"
+        },
+        "403": {
+          "description": "wrong token"
+        },
+        "500": {
+          "description": "Internal Server Error"
+        }
+      },
+      "post": {
+        "tags": [
+          "restaurant rules"
+        ],
+        "summary": "To create rules for new restaurant",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "maxPersonPerGroup": {
+                    "example": 8
+                  },
+                  "minBookingDay": {
+                    "example": 1
+                  },
+                  "maxBookingDay": {
+                    "example": 30
+                  },
+                  "updateBookingTime": {
+                    "example": "00:00"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "no token"
+          },
+          "403": {
+            "description": "wrong token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/rules/{ruleId}": {
+      "put": {
+        "tags": [
+          "restaurant rules"
+        ],
+        "summary": "To update restaurant online reservation rules",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "max_person_per_reserve": {
+                    "example": 6
+                  },
+                  "reservation_start_day": {
+                    "example": 1
+                  },
+                  "reservation_end_day": {
+                    "example": 30
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "wrong data type"
+          },
+          "401": {
+            "description": "no token"
+          },
+          "403": {
+            "description": "wrong token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/onSiteWaiting": {
+      "post": {
+        "tags": [
+          "on site waiting"
+        ],
+        "summary": "現場候位",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "restaurant_id": {
+                    "example": 1
+                  },
+                  "adult": {
+                    "example": 4
+                  },
+                  "child": {
+                    "example": 0
+                  },
+                  "name": {
+                    "example": "王小明"
+                  },
+                  "gender": {
+                    "example": "先生"
+                  },
+                  "phone": {
+                    "example": "0912345678"
+                  },
+                  "email": {
+                    "example": "test@gmail.com"
+                  },
+                  "purpose": {
+                    "example": "朋友聚餐"
+                  },
+                  "note": {
+                    "example": "不吃牛肉"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {}
+      },
+      "get": {
+        "tags": [
+          "on site waiting"
+        ],
+        "summary": "服務生查看現場候位的資訊",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "types": "object",
+                        "properties": {
+                          "id": {
+                            "example": 1
+                          },
+                          "adult": {
+                            "example": 4
+                          },
+                          "child": {
+                            "example": 0
+                          },
+                          "name": {
+                            "example": "王小明"
+                          },
+                          "gender": {
+                            "example": "先生"
+                          },
+                          "phone": {
+                            "example": "0912345678"
+                          },
+                          "purpose": {
+                            "example": "朋友聚餐"
+                          },
+                          "note": {
+                            "example": "不吃牛肉"
+                          },
+                          "ticket_number": {
+                            "example": 90
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "on site waiting"
+        ],
+        "summary": "waiter can update the client status to 'cancled', 'no-show'",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "onSiteWaiting_id": {
+                    "type": "integer",
+                    "example": 100
+                  },
+                  "updated_status": {
+                    "type": "string",
+                    "enum": [
+                      "cancled",
+                      "no-show"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

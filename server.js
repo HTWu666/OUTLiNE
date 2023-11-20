@@ -10,6 +10,7 @@ import userRouter from './routes/user.js'
 import restaurantRouter from './routes/restaurant.js'
 import tableRouter from './routes/table.js'
 import reservationRouter from './routes/reservation.js'
+import ruleRouter from './routes/rule.js'
 
 dotenv.config()
 const app = express()
@@ -32,7 +33,7 @@ morganBody(app, {
   stream: log
 })
 
-app.use('/api', [userRouter, restaurantRouter, tableRouter, reservationRouter])
+app.use('/api', [userRouter, restaurantRouter, tableRouter, reservationRouter, ruleRouter])
 
 app.all('*', (req, res) => {
   res.status(404).render('./error/notFound')

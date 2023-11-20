@@ -1,7 +1,9 @@
 import moment from 'moment-timezone'
+import amqp from 'amqplib'
 import * as reservationModel from '../models/reservation.js'
 import * as restaurantModel from '../models/restaurant.js'
 import * as ruleModel from '../models/rule.js'
+import queue from '../constants/queueConstants.js'
 
 const validateCreateReservation = (
   contentType,
@@ -16,7 +18,7 @@ const validateCreateReservation = (
   purpose,
   note,
   restaurantId,
-  maxPersonPerReserve
+  maxPersonPerGroup
 ) => {
   if (contentType !== 'application/json') {
     return { valid: false, error: 'Wrong content type' }
@@ -54,7 +56,7 @@ const validateCreateReservation = (
   }
 
   const person = adult + child
-  if (person > maxPersonPerReserve) {
+  if (person > maxPersonPerGroup) {
     return { valid: false, error: 'Exceed the limit of max person per reservation' }
   }
 
@@ -90,14 +92,17 @@ const validateCreateReservation = (
   return { valid: true }
 }
 
-export const createReservation = async (req, res) => {
+// for client
+export const createReservationByCustomer = async (req, res) => {
   try {
     const contentType = req.headers['content-type']
     const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
       req.body
     const restaurantId = parseInt(req.params.id, 10)
     const results = await ruleModel.getRule(restaurantId)
-    const maxPersonPerReserve = results[0].max_person_per_group
+    const maxPersonPerGroup = results[0].max_person_per_group
+
+    // validate
     const validation = validateCreateReservation(
       contentType,
       adult,
@@ -111,13 +116,13 @@ export const createReservation = async (req, res) => {
       purpose,
       note,
       restaurantId,
-      maxPersonPerReserve
+      maxPersonPerGroup
     )
-
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
 
+    // create reservation
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     const reservationId = await reservationModel.createReservation(
@@ -134,18 +139,26 @@ export const createReservation = async (req, res) => {
       note
     )
 
+    // 預約成功時, 將訂位成功的信件丟給 worker 寄
+    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
+    const channel = await connection.createChannel()
+    const queueName = queue.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE
+    await channel.assertQueue(queueName, { durable: true })
+    const job = JSON.stringify(reservationId) // woker 根據 reservation Id 到資料庫撈資料寄信
+    console.log(job)
+    channel.sendToQueue(queueName, Buffer.from(job))
+
     res.status(200).json(reservationId)
   } catch (err) {
     console.error(err)
-
     if (err instanceof Error) {
       return res.status(err.status).json({ error: err.message })
     }
-
     res.status(500).json({ error: 'Create reservation failed' })
   }
 }
 
+// for business
 export const getReservations = async (req, res) => {
   try {
     const { userId } = res.locals
@@ -156,11 +169,9 @@ export const getReservations = async (req, res) => {
     res.status(200).json({ data: reservations })
   } catch (err) {
     console.error(err)
-
     if (err instanceof Error) {
       return res.status(err.status).json({ error: err.message })
     }
-
     res.status(500).json({ error: 'Get reservations failed' })
   }
 }

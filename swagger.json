@@ -549,14 +549,20 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "max_person_per_reserve": {
-                        "example": 8
-                      },
-                      "reservation_start_day": {
-                        "example": 1
-                      },
-                      "reservation_end_day": {
-                        "example": 30
+                      "type":"object",
+                      "properties": {
+                        "max_person_per_group": {
+                          "example": 8
+                        },
+                        "max_booking_day": {
+                          "example": 30
+                        },
+                        "min_booking_day": {
+                          "example": 1
+                        },
+                        "update_booking_time": {
+                          "example": "00:00:00"
+                        }
                       }
                     }
                   }
@@ -580,6 +586,16 @@
           "restaurant rules"
         ],
         "summary": "To create rules for new restaurant",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "security": [
           {
             "BearerAuth": []

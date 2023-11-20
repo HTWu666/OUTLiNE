@@ -98,8 +98,4 @@ const worker1 = async () => {
   }
 }
 
-// 將過期的可訂位時間 availability 更新為 false
-const worker2 = async () => {}
-
 worker1()
-worker2()

@@ -3,7 +3,7 @@ import * as tableModel from '../models/table.js'
 import * as restaurantModel from '../models/restaurant.js'
 import cache from '../utils/cache.js'
 
-const validateCreateTable = (contentType, tableName, seatQty) => {
+const validateCreateTable = (contentType, tableName, seatQty, availableTime) => {
   if (contentType !== 'application/json') {
     return { valid: false, error: 'Wrong content type' }
   }
@@ -85,23 +85,107 @@ export const createTable = async (req, res) => {
   }
 }
 
+const validateCreateAvailableTime = (contentType, tableId, availableTime) => {
+  if (contentType !== 'application/json') {
+    return { valid: false, error: 'Wrong content type' }
+  }
+
+  let missingField = ''
+  if (!tableId) {
+    missingField = 'Table Id'
+  } else if (!availableTime) {
+    missingField = 'Table available time'
+  }
+  if (missingField) {
+    return { valid: false, error: `${missingField} is required` }
+  }
+
+  // verify data type
+  if (typeof tableId !== 'number') {
+    return { valid: false, error: 'Table id must be a number' }
+  }
+  if (!(typeof availableTime === 'string' || Array.isArray(availableTime))) {
+    return { valid: false, error: 'Available time must be a string or an array' }
+  }
+
+  const availableTimeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
+  if (typeof availableTime === 'string') {
+    if (!availableTimeRegex.test(availableTime)) {
+      return { valid: false, error: 'Available time must be in the form of hh:mm' }
+    }
+  } else {
+    availableTime.forEach((time) => {
+      if (!availableTimeRegex.test(time)) {
+        return { valid: false, error: 'Available time must be in the form of hh:mm' }
+      }
+    })
+  }
+
+  return { valid: true }
+}
+
+export const createAvailableTime = async (req, res) => {
+  try {
+    const contentType = req.headers['content-type']
+    const { tableId, availableTime } = req.body
+    const validation = validateCreateAvailableTime(contentType, tableId, availableTime)
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error })
+    }
+
+    let availableTimeId
+    const timezone = 'Asia/Taipei'
+    if (typeof availableTime === 'string' && availableTime.length > 0) {
+      const utcAvailableTime = moment.tz(availableTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
+      availableTimeId = await tableModel.createAvailableTime([
+        {
+          tableId,
+          utcAvailableTime
+        }
+      ])
+    }
+
+    if (Array.isArray(availableTime) && availableTime.length > 0) {
+      const formattedAvailableTime = availableTime.map((time) => {
+        const utcAvailableTime = moment.tz(time, 'HH:mm', timezone).utc().format('HH:mm')
+        return { tableId, utcAvailableTime }
+      })
+
+      availableTimeId = await tableModel.createAvailableTime(formattedAvailableTime)
+    }
+
+    res.status(200).json(availableTimeId)
+  } catch (err) {
+    console.error(err)
+    if (err instanceof Error) {
+      return res.status(err.status).json({ error: err.message })
+    }
+    res.status(500).json({ error: 'Create available time failed' })
+  }
+}
+
 export const getTables = async (req, res) => {
   try {
     const { userId } = res.locals
     const restaurantId = await restaurantModel.findRestaurantByUserId(userId)
     const results = await tableModel.getTables(restaurantId)
+
     const transformedData = {}
     results.forEach((item) => {
       const tableId = item.table_id
+      const utcTime = item.available_time
+      const date = new Date(`1970-01-01T${utcTime}Z`)
+      date.setHours(date.getHours() + 8)
+      const taipeiTime = date.toISOString().substr(11, 5)
       if (!Object.prototype.hasOwnProperty.call(transformedData, tableId)) {
         transformedData[tableId] = {
           id: tableId,
           tableName: item.name,
           seatQty: item.seat_qty,
-          availableTime: [item.available_time]
+          availableTime: [taipeiTime]
         }
       } else {
-        transformedData[tableId].availableTime.push(item.available_time)
+        transformedData[tableId].availableTime.push(taipeiTime)
       }
     })
 

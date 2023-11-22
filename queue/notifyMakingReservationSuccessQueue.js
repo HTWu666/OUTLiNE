@@ -76,7 +76,7 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
     diningTime: formattedTime,
     adult: reservationDetails[0].adult,
     child: reservationDetails[0].child,
-    link: `${process.env.DOMAIN}/reservation?upn=${upn}`
+    link: `${process.env.DOMAIN}/api/reservation?upn=${upn}`
   })
 
   const info = await transporter.sendMail({

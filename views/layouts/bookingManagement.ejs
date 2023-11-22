@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 其他头部信息 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="flex">
+        <%- include('../partials/sidebar.ejs') %>
+        <div class="flex-grow p-5">
+            <div class="flex justify-between items-center">
+                <div class="text-4xl font-bold">訂位管理</div>
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="hover:text-blue-500">新增訂位</a>
+                    <a href="/checkReservation" class="hover:text-blue-500">訂位確認</a>
+                    <a href="#" class="hover:text-blue-500">新增候位</a>
+                    <a href="#" class="hover:text-blue-500">候位確認</a>
+                </div>
+            </div>
+            
+            <%- body %>
+        </div>
+    </div>
+</body>
+</html>
+

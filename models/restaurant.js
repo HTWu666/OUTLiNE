@@ -24,4 +24,14 @@ export const findRestaurantByUserId = async (userId) => {
   return rows[0].restaurant_id
 }
 
-export const getRestaurant = async () => {}
+export const getRestaurant = async (restaurantId) => {
+  const { rows } = await pool.query(
+    `
+      SELECT * FROM restaurants
+      WHERE id = $1
+    `,
+    [restaurantId]
+  )
+
+  return rows
+}

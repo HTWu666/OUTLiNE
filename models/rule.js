@@ -36,52 +36,69 @@ export const getRule = async (restaurantId) => {
   return rows
 }
 
-// 待測試
 export const updateRule = async (
   restaurantId,
-  maxPersonPerReserve,
-  reservationStartDay,
-  reservationEndDay,
-  updateReservatoinTime
+  maxPersonPerGroup,
+  minBookingDay,
+  maxBookingDay,
+  updateBookingTime
 ) => {
   const updates = []
   const values = []
 
-  if (maxPersonPerReserve !== undefined) {
-    updates.push('max_person_per_reserve = $1')
-    values.push(maxPersonPerReserve)
+  if (maxPersonPerGroup !== undefined) {
+    updates.push('max_person_per_group = $1')
+    values.push(maxPersonPerGroup)
   }
 
-  if (reservationStartDay !== undefined) {
-    updates.push(`reservation_start_day = $${updates.length + 1}`)
-    values.push(reservationStartDay)
+  if (minBookingDay !== undefined) {
+    updates.push(`min_booking_day = $${updates.length + 1}`)
+    values.push(minBookingDay)
   }
 
-  if (reservationEndDay !== undefined) {
-    updates.push(`reservation_end_day = $${updates.length + 1}`)
-    values.push(reservationEndDay)
+  if (maxBookingDay !== undefined) {
+    updates.push(`max_booking_day = $${updates.length + 1}`)
+    values.push(maxBookingDay)
   }
 
-  if (updateReservatoinTime !== undefined) {
-    updates.push(`update_reservation_time = $${updates.length + 1}`)
-    values.push(updateReservatoinTime)
+  if (updateBookingTime !== undefined) {
+    updates.push(`update_booking_time = $${updates.length + 1}`)
+    values.push(updateBookingTime)
   }
 
-  // 確保有值需要更新
   if (updates.length === 0) {
     throw new Error('No fields to update')
   }
 
-  // 完成 SQL 語句
-  const queryString = `
-    UPDATE rules
-    SET ${updates.join(', ')}
-    WHERE restaurant_id = $${updates.length + 1};
-  `
   values.push(restaurantId)
 
-  // 執行更新操作
+  const conn = await pool.connect()
+  try {
+    await conn.query('BEGIN')
 
-  const res = await pool.query(queryString, values)
-  return res
+    // update rule
+    const res = await conn.query(
+      `
+        UPDATE rules
+        SET ${updates.join(', ')}
+        WHERE restaurant_id = $${updates.length + 1}
+      `,
+      values
+    )
+    console.log(res)
+    // // check if need to update available time
+    // await conn.query(
+    //   `
+
+    //   `)
+
+    await conn.query('COMMIT')
+
+    return res
+  } catch (err) {
+    await conn.query('ROLLBACK')
+    throw err
+  } finally {
+    conn.release()
+  }
 }

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>確認訂位</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="date-field" class="flex-grow">
+        <input type="date" id="date-selector" class="border border-1 border-solid border-gray-300 w-full h-10 rounded-md">
+    </div>
+
+    <div id="reservations-list">
+        <table>
+            <thead>
+                <tr>
+                    <th class="w-1/12 text-left">姓名</th>
+                    <th class="w-1/12 text-left">電話</th>
+                    <th class="w-1/12 text-left">大人</th>
+                    <th class="w-1/12 text-left">小孩</th>
+                    <th class="w-1/12 text-left">桌號</th>
+                    <th class="w-1/12 text-left">用餐時間</th>
+                    <th class="w-1/12 text-left">狀態</th>
+                    <th class="w-1/12 text-left">確認入座</th>
+                    <th class="w-1/12 text-left">取消訂位</th>
+                </tr>
+            </thead>
+            <tbody id="reservations-body"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const maxBookingDay = 30;
+        const dateSelector = document.getElementById('date-selector');
+
+        // 設置預設日期為今天
+        const today = new Date();
+        dateSelector.valueAsDate = today;
+
+        // 設置最小可選擇日期為今天
+        dateSelector.min = today.toISOString().split('T')[0];
+
+        // 計算並設置最大可選擇日期
+        const maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + maxBookingDay);
+        dateSelector.max = maxDate.toISOString().split('T')[0];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const dateSelector = document.getElementById('date-selector');
+            const adultSelector = document.getElementById('adult-selector');
+            const childSelector = document.getElementById('child-selector');
+            const timeField = document.getElementById('time-field');
+            let availableSeatsData
+
+            // 設置今天的日期為預設值
+            const today = new Date().toISOString().split('T')[0];
+            dateSelector.value = today;
+        })
+        
+        let token
+        document.addEventListener('DOMContentLoaded', async () => {
+            const cookies = document.cookie.split('; ')
+
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=')
+                if (name === 'token') {
+                    token = value
+                    break
+                }
+            }
+
+            async function fetchReservations() {
+                try {
+                    const date = document.querySelector('#date-selector').value
+                    const response = await axios.get(`/api/reservation?date=${date}`, {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    })
+
+                    // 假设这是从后端获取的数据
+                    const reservations = response.data.data;
+
+                    // 获取表格的 tbody 元素
+                    const tbody = document.getElementById('reservations-body');
+
+                    // 清空当前的 tbody
+                    tbody.innerHTML = '';
+
+                    // 遍历预订数据并创建表格行
+                    reservations.forEach(reservation => {
+                        // 创建一个新的 tr 元素
+                        const tr = document.createElement('tr');
+                        tr.id = `reservation${reservation.id}`
+
+                        // 创建并添加 td 元素
+                        tr.innerHTML = `
+                            <td>${reservation.name}</td>
+                            <td>${reservation.phone}</td>
+                            <td>${reservation.adult}</td>
+                            <td>${reservation.child}</td>
+                            <td>${reservation.table_name}</td>
+                            <td>${reservation.dining_time}</td>
+                            <td>${reservation.status}</td>
+                        `;
+                        
+                        // 将 tr 元素添加到 tbody 中
+                        tbody.appendChild(tr);
+
+                        const confirmBtnTd = document.createElement('td')
+                        const confirmBtn = document.createElement('button')
+                        confirmBtn.textContent = '確認入座'
+                        confirmBtn.classList.add("bg-emerald-500", "hover:bg-emerald-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out")
+                        confirmBtn.onclick = () => sendConfirmRequest(reservation.id)
+                        confirmBtnTd.appendChild(confirmBtn)
+                        tr.appendChild(confirmBtnTd)
+
+                        const cancelBtnTd = document.createElement('td')
+                        const cancelBtn = document.createElement('button')
+                        cancelBtn.textContent = '取消訂位'
+                        cancelBtn.classList.add("bg-rose-500", "hover:bg-rose-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out")
+                        cancelBtn.onclick = () => sendCancelRequest(reservation.id)
+                        cancelBtnTd.appendChild(cancelBtn)
+                        tr.appendChild(cancelBtnTd)
+                    });
+                } catch (err) {
+                    alert(err)
+                }
+            }
+
+            // 为日期选择器添加事件监听器
+            dateSelector.addEventListener('change', fetchReservations);
+
+            // 初始加载时也发送一次请求
+            fetchReservations();
+            
+        })
+
+        async function sendConfirmRequest(reservationId) {
+            try {
+                const response = await axios.put(`/api/reservation/${reservationId}`, {}, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                alert(response.data.message)
+                document.querySelector(`#reservation${reservationId}`).remove()
+            } catch (err) {
+                alert(err)
+            }
+        }
+
+        async function sendCancelRequest(reservationId) {
+            try {
+                const response = await axios.delete(`/api/reservation/${reservationId}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                alert(response.data.message)
+                document.querySelector(`#reservation${reservationId}`).remove()
+            } catch (err) {
+                alert(err)
+            }
+        }
+    </script>
+</body>
+</html>

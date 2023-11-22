@@ -18,20 +18,23 @@ export const createAvailableTime = async (availableTimeData) => {
     .join(', ')
   const values = availableTimeData.flatMap((data) => [data.tableId, data.utcAvailableTime])
 
-  await pool.query(
+  const { rows } = await pool.query(
     `
-        INSERT INTO table_available_time (table_id, available_time)
-        VALUES ${placeholders}
+      INSERT INTO table_available_time (table_id, available_time)
+      VALUES ${placeholders}
+      RETURNING id
     `,
     values
   )
+
+  return rows[0].id
 }
 
 export const getTable = async (restaurantId) => {
   const { rows } = await pool.query(
     `
-        SELECT * FROM tables
-        WHERE restaurant_id = $1
+      SELECT * FROM tables
+      WHERE restaurant_id = $1
     `,
     [restaurantId]
   )
@@ -43,8 +46,8 @@ export const getAvailableTime = async (tableIds) => {
   const placeholders = tableIds.map((_, index) => `$${index + 1}`).join(', ')
   const { rows } = await pool.query(
     `
-        SELECT table_id, available_time FROM table_available_time
-        WHERE table_id IN (${placeholders})
+      SELECT table_id, available_time FROM table_available_time
+      WHERE table_id IN (${placeholders})
     `,
     tableIds
   )

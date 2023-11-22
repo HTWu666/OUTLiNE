@@ -6,11 +6,16 @@ import fs from 'fs'
 import morganBody from 'morgan-body'
 import swaggerUi from 'swagger-ui-express'
 import swaggerDocument from './swagger.json' assert { 'type': 'json' }
+import expressLayouts from 'express-ejs-layouts'
 import userRouter from './routes/user.js'
 import restaurantRouter from './routes/restaurant.js'
 import tableRouter from './routes/table.js'
 import reservationRouter from './routes/reservation.js'
 import ruleRouter from './routes/rule.js'
+import availableSeatRouter from './routes/availableSeat.js'
+import reservationPageRouter from './routes/client/reservation.js'
+import checkReservationPageRouter from './routes/admin/reservation.js'
+import signinPageRouter from './routes/admin/signin.js'
 
 dotenv.config()
 const app = express()
@@ -19,6 +24,11 @@ app.use(express.json()) // parse json
 app.use(express.urlencoded({ extended: false })) // parse urlencoded
 app.use(cookieParser()) // parse cookie
 app.set('view engine', 'ejs')
+app.set('views', './views')
+app.use(expressLayouts)
+app.set('layout', './layouts/layout')
+app.use(express.static('public'))
+app.use(express.static('dist'))
 
 // swagger
 // const outputFile = './swagger.json'
@@ -33,7 +43,16 @@ morganBody(app, {
   stream: log
 })
 
-app.use('/api', [userRouter, restaurantRouter, tableRouter, reservationRouter, ruleRouter])
+app.use('/api', [
+  userRouter,
+  restaurantRouter,
+  tableRouter,
+  reservationRouter,
+  ruleRouter,
+  availableSeatRouter
+])
+
+app.use('/', [reservationPageRouter, checkReservationPageRouter, signinPageRouter])
 
 app.all('*', (req, res) => {
   res.status(404).render('./error/notFound')

@@ -1,7 +1,7 @@
 import schedule from 'node-schedule'
 import amqp from 'amqplib'
 import * as ruleModel from '../models/rule.js'
-import * as updateBookingTimeJob from '../utils/updateBookingDateJob.js'
+import * as updateBookingDateJob from '../utils/updateBookingDateJob.js'
 import queue from '../constants/queueConstants.js'
 import * as restaurantModel from '../models/restaurant.js'
 
@@ -90,7 +90,7 @@ export const createRule = async (req, res) => {
     rule.minute = parseInt(minute, 10)
     rule.tz = 'Asia/Taipei'
 
-    updateBookingTimeJob.setJob(
+    updateBookingDateJob.setJob(
       schedule.scheduleJob(rule, async () => {
         // 把 job 放入 queue 中, 觸發 worker 1 更新
         const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
@@ -120,6 +120,70 @@ export const getRule = async (req, res) => {
     const rule = await ruleModel.getRule(restaurantId)
 
     res.status(200).json({ data: rule })
+  } catch (err) {
+    console.error(err)
+    if (err instanceof Error) {
+      return res.status(err.status).json({ error: err.message })
+    }
+    res.status(500).json({ error: 'Get rule failed' })
+  }
+}
+
+const validateUpdateRule = (
+  contentType,
+  maxPersonPerGroup,
+  minBookingDay,
+  maxBookingDay,
+  updateBookingTime
+) => {
+  if (contentType !== 'application/json') {
+    return { valid: false, error: 'Wrong content type' }
+  }
+
+  // verify data type
+  if (maxPersonPerGroup && typeof maxPersonPerGroup !== 'number') {
+    return { valid: false, error: 'Max person per group must be a number' }
+  }
+  if (minBookingDay && typeof minBookingDay !== 'number') {
+    return { valid: false, error: 'Min booking day must be a number' }
+  }
+  if (maxBookingDay && typeof maxBookingDay !== 'number') {
+    return { valid: false, error: 'Max booking day must be a number' }
+  }
+
+  const updateBookingTimeRegex = /^(?:[01]\d|2[0-3]):[0-5]\d$/
+  if (updateBookingTime && !updateBookingTimeRegex.test(updateBookingTime)) {
+    return { valid: false, error: 'Update booking time must be in the form of HH:MM' }
+  }
+
+  return { valid: true }
+}
+
+export const updateRule = async (req, res) => {
+  try {
+    const { userId } = res.locals
+    const contentType = req.headers['content-type']
+    const { maxPersonPerGroup, minBookingDay, maxBookingDay, updateBookingTime } = req.body
+    const validation = validateUpdateRule(
+      contentType,
+      maxPersonPerGroup,
+      minBookingDay,
+      maxBookingDay,
+      updateBookingTime
+    )
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error })
+    }
+    const restaurantId = await restaurantModel.findRestaurantByUserId(userId)
+    const rule = await ruleModel.updateRule(
+      restaurantId,
+      maxPersonPerGroup,
+      minBookingDay,
+      maxBookingDay,
+      updateBookingTime
+    )
+
+    res.status(200).json(rule)
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {

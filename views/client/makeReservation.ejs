@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= restaurantName %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <main class="mt-20 ml-20 mr-20 mb-20">
+        <div class="relative w-100 h-96 overflow-hidde mb-5"><img src="/images/海底撈.jpg" class="absolute w-full h-full object-cover"></div>
+        <div id="restaurant-name" class="text-6xl mb-3"><%= restaurantName %></div>
+        <div id="restaurant-address" class="mb-3"><%= restaurantAddress %></div>
+        <div id="restaurant-phone" class="flex mb-3">
+            <img src="/images/phone.png" class="w-5 h-5 mr-2">
+            <a href="tel:<%= restaurantPhone %>" class="flex-2"><%= restaurantPhone %></a>
+        </div>
+        <hr>
+        <div id="booking-selector" class="flex w-full mb-10 mt-6">
+            <div id="diner-field" class="flex-shrink-0 mr-3">
+                <div class="field-label mb-5 text-lg">用餐人數</div>
+                <select id="adult-selector" class="border border-1 border-solid border-gray-300 w-64 h-10 rounded-md mr-3"></select>
+                <select id="child-selector" class="border border-1 border-solid border-gray-300 w-64 h-10 rounded-md"></select>
+            </div>
+            <div id="date-field" class="flex-grow">
+                <div class="mb-5 text-lg">用餐日期</div>
+                <input type="date" id="date-selector" class="border border-1 border-solid border-gray-300 w-full h-10 rounded-md">
+            </div>
+        </div>        
+        <hr>
+        <div id="booking-time" class="mt-10 mb-10">
+            <div class="field-label mb-5 text-lg">用餐時段</div>
+            <div id="time-field" class="flex flex-wrap"></div>
+        </div>
+        <hr>
+        <form class="space-y-4 mt-10">
+            <div class="text-lg mb-10">訂位人資訊</div>
+            <!-- 訂位人資訊 -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <label for="name" class="block text-base font-medium text-gray-700 mr-3 w-40">訂位人資訊 (必填)</label>
+                    <input type="text" id="name" name="name" required class="flex-grow border border-gray-300 rounded-sm shadow-sm h-8">
+                </div>
+            
+                <!-- radio 選項 -->
+                <div>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="title" value="小姐" class="text-orange-500">
+                        <span class="ml-2">小姐</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" name="title" value="先生" class="text-orange-500">
+                        <span class="ml-2">先生</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" name="title" value="其他" class="text-orange-500">
+                        <span class="ml-2">其他</span>
+                    </label>
+                </div>
+            </div>
+        
+            <!-- 手機號碼 -->
+            <div class="flex items-center mt-2">
+                <label for="phone" class="block text-base font-medium text-gray-700 mr-3 w-40">訂位人手機號碼 (必填)</label>
+                <input type="tel" id="phone" name="phone" required class="flex-grow border border-gray-300 rounded-sm shadow-sm h-8">
+            </div>
+            
+            <!-- Email -->
+            <div class="flex items-center mt-2">
+                <label for="email" class="block text-base font-medium text-gray-700 mr-3 w-40">訂位人 email (必填)</label>
+                <input type="email" id="email" name="email" required class="flex-grow border border-gray-300 rounded-sm shadow-sm h-8">
+            </div>
+        
+            <!-- 用餐目的 -->
+            <div>
+                <span class="block text-base font-medium text-gray-700 mb-5">用餐目的</span>
+                <div class="mt-2 space-x-2">
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-orange-500 hover:text-white">
+                        <input type="radio" name="purpose" value="生日" class="hidden" />
+                        <span>生日</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-orange-500 hover:text-white">
+                        <input type="radio" name="purpose" value="家庭聚餐" class="hidden" />
+                        <span>家庭聚餐</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-orange-500 hover:text-white">
+                        <input type="radio" name="purpose" value="情人約會" class="hidden" />
+                        <span>情人約會</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-orange-500 hover:text-white">
+                        <input type="radio" name="purpose" value="結婚紀念" class="hidden" />
+                        <span>結婚紀念</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-orange-500 hover:text-white">
+                        <input type="radio" name="purpose" value="朋友聚餐" class="hidden" />
+                        <span>朋友聚餐</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-orange-500 hover:text-white">
+                        <input type="radio" name="purpose" value="商務聚餐" class="hidden" />
+                        <span>商務聚餐</span>
+                    </label>
+                </div>
+            </div>
+        
+            <!-- 其他備註 -->
+            <div>
+                <label for="note" class="block text-base font-medium text-gray-700">其他備註</label>
+                <textarea id="note" name="note" rows="3" maxlength="400" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"></textarea>
+            </div>
+        </form>
+        <button id="make-reservation" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out w-full mt-5">確認訂位</button>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const pathSegments = window.location.pathname.split('/')
+        const restaurantId = pathSegments[2]
+        const maxPersonPerGroup = <%- JSON.stringify(maxPersonPerGroup) %>
+        // 初始化選項
+        function initializeSelectors() {
+            for (let i = 1; i <= maxPersonPerGroup; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + '位大人';
+                document.getElementById('adult-selector').appendChild(option);
+                if (i === 2) {
+                    option.selected = true;
+                }
+            }
+
+            updateChildSelector(1);
+        }
+
+        // 更新 child-selector 的選項
+        function updateChildSelector(adultCount) {
+            const childSelector = document.getElementById('child-selector');
+            childSelector.innerHTML = '';
+
+            const maxChildren = maxPersonPerGroup - adultCount;
+            for (let i = 0; i <= maxChildren; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.text = i + '位小孩';
+            childSelector.appendChild(option);
+            }
+        }
+
+        // 當 adult-selector 的選擇改變時觸發更新
+        document.getElementById('adult-selector').addEventListener('change', function () {
+            updateChildSelector(parseInt(this.value, 10));
+        });
+
+        document.getElementById('child-selector').addEventListener('change', function () {
+            const adultSelector = document.getElementById('adult-selector');
+            const selectedChildren = parseInt(this.value, 10);
+
+            // 計算允許的最大大人數量，以保持總人數不超過 maxPersonPerGroup
+            const maxAdults = maxPersonPerGroup - selectedChildren;
+
+            // 紀錄當前選中的大人數量
+            const currentAdultSelection = parseInt(adultSelector.value, 10);
+
+            // 清空大人選擇器的當前選項
+            adultSelector.innerHTML = '';
+
+            // 填充大人選擇器的選項，但不超過計算出的最大值
+            for (let i = 1; i <= maxAdults; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + '位大人';
+                adultSelector.appendChild(option);
+
+                // 如果當前選中的大人數量在新的範圍內，則保持該選擇
+                if (i === currentAdultSelection) {
+                    option.selected = true;
+                }
+            }
+
+            // 如果當前選中的大人數量超出了新的範圍，則選擇新範圍的最大值
+            if (currentAdultSelection > maxAdults) {
+                adultSelector.value = maxAdults;
+            }
+        });
+
+        // 初始化用餐人數選項
+        initializeSelectors();
+
+        const maxBookingDay = <%- JSON.stringify(maxBookingDay) %>
+        const dateSelector = document.getElementById('date-selector');
+
+        // 設置預設日期為今天
+        const today = new Date();
+        dateSelector.valueAsDate = today;
+
+        // 設置最小可選擇日期為今天
+        dateSelector.min = today.toISOString().split('T')[0];
+
+        // 計算並設置最大可選擇日期
+        const maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + maxBookingDay);
+        dateSelector.max = maxDate.toISOString().split('T')[0];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const dateSelector = document.getElementById('date-selector');
+            const adultSelector = document.getElementById('adult-selector');
+            const childSelector = document.getElementById('child-selector');
+            const timeField = document.getElementById('time-field');
+            let availableSeatsData
+
+            // 設置今天的日期為預設值
+            const today = new Date().toISOString().split('T')[0];
+            dateSelector.value = today;
+
+            // 發送請求並更新時間
+            async function fetchAndUpdateAvailableTimes() {
+                try {
+                    const response = await axios.get(`/api/availableSeats?restaurantId=${restaurantId}&date=${dateSelector.value}`);
+                    availableSeatsData = response.data.data;
+                    updateAvailableTimes();
+                } catch (err) {
+                    console.error(err);
+                    // 錯誤處理
+                }
+            }
+
+            // 更新可用時間
+            function updateAvailableTimes() {
+                const adultCount = parseInt(adultSelector.value, 10) || 0;
+                const childCount = parseInt(childSelector.value, 10) || 0;
+                const totalCount = adultCount + childCount;
+                const suitableOption = availableSeatsData.find(option => option.max_person >= totalCount);
+                timeField.innerHTML = '';
+
+                if (suitableOption) {
+                    suitableOption.available_time.forEach(time => {
+                        const label = document.createElement('label');
+                        label.classList.add("border", "p-2", "cursor-pointer", "rounded-md", "mr-2", "mb-2", "w-32", "flex", "justify-center", "items-center", "text-center")
+
+                        const radioButton = document.createElement('input');
+                        radioButton.setAttribute('type', 'radio');
+                        radioButton.setAttribute('name', 'bookingTime');
+                        radioButton.setAttribute('value', time);
+                        radioButton.classList.add("hidden");
+
+                        // 当点击 label 时更新样式
+                        label.addEventListener('click', () => {
+                            document.querySelectorAll('#time-field label').forEach(el => {
+                                el.classList.remove("bg-orange-500", "text-white");
+                            });
+                            label.classList.add("bg-orange-500", "text-white");
+                        });
+
+                        label.appendChild(radioButton);
+
+                        const timeText = document.createTextNode(time);
+                        label.appendChild(timeText);
+
+                        document.getElementById('time-field').appendChild(label);
+                    });
+                } else {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.textContent = '沒有可預約的時間';
+                    timeField.appendChild(timeDiv);
+                }
+            }
+
+            // 初始載入時獲取數據
+            fetchAndUpdateAvailableTimes();
+
+            // 監聽選擇器的變化
+            adultSelector.addEventListener('change', updateAvailableTimes);
+            childSelector.addEventListener('change', updateAvailableTimes);
+            dateSelector.addEventListener('change', fetchAndUpdateAvailableTimes);
+        });
+
+        document.querySelectorAll('.purpose-label input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.purpose-label').forEach(label => {
+                    label.classList.remove("bg-orange-500", "text-white");
+                });
+                if (this.checked) {
+                    this.parentNode.classList.add("bg-orange-500", "text-");
+                }
+            });
+        });
+
+        document.getElementById('make-reservation').addEventListener('click', makeReservation);
+        async function makeReservation() {
+            try {
+                const adult = parseInt(document.querySelector('#adult-selector').value, 10)
+                const child = parseInt(document.querySelector('#child-selector').value, 10)
+                const diningDate = document.querySelector('#date-selector').value
+                const diningTime = document.querySelector('input[name="bookingTime"]:checked').value
+                console.log(diningTime)
+                const name = document.querySelector('#name').value
+                const gender = document.querySelector('input[name="title"]:checked').value
+                console.log(gender)
+                const phone = document.querySelector('#phone').value
+                const email = document.querySelector('#email').value
+                const purpose = document.querySelector('input[name="purpose"]:checked').value
+                const note = document.querySelector('#note').value
+                const response = await axios.post(`/api/reservation/restaurant/${restaurantId}`,{
+                    "adult": adult,
+                    "child": child,
+                    "diningDate": diningDate,
+                    "diningTime": diningTime,
+                    "name": name,
+                    "gender": gender,
+                    "phone": phone,
+                    "email": email,
+                    "purpose": purpose,
+                    "note": note
+                });
+                alert('Making reservation successfully')
+            } catch (err) {
+                console.log(err.response.data.error)
+                alert(err.response.data.error)
+            }
+        }
+    </script>
+</body>
+</html>

@@ -34,6 +34,10 @@ const getTables = async (restaurantId) => {
 const createAvailableSeats = async (restaurantId, maxBookingDay) => {
   const updatedDate = new Date()
   updatedDate.setDate(updatedDate.getDate() + maxBookingDay)
+  const year = updatedDate.getFullYear()
+  const month = updatedDate.getMonth() + 1
+  const day = updatedDate.getDate()
+  const formattedDate = `${year}-${month}-${day}`
   const tableData = await getTables(restaurantId)
 
   const values = tableData
@@ -42,7 +46,7 @@ const createAvailableSeats = async (restaurantId, maxBookingDay) => {
       row.table_id,
       row.name,
       row.seat_qty,
-      updatedDate,
+      formattedDate,
       row.available_time
     ])
     .flat()

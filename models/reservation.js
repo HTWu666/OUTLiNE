@@ -121,8 +121,73 @@ export const getReservations = async (restaurantId, diningDate) => {
     SELECT * FROM reservations
     WHERE restaurant_id = $1
       AND dining_date = $2
+      AND status IN ('not_seated', 'notified', 'reserved')
     `,
     [restaurantId, diningDate]
+  )
+
+  return rows
+}
+
+export const getReservation = async (reservationId) => {
+  const { rows } = await pool.query(
+    `
+    SELECT * FROM reservations
+    WHERE id = $1
+    `,
+    [reservationId]
+  )
+
+  return rows
+}
+
+export const cancelReservation = async (reservationId) => {
+  const conn = await pool.connect()
+  try {
+    await conn.query('BEGIN')
+    const { rows: reservationDetails } = await conn.query(
+      `
+      UPDATE reservations
+      SET status = 'canceled'
+      WHERE id = $1
+      RETURNING *
+      `,
+      [reservationId]
+    )
+
+    await conn.query(
+      `
+      UPDATE available_seats
+      SET availability = 'TRUE'
+      WHERE table_id = $1
+        AND available_date = $2
+        AND available_time = $3
+      `,
+      [
+        reservationDetails[0].table_id,
+        reservationDetails[0].dining_date,
+        reservationDetails[0].dining_time
+      ]
+    )
+
+    await conn.query('COMMIT')
+  } catch (err) {
+    await conn.query('ROLLBACK')
+    throw err
+  } finally {
+    conn.release()
+  }
+}
+
+export const confirmReservation = async (reservationId) => {
+  const { rows } = await pool.query(
+    `
+    UPDATE reservations
+    SET status = 'seated'
+    WHERE id = $1
+    RETURNING *
+    `,
+    [reservationId]
   )
 
   return rows

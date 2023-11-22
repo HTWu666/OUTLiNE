@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outline 登入</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="w-full max-w-xs">
+        <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div class="mb-4 border-b-4 border-gray-300">
+                <h1 class="text-lg font-bold text-gray-700 text-center">Outline</h1>
+            </div>
+            <div class="mb-4">
+                <input type="email" placeholder="email" id="sign-in-email" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-6">
+                <input type="password" placeholder="password" id="sign-in-password" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="flex items-center justify-between">
+                <button id="sign-in-btn" class="form-btn bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                    登入
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+    const signInEmail = document.querySelector('#sign-in-email')
+    const signInPassword = document.querySelector('#sign-in-password')
+    const signInBtn = document.querySelector('#sign-in-btn')
+
+    signInBtn.addEventListener('click', async (event) => {
+            event.preventDefault()
+
+            const email = signInEmail.value
+            const password = signInPassword.value
+            signInEmail.value = ''
+            signInPassword.value = ''
+        
+        try {
+            const response = await axios.post('/api/user/signin', {
+                email,
+                password
+            })
+
+            // Store the access_token with cookie
+            const now = new Date();
+            const expires = new Date(now.getTime() + `${response.data.data.access_expired}` * 1000)
+            document.cookie = `token=${encodeURIComponent(response.data.data.access_token)}; expires=${expires.toUTCString()};`
+
+            alert('Sign In Successfully')
+        } catch (err) {
+            alert(`Failed: ${err.response.data.error}`)
+        }
+    })
+    </script>

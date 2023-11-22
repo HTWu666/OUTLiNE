@@ -1,7 +1,7 @@
-import * as userModel from '../models/user.js'
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import validator from 'validator'
+import * as userModel from '../models/user.js'
 
 const validateSignUp = (contentType, name, email, password) => {
   if (contentType !== 'application/json') {
@@ -71,7 +71,9 @@ const COOKIE_OPTIONS = {
 
 const createJWT = (userId) => {
   const payload = { id: userId }
-  return jwt.sign(payload, process.env.JWT_KEY, { expiresIn: `${process.env.JWT_EXPIRATION_IN_SECOND}s` })
+  return jwt.sign(payload, process.env.JWT_KEY, {
+    expiresIn: `${process.env.JWT_EXPIRATION_IN_SECOND}s`
+  })
 }
 
 export const signUp = async (req, res) => {
@@ -100,8 +102,8 @@ export const signUp = async (req, res) => {
       .status(200)
       .json({
         data: {
-          accessToken: token,
-          accessExpired: process.env.JWT_EXPIRATION_IN_SECOND,
+          access_token: token,
+          access_expired: process.env.JWT_EXPIRATION_IN_SECOND,
           user: {
             id: userId,
             name,
@@ -170,8 +172,8 @@ export const signIn = async (req, res) => {
       .status(200)
       .json({
         data: {
-          accessToken: token,
-          accessExpired: process.env.JWT_EXPIRATION_IN_SECOND,
+          access_token: token,
+          access_expired: process.env.JWT_EXPIRATION_IN_SECOND,
           user: {
             id: userId,
             email

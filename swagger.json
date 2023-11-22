@@ -204,6 +204,49 @@
         }
       }
     },
+    "/api/tables/availableTime": {
+      "post": {
+        "tags": [
+          "tables"
+        ],
+        "summary": "For vendor, create available time for certain table",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableId": {
+                    "type": "number",
+                    "example": 1
+                  },
+                  "availableTime": {
+                    "type": "array",
+                    "example": ["11:00", "12:30"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/availableSeats": {
       "get": {
         "tags": [
@@ -211,6 +254,13 @@
         ],
         "summary": "For client, get available time on selected date",
         "parameters": [
+          {
+            "name": "restaurantId",
+            "in": "query",
+            "schema": {
+              "types": "number"
+            }
+          },
           {
             "name": "date",
             "in": "query",
@@ -251,28 +301,6 @@
                             "11:30",
                             "12:00",
                             "12:30"
-                          ],
-                          "available_table": [
-                            {
-                              "time": "11:00",
-                              "table_id": 3,
-                              "table_name": "A3"
-                            },
-                            {
-                              "time": "11:30",
-                              "table_id": 4,
-                              "table_name": "A4"
-                            },
-                            {
-                              "time": "12:00",
-                              "table_id": 10,
-                              "table_name": "B3"
-                            },
-                            {
-                              "time": "12:30",
-                              "table_id": 3,
-                              "table_name": "A3"
-                            }
                           ]
                         },
                         {
@@ -281,20 +309,6 @@
                             "11:30",
                             "12:00",
                             "12:30"
-                          ],
-                          "available_table": [
-                            {
-                              "time": "11:30",
-                              "table_name": "A1"
-                            },
-                            {
-                              "time": "12:00",
-                              "table_name": "B1"
-                            },
-                            {
-                              "time": "12:30",
-                              "table_name": "A2"
-                            }
                           ]
                         }
                       ]
@@ -386,7 +400,9 @@
             "description": "Internal Server Error"
           }
         }
-      },
+      }
+    },
+    "/api/reservations": {
       "get": {
         "tags": [
           "reservations"
@@ -465,9 +481,7 @@
             }
           }
         }
-      }
-    },
-    "/api/reservations": {
+      },
       "put": {
         "tags": [
           "reservations"
@@ -522,6 +536,34 @@
           },
           "403": {
             "description": "wrong token"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["reservations"],
+        "summary": "For business, cancel reservation",
+        "parameters": [
+          {
+            "name": "reservationId",
+            "in": "path",
+            "required": true,
+            "description": "To specify which reservation is going to be canceled"
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted"
+          },
+          "404": {
+            "description": "The specific table available time is not existed"
           },
           "500": {
             "description": "Internal Server Error"
@@ -638,9 +680,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/rules/{ruleId}": {
+      },
       "put": {
         "tags": [
           "restaurant rules"
@@ -657,14 +697,17 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "max_person_per_reserve": {
+                  "maxPersonPerGroup": {
                     "example": 6
                   },
-                  "reservation_start_day": {
+                  "minBookingDay": {
                     "example": 1
                   },
-                  "reservation_end_day": {
+                  "maxBookingDay": {
                     "example": 30
+                  },
+                  "updateBookingTime": {
+                    "example": "00:00"
                   }
                 }
               }

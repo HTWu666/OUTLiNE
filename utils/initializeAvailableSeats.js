@@ -42,15 +42,15 @@ const createAvailableSeats = async (restaurantId, updatedDate) => {
 const initializeAvailableSeats = async (restaurantId) => {
   const { rows } = await pool.query(
     `
-        SELECT reservation_start_day, reservation_end_day
+        SELECT min_booking_day, max_booking_day
         FROM rules
         WHERE restaurant_id = $1
     `,
     [restaurantId]
   )
 
-  const minBookingDay = rows[0].reservation_start_day
-  const maxBookingDay = rows[0].reservation_end_day
+  const minBookingDay = rows[0].min_booking_day
+  const maxBookingDay = rows[0].max_booking_day
   for (let i = minBookingDay; i < maxBookingDay; i++) {
     const availableDate = new Date()
     availableDate.setDate(availableDate.getDate() + i)

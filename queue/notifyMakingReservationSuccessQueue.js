@@ -4,13 +4,11 @@ import amqp from 'amqplib'
 import fs from 'fs'
 import ejs from 'ejs'
 import moment from 'moment-timezone'
-import jwt from 'jsonwebtoken'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import queue from '../constants/queueConstants.js'
 import nodemailer from 'nodemailer'
 
-dotenv.config()
+dotenv.config({ path: '../.env' })
 const { Pool } = pg
 
 const pool = new Pool({
@@ -29,6 +27,8 @@ const transporter = nodemailer.createTransport({
   }
 })
 
+const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE = 'notifyMakingReservationSuccessfullyQueue'
+
 const sendMakingReservationSuccessfullyMail = async (reservationId) => {
   const { rows: reservationDetails } = await pool.query(
     `
@@ -37,6 +37,7 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
     `,
     [reservationId]
   )
+
   const reservationDate = new Date(reservationDetails[0].dining_date)
   const month = reservationDate.getMonth() + 1
   const day = reservationDate.getDate()
@@ -48,6 +49,7 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
   const formattedTime = diningTimeInTaipei.format('HH:mm')
   const person =
     parseInt(reservationDetails[0].adult, 10) + parseInt(reservationDetails[0].child, 10)
+  const { upn } = reservationDetails[0]
 
   const restaurantId = reservationDetails[0].restaurant_id
   const { rows: restaurantDetails } = await pool.query(
@@ -57,12 +59,6 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
     `,
     [restaurantId]
   )
-
-  // create token (reservationId), 返回訂位資訊的頁面再根據 reservationId 去撈資料
-  const payload = {
-    reservationId: reservationDetails[0].id
-  }
-  const upn = jwt.sign(payload, process.env.JWT_KEY)
 
   const dirname = path.dirname(fileURLToPath(import.meta.url))
   const emailTemplatePath = path.join(dirname, '../views/email/makingReservationSuccessMail.html')
@@ -76,7 +72,7 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
     diningTime: formattedTime,
     adult: reservationDetails[0].adult,
     child: reservationDetails[0].child,
-    link: `${process.env.DOMAIN}/api/reservation?upn=${upn}`
+    link: `${process.env.DOMAIN}/reservation/click?upn=${upn}`
   })
 
   const info = await transporter.sendMail({
@@ -93,7 +89,7 @@ const worker = async () => {
   try {
     const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
     const channel = await connection.createChannel()
-    const queueName = queue.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE
+    const queueName = NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE
 
     console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
 

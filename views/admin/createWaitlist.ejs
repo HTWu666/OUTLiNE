@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現場候位</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="flex flex-col min-h-screen m-0">
+    <main class="mt-10 ml-10 mr-10 mb-10 flex-grow">
+            <div id="diner-field" class="flex-shrink-0 mr-3 mb-10">
+                <div class="field-label mb-5 text-lg">用餐人數</div>
+                <select id="adult-selector" class="border border-1 border-solid border-gray-300 w-64 h-10 rounded-md mr-3"></select>
+                <select id="child-selector" class="border border-1 border-solid border-gray-300 w-64 h-10 rounded-md"></select>
+            </div>
+        <hr>
+        <form class="space-y-4 mt-10">
+            <div class="text-lg mb-10">訂位人資訊</div>
+            <!-- 訂位人資訊 -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <label for="name" class="block text-base font-medium text-gray-700 mr-3 w-40">訂位人資訊 (必填)</label>
+                    <input type="text" id="name" name="name" required class="flex-grow border border-gray-300 rounded-sm shadow-sm h-8">
+                </div>
+            
+                <!-- radio 選項 -->
+                <div>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="title" value="小姐" class="text-orange-500">
+                        <span class="ml-2">小姐</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" name="title" value="先生" class="text-orange-500">
+                        <span class="ml-2">先生</span>
+                    </label>
+                    <label class="inline-flex items-center ml-6">
+                        <input type="radio" name="title" value="其他" class="text-orange-500">
+                        <span class="ml-2">其他</span>
+                    </label>
+                </div>
+            </div>
+        
+            <!-- 手機號碼 -->
+            <div class="flex items-center mt-2">
+                <label for="phone" class="block text-base font-medium text-gray-700 mr-3 w-40">訂位人手機號碼 (必填)</label>
+                <input type="tel" id="phone" name="phone" required class="flex-grow border border-gray-300 rounded-sm shadow-sm h-8">
+            </div>
+            
+            <!-- 用餐目的 -->
+            <div>
+                <span class="block text-base font-medium text-gray-700 mb-5">用餐目的</span>
+                <div class="mt-2 space-x-2">
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer">
+                        <input type="radio" name="purpose" value="生日" class="hidden" />
+                        <span>生日</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer">
+                        <input type="radio" name="purpose" value="家庭聚餐" class="hidden" />
+                        <span>家庭聚餐</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer">
+                        <input type="radio" name="purpose" value="情人約會" class="hidden" />
+                        <span>情人約會</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer">
+                        <input type="radio" name="purpose" value="結婚紀念" class="hidden" />
+                        <span>結婚紀念</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer">
+                        <input type="radio" name="purpose" value="朋友聚餐" class="hidden" />
+                        <span>朋友聚餐</span>
+                    </label>
+                    <label class="purpose-label border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:cursor-pointer">
+                        <input type="radio" name="purpose" value="商務聚餐" class="hidden" />
+                        <span>商務聚餐</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label for="note" class="block text-base font-medium text-gray-700">其他備註</label>
+                <textarea id="note" name="note" rows="3" maxlength="400" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"></textarea>
+            </div>
+        </form>
+        <button id="waitlisted" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out w-full mt-5">確認候位</button>
+    </main>
+
+    <div id="qrcode-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <!-- 弹出框内容 -->
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <!-- 关闭按钮 -->
+            <div class="flex justify-end">
+                <button id="close-modal" class="text-black">&times;</button>
+            </div>
+            <div id="qrcode-url"></div>
+            <!-- QR Code 显示区域 -->
+            <img id="qrcode-container" alt="QR Code" class="p-4">
+                <!-- QR Code 数据将在这里显示 -->
+            </img>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const maxPersonPerGroup = <%- JSON.stringify(maxPersonPerGroup) %>
+        initializeSelectors();
+
+        function initializeSelectors() {
+            for (let i = 1; i <= maxPersonPerGroup; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + '位大人';
+                document.getElementById('adult-selector').appendChild(option);
+                if (i === 2) {
+                    option.selected = true;
+                }
+            }
+
+            updateChildSelector(1);
+        }
+
+        function updateChildSelector(adultCount) {
+            const childSelector = document.getElementById('child-selector');
+            childSelector.innerHTML = '';
+
+            const maxChildren = maxPersonPerGroup - adultCount;
+            for (let i = 0; i <= maxChildren; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.text = i + '位小孩';
+            childSelector.appendChild(option);
+            }
+        }
+
+        document.getElementById('adult-selector').addEventListener('change', function () {
+            updateChildSelector(parseInt(this.value, 10));
+        });
+
+        document.getElementById('child-selector').addEventListener('change', function () {
+            const adultSelector = document.getElementById('adult-selector');
+            const selectedChildren = parseInt(this.value, 10);
+            const maxAdults = maxPersonPerGroup - selectedChildren;
+            const currentAdultSelection = parseInt(adultSelector.value, 10);
+            adultSelector.innerHTML = '';
+
+            for (let i = 1; i <= maxAdults; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i + '位大人';
+                adultSelector.appendChild(option);
+
+                if (i === currentAdultSelection) {
+                    option.selected = true;
+                }
+            }
+
+            if (currentAdultSelection > maxAdults) {
+                adultSelector.value = maxAdults;
+            }
+        }); 
+
+        document.querySelectorAll('.purpose-label input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.purpose-label').forEach(label => {
+                    label.classList.remove("bg-orange-500", "text-white");
+                });
+                if (this.checked) {
+                    this.parentNode.classList.add("bg-orange-500", "text-white");
+                }
+            });
+        });
+
+        document.getElementById('waitlisted').addEventListener('click', waitlisted);
+        async function waitlisted() {
+            try {
+                const adult = parseInt(document.querySelector('#adult-selector').value, 10)
+                const child = parseInt(document.querySelector('#child-selector').value, 10)
+                const name = document.querySelector('#name').value
+                const gender = document.querySelector('input[name="title"]:checked').value
+                const phone = document.querySelector('#phone').value
+                const purpose = document.querySelector('input[name="purpose"]:checked').value
+                const note = document.querySelector('#note').value
+                const response = await axios.post(`/api/restaurant/${restaurantId}/waitlist`,{
+                    "adult": adult,
+                    "child": child,
+                    "name": name,
+                    "gender": gender,
+                    "phone": phone,
+                    "purpose": purpose,
+                    "note": note
+                }, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                alert('Successfully waitlisted')
+
+                document.getElementById('qrcode-container').src = response.data.data.qrCode;
+                document.querySelector('#qrcode-url').innerHTML = response.data.data.url
+                document.getElementById('qrcode-modal').classList.remove('hidden');
+            } catch (err) {
+                console.log(err.response.data.error)
+                alert(err.response.data.error)
+            }
+        }
+
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('qrcode-modal').classList.add('hidden');
+            initializeSelectors()
+            document.getElementById('name').value = '';
+            document.querySelector('input[name="title"]:checked').checked = false; // 假设至少有一个选项被选中
+            document.getElementById('phone').value = '';
+            document.getElementById('note').value = '';
+            document.querySelectorAll('input[name="purpose"]').forEach(radio => {
+                radio.checked = false;
+                radio.parentNode.classList.remove("bg-orange-500", "text-white");
+            });
+        });
+    </script>
+</body>
+</html>

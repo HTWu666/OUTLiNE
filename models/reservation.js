@@ -11,7 +11,8 @@ export const createReservation = async (
   phone,
   email,
   purpose,
-  note
+  note,
+  connection
 ) => {
   const person = adult + child
 
@@ -32,13 +33,9 @@ export const createReservation = async (
     throw err
   }
 
-  const conn = await pool.connect()
-  try {
-    await conn.query('BEGIN')
-
-    // 取得可訂位的時間並 lock the row
-    const { rows: availableSeat } = await conn.query(
-      `
+  // 取得可訂位的時間並 lock the row
+  const { rows: availableSeat } = await connection.query(
+    `
         SELECT id, table_id, table_name
         FROM available_seats
         WHERE restaurant_id = $1
@@ -48,19 +45,19 @@ export const createReservation = async (
           AND availability = TRUE
         FOR UPDATE
       `,
-      [restaurantId, requiredSeats, diningDate, diningTime]
-    )
+    [restaurantId, requiredSeats, diningDate, diningTime]
+  )
 
-    if (!availableSeat[0]) {
-      const err = new Error('No available seat')
-      err.status = 400
-      throw err
-    }
+  if (!availableSeat[0]) {
+    const err = new Error('No available seat')
+    err.status = 400
+    throw err
+  }
 
-    const tableId = availableSeat[0].table_id
-    const tableName = availableSeat[0].table_name
-    const { rows: reservation } = await conn.query(
-      `
+  const tableId = availableSeat[0].table_id
+  const tableName = availableSeat[0].table_name
+  const { rows: reservation } = await connection.query(
+    `
         INSERT INTO reservations (
           restaurant_id,
           adult,
@@ -78,41 +75,34 @@ export const createReservation = async (
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING id
       `,
-      [
-        restaurantId,
-        adult,
-        child,
-        diningDate,
-        diningTime,
-        tableId,
-        tableName,
-        name,
-        gender,
-        phone,
-        email,
-        purpose,
-        note
-      ]
-    )
+    [
+      restaurantId,
+      adult,
+      child,
+      diningDate,
+      diningTime,
+      tableId,
+      tableName,
+      name,
+      gender,
+      phone,
+      email,
+      purpose,
+      note
+    ]
+  )
 
-    const availableSeatId = availableSeat[0].id
-    await conn.query(
-      `
+  const availableSeatId = availableSeat[0].id
+  await connection.query(
+    `
         UPDATE available_seats
         SET availability = FALSE
         WHERE id = $1
       `,
-      [availableSeatId]
-    )
+    [availableSeatId]
+  )
 
-    await conn.query('COMMIT')
-    return reservation[0].id
-  } catch (err) {
-    await conn.query('ROLLBACK')
-    throw err
-  } finally {
-    conn.release()
-  }
+  return reservation[0].id
 }
 
 export const getReservations = async (restaurantId, diningDate) => {
@@ -138,7 +128,7 @@ export const getReservation = async (reservationId) => {
     [reservationId]
   )
 
-  return rows
+  return rows[0]
 }
 
 export const cancelReservation = async (reservationId) => {
@@ -148,7 +138,10 @@ export const cancelReservation = async (reservationId) => {
     const { rows: reservationDetails } = await conn.query(
       `
       UPDATE reservations
-      SET status = 'canceled'
+      SET status = CASE
+        WHEN dining_date <= CURRENT_DATE AND dining_time < NOW()::time THEN 'no_show'
+        ELSE 'canceled'
+      END
       WHERE id = $1
       RETURNING *
       `,
@@ -158,7 +151,9 @@ export const cancelReservation = async (reservationId) => {
     await conn.query(
       `
       UPDATE available_seats
-      SET availability = 'TRUE'
+      SET availability = CASE
+        WHEN available_date > CURRENT_DATE THEN TRUE
+      END
       WHERE table_id = $1
         AND available_date = $2
         AND available_time = $3
@@ -191,4 +186,15 @@ export const confirmReservation = async (reservationId) => {
   )
 
   return rows
+}
+
+export const createUpnForReservation = async (upn, reservationId, connection) => {
+  await connection.query(
+    `
+    UPDATE reservations
+    SET upn = $1
+    WHERE id = $2
+  `,
+    [upn, reservationId]
+  )
 }

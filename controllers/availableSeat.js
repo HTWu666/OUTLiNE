@@ -3,9 +3,9 @@ import * as availableModel from '../models/availableSeat.js'
 
 export const getAvailableSeats = async (req, res) => {
   try {
-    const { restaurantId, date } = req.query
+    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { date } = req.query
     const availableSeats = await availableModel.getAvailableSeats(restaurantId, date)
-
     const transformedData = availableSeats.reduce((acc, seat) => {
       const existing = acc.find((entry) => entry.max_person === seat.seat_qty)
 

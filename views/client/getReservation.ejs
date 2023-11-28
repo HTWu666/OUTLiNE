@@ -3,17 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/css/output.css" rel="stylesheet">
     <title><%= restaurantName %></title>
 </head>
-<body>
-    <div><%= restaurantName %></div>
-    <div><%= restaurantPhone %></div>
-    <div><%= restaurantAddress %></div>
-    <div><%= customerName %> 您好</div>
-    <div>以下是您的訂位資訊</div>
-    <div><%= diningDate %> <%= dayOfWeek %></div>
-    <div><%= diningTime %></div>
-    <div><%= adult %> 位大人 <%= child %> 位小孩</div>
-    <button><a href="<%= link %>">取消訂位</a></button>
+<body class="bg-gray-100">
+    <div class="p-4 flex justify-center items-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg text-center w-96">
+            <div class="font-bold text-3xl mb-4"><%= restaurantName %></div>
+            <div class="text-gray-700 text-sm mb-2"><%= restaurantPhone %></div>
+            <div class="text-gray-700 text-sm mb-4"><%= restaurantAddress %></div>
+            <div class="text-gray-800 text-md mb-1"><%= customerName %> 您好</div>
+            <div class="text-gray-600 text-sm mb-4">以下是您的訂位資訊</div>
+            <div class="border-solid border-2 border-gray-100 p-4 rounded-md">
+                <div class= "text-xl mb-4"><%= diningDate %> <%= dayOfWeek %></div>
+                <div class="text-orange-500 text-5xl mb-4 font-bold"><%= diningTime %></div>
+                <div class="text-gray-800 text-lg mb-4"><%= adult %> 位大人 <%= child %> 位小孩</div>
+                <div id="show-status" class="mb-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const statusDiv = document.querySelector('#show-status');
+        const status = "<%= status %>";
+        const cancelLink = "<%= link %>";
+
+        switch (status) {
+            case 'canceled':
+                statusDiv.innerHTML = '<div class="text-red-600 font-semibold">您的訂位已取消</div>';
+                break;
+            case 'seated':
+                statusDiv.innerHTML = '<div class="text-green-600 font-semibold">您已入座</div>';
+                break;
+            case 'no_show':
+                statusDiv.innerHTML = '<div class="text-red-600 font-semibold">您的訂位已過時</div>';
+                break;
+            case 'not_seated':
+                const cancelButton = document.createElement('button');
+                cancelButton.innerText = '取消訂位';
+                cancelButton.className = 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded';
+                cancelButton.addEventListener('click', async () => {
+                    try {
+                        const response = await axios.delete(cancelLink);
+                        alert('訂位取消成功');
+                    } catch (err) {
+                        console.error(err);
+                        alert('取消訂位失敗');
+                    }
+                });
+                statusDiv.appendChild(cancelButton);
+                break;
+        }
+    </script>
 </body>
 </html>

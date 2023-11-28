@@ -4,6 +4,6 @@ import authenticate from '../middlewares/authenticate.js'
 
 const router = express.Router()
 
-router.post('/restaurant', authenticate, createRestaurant)
+router.post('/restaurant/:restaurantId(\\d+)', authenticate, createRestaurant)
 
 export default router

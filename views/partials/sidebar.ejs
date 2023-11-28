@@ -1,7 +1,36 @@
-<script src="https://cdn.tailwindcss.com"></script>
-<div class="w-64 border-r border-gray-200">
-    <!-- 这里放置链接 -->
-    <a href="/reservation" class="block py-2 px-4 hover:bg-gray-100">訂位管理</a>
-    <a href="/page2" class="block py-2 px-4 hover:bg-gray-100">時間管理</a>
-    <!-- 更多链接 -->
+<div class="w-16 md:w-64 bg-gray-900 text-blue-100">
+    <div class="w-16 md:w-64 h-screen bg-gray-900 text-blue-100">
+        <div class="py-8 px-5 text-orange-500 font-bold text-5xl shadow-md">Outline</div>
+        <a id="bookingManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/booking.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">訂位管理</span>
+        </a>
+        <a id="tableManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/table.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">座位管理</span>
+        </a>
+        <a id="ruleManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/rule.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">規則管理</span>
+        </a>
+        <a id="memberManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/user.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">管理員中心</span>
+        </a>
+    </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+            const bookingManagementLink = document.getElementById('bookingManagementLink');
+            bookingManagementLink.href = `/restaurant/${restaurantId}/admin/checkReservation`;
+
+            const tableManagementLink = document.getElementById('tableManagementLink');
+            tableManagementLink.href = `/restaurant/${restaurantId}/admin/checkTable`;
+
+            const ruleManagementLink = document.getElementById('ruleManagementLink');
+            ruleManagementLink.href = `/restaurant/${restaurantId}/admin/rule`;
+
+            const memberManagementLink = document.getElementById('memberManagementLink');
+            memberManagementLink.href = `/restaurant/${restaurantId}/admin/member`;
+        })
+</script>

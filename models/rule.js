@@ -33,7 +33,7 @@ export const getRule = async (restaurantId) => {
     [restaurantId]
   )
 
-  return rows
+  return rows[0]
 }
 
 export const updateRule = async (
@@ -41,7 +41,8 @@ export const updateRule = async (
   maxPersonPerGroup,
   minBookingDay,
   maxBookingDay,
-  updateBookingTime
+  updateBookingTime,
+  connection
 ) => {
   const updates = []
   const values = []
@@ -72,33 +73,43 @@ export const updateRule = async (
 
   values.push(restaurantId)
 
-  const conn = await pool.connect()
-  try {
-    await conn.query('BEGIN')
-
-    // update rule
-    const res = await conn.query(
-      `
+  // const conn = await pool.connect()
+  // try {
+  // await conn.query('BEGIN')
+  // // get old rule
+  // const { rows: oldRule } = await conn.query(
+  //   `
+  //   SELECT * FROM rules
+  //   WHERE restaurant_id = $1
+  //   `,
+  //   [restaurantId]
+  // )
+  // console.log(oldRule)
+  // update rule
+  await connection.query(
+    `
         UPDATE rules
         SET ${updates.join(', ')}
         WHERE restaurant_id = $${updates.length + 1}
       `,
-      values
-    )
-    console.log(res)
-    // // check if need to update available time
-    // await conn.query(
-    //   `
+    values
+  )
 
-    //   `)
+  // // Get new rule
+  // const { rows: newRule } = await conn.query(
+  //   `
+  //   SELECT * FROM rules
+  //   WHERE restaurant_id = $1
+  //   `,
+  //   [restaurantId]
+  // )
+  // console.log(newRule)
 
-    await conn.query('COMMIT')
-
-    return res
-  } catch (err) {
-    await conn.query('ROLLBACK')
-    throw err
-  } finally {
-    conn.release()
-  }
+  // await conn.query('COMMIT')
+  // } catch (err) {
+  //   await conn.query('ROLLBACK')
+  //   throw err
+  // } finally {
+  //   conn.release()
+  // }
 }

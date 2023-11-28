@@ -30,6 +30,7 @@
 </html>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+    localStorage.removeItem('restaurantId')
     const signInEmail = document.querySelector('#sign-in-email')
     const signInPassword = document.querySelector('#sign-in-password')
     const signInBtn = document.querySelector('#sign-in-btn')
@@ -54,6 +55,7 @@
             document.cookie = `token=${encodeURIComponent(response.data.data.access_token)}; expires=${expires.toUTCString()};`
 
             alert('Sign In Successfully')
+            window.location.href = '/admin/chooseRestaurant'
         } catch (err) {
             alert(`Failed: ${err.response.data.error}`)
         }

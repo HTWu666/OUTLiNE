@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outline 餐廳管理系統</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="w-full max-w-xs">
+        <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div class="mb-4 border-b-4 border-gray-300">
+                <h1 class="text-lg font-bold text-gray-700 text-center">Outline</h1>
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="restaurant-select">
+                    選擇餐廳
+                </label>
+                <div class="mb-4">
+                    <select id="restaurant-select" class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded leading-tight focus:outline-none focus:border-orange-500">
+                        <!-- 餐廳選項將在這裡動態插入 -->
+                    </select>
+                </div>
+                <button id="confirm-button" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    確定
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const restaurants = <%- JSON.stringify(restaurants) %>
+        const selectElement = document.getElementById('restaurant-select');
+        restaurants.forEach(restaurant => {
+            const option = document.createElement('option');
+            option.value = restaurant.id;
+            option.textContent = restaurant.name;
+            selectElement.appendChild(option);
+        });
+
+        document.getElementById('confirm-button').addEventListener('click', (event) => {
+            event.preventDefault();
+            const restaurantId = selectElement.value;
+            localStorage.setItem('restaurantId', restaurantId);
+            window.location.href = `/restaurant/${restaurantId}/admin/checkReservation`
+        });
+    </script>
+</body>
+</html>

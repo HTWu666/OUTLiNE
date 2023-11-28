@@ -11,9 +11,11 @@ const validateSignUp = (contentType, name, email, password) => {
   let missingField = ''
   if (!name) {
     missingField = 'Name'
-  } else if (!email) {
+  }
+  if (!email) {
     missingField = 'Email'
-  } else if (!password) {
+  }
+  if (!password) {
     missingField = 'Password'
   }
   if (missingField) {
@@ -70,12 +72,13 @@ const COOKIE_OPTIONS = {
 }
 
 const createJWT = (userId) => {
-  const payload = { id: userId }
+  const payload = { userId }
   return jwt.sign(payload, process.env.JWT_KEY, {
     expiresIn: `${process.env.JWT_EXPIRATION_IN_SECOND}s`
   })
 }
 
+// 註冊需經餐廳老闆審核
 export const signUp = async (req, res) => {
   try {
     const contentType = req.headers['content-type']
@@ -94,23 +97,7 @@ export const signUp = async (req, res) => {
     // create user
     const userId = await userModel.createUser(name, email, hashedPassword)
 
-    // create token
-    const token = createJWT(userId)
-
-    res
-      .cookie('jwtToken', token, COOKIE_OPTIONS)
-      .status(200)
-      .json({
-        data: {
-          access_token: token,
-          access_expired: process.env.JWT_EXPIRATION_IN_SECOND,
-          user: {
-            id: userId,
-            name,
-            email
-          }
-        }
-      })
+    res.status(200).json({ message: 'Please wait for approval' })
   } catch (err) {
     console.error(err)
 
@@ -156,6 +143,9 @@ export const signIn = async (req, res) => {
 
     // verify
     const user = await userModel.findUserByEmail(email)
+    if (user.status !== 'activated') {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
     const isValidPassword = await argon2.verify(user.password, password, {
       secret: Buffer.from(process.env.ARGON2_PEPPER)
     })
@@ -183,5 +173,17 @@ export const signIn = async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Sign in failed' })
+  }
+}
+
+export const signOut = async (req, res) => {
+  try {
+    res
+      .cookie('jwtToken', '', { maxAge: 0, httpOnly: true, path: '/' })
+      .status(200)
+      .json({ message: 'Sing out successfully' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Sign out failed' })
   }
 }

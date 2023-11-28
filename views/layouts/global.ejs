@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+    <script>
+        let token
+        document.addEventListener('DOMContentLoaded', async () => {
+            const cookies = document.cookie.split('; ')
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=')
+                if (name === 'token') {
+                    token = value
+                    break
+                }
+            }
+            if (token === undefined) {
+                window.location.href = '/signin'
+            }
+        })
+
+        const restaurantId = localStorage.getItem('restaurantId');
+        if (!restaurantId) {
+            window.location.href = '/signin'
+        }
+    </script>
+</body>
+</html>

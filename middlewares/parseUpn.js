@@ -3,7 +3,7 @@ import util from 'util'
 
 const jwtVerify = util.promisify(jwt.verify)
 
-const parseUpn = async (req, res, next) => {
+export const parseUpnForReservation = async (req, res, next) => {
   try {
     const { upn } = req.query
     if (!upn) {
@@ -26,4 +26,25 @@ const parseUpn = async (req, res, next) => {
   }
 }
 
-export default parseUpn
+export const parseUpnForWaitlist = async (req, res, next) => {
+  try {
+    const { upn } = req.query
+    if (!upn) {
+      return res.status(400).json({ errors: 'no upn' })
+    }
+
+    const decoded = await jwtVerify(upn, process.env.JWT_KEY)
+    res.locals.waitingId = decoded.waitingId
+    next()
+  } catch (err) {
+    console.error(err)
+
+    if (err.name === 'TokenExpiredError') {
+      res.status(403).json({ message: 'Invalid token' })
+    } else if (err.name === 'JsonWebTokenError') {
+      res.status(403).json({ message: 'Invalid token' })
+    } else {
+      res.status(500).json({ errors: 'Parse upn failed' })
+    }
+  }
+}

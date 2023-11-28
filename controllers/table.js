@@ -1,7 +1,5 @@
 import moment from 'moment-timezone'
 import * as tableModel from '../models/table.js'
-import * as restaurantModel from '../models/restaurant.js'
-import cache from '../utils/cache.js'
 
 const validateCreateTable = (contentType, tableName, seatQty, availableTime) => {
   if (contentType !== 'application/json') {
@@ -39,24 +37,7 @@ export const createTable = async (req, res) => {
       return res.status(400).json({ error: validation.error })
     }
 
-    // get restaurantId by userId
-    let restaurantId
-    const restaurantIdCacheKey = `restaurantId:${userId}`
-    if (cache.status === 'ready') {
-      const cachedRestaurantId = await cache.get(restaurantIdCacheKey)
-
-      if (cachedRestaurantId) {
-        restaurantId = cachedRestaurantId
-      }
-    }
-
-    if (!restaurantId) {
-      restaurantId = await restaurantModel.findRestaurantByUserId(userId)
-      if (cache.status === 'ready') {
-        await cache.set(restaurantIdCacheKey, restaurantId)
-      }
-    }
-
+    const restaurantId = parseInt(req.params.restaurantId, 10)
     const tableId = await tableModel.createTable(restaurantId, tableName, seatQty)
     const timezone = 'Asia/Taipei'
     if (typeof availableTime === 'string' && availableTime.length > 0) {
@@ -158,7 +139,7 @@ export const createAvailableTime = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(err.status).json({ error: err.message })
+      return res.status(400).json({ error: err.message })
     }
     res.status(500).json({ error: 'Create available time failed' })
   }
@@ -166,8 +147,7 @@ export const createAvailableTime = async (req, res) => {
 
 export const getTables = async (req, res) => {
   try {
-    const { userId } = res.locals
-    const restaurantId = await restaurantModel.findRestaurantByUserId(userId)
+    const restaurantId = parseInt(req.params.restaurantId, 10)
     const results = await tableModel.getTables(restaurantId)
 
     const transformedData = {}
@@ -203,7 +183,7 @@ export const getTables = async (req, res) => {
 
 export const deleteTable = async (req, res) => {
   try {
-    const tableId = req.params.id
+    const { tableId } = req.params
     const { time } = req.query
 
     if (time) {
@@ -217,6 +197,9 @@ export const deleteTable = async (req, res) => {
     res.status(200).json({ message: 'Delete successfully' })
   } catch (err) {
     console.error(err)
+    if (err instanceof Error) {
+      return res.status(400).json({ error: err.message })
+    }
     res.status(500).json({ error: 'Delete table failed' })
   }
 }

@@ -33,5 +33,31 @@ export const getRestaurant = async (restaurantId) => {
     [restaurantId]
   )
 
-  return rows
+  return rows[0]
+}
+
+export const getRestaurantByUserId = async (userId) => {
+  const { rows: restaurantIds } = await pool.query(
+    `
+    SELECT * FROM user_restaurant
+    WHERE user_id = $1
+    `,
+    [userId]
+  )
+
+  if (restaurantIds.length === 0) {
+    return []
+  }
+
+  const ids = restaurantIds.map((item) => item.restaurant_id)
+  const params = ids.map((_, index) => `$${index + 1}`).join(', ')
+  const { rows: restaurantDetails } = await pool.query(
+    `
+    SELECT * FROM restaurants
+    WHERE id IN (${params})
+    `,
+    ids
+  )
+
+  return restaurantDetails
 }

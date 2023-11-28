@@ -1,26 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- 其他头部信息 -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/css/output.css" rel="stylesheet">
 </head>
 <body>
-    <div class="flex">
+    <%- include('./global.ejs') %>
+    <div class="flex min-h-screen">
         <%- include('../partials/sidebar.ejs') %>
         <div class="flex-grow p-5">
-            <div class="flex justify-between items-center">
-                <div class="text-4xl font-bold">訂位管理</div>
-                <div class="flex items-center space-x-4">
-                    <a href="#" class="hover:text-blue-500">新增訂位</a>
-                    <a href="/checkReservation" class="hover:text-blue-500">訂位確認</a>
-                    <a href="#" class="hover:text-blue-500">新增候位</a>
-                    <a href="#" class="hover:text-blue-500">候位確認</a>
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-4xl font-bold text-gray-700">訂位管理</div>
+                <div class="flex items-center space-x-3">
+                    <a id="makeReservationLink" class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition duration-200">新增訂位</a>
+                    <a id="checkReservationLink" class="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600 transition duration-200">訂位確認</a>
+                    <a id="createWaitlistLink" class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 transition duration-200">新增候位</a>
+                    <a id="checkWaitlistLink" class="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600 transition duration-200">候位確認</a>
                 </div>
             </div>
-            
             <%- body %>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const makeReservationLink = document.getElementById('makeReservationLink');
+            makeReservationLink.href = `/restaurant/${restaurantId}/admin/makeReservation`;
+
+            const checkReservationLink = document.getElementById('checkReservationLink');
+            checkReservationLink.href = `/restaurant/${restaurantId}/admin/checkReservation`;
+
+            const createWaitlistLink = document.getElementById('createWaitlistLink');
+            createWaitlistLink.href = `/restaurant/${restaurantId}/admin/createWaitlist`;
+
+            const checkWaitlistLink = document.getElementById('checkWaitlistLink');
+            checkWaitlistLink.href = `/restaurant/${restaurantId}/admin/checkWaitlist`;
+        })
+    </script>
 </body>
 </html>
 

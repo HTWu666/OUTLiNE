@@ -7,6 +7,8 @@ import morganBody from 'morgan-body'
 import swaggerUi from 'swagger-ui-express'
 import swaggerDocument from './swagger.json' assert { 'type': 'json' }
 import expressLayouts from 'express-ejs-layouts'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 import userRouter from './routes/user.js'
 import restaurantRouter from './routes/restaurant.js'
 import tableRouter from './routes/table.js'
@@ -15,18 +17,33 @@ import ruleRouter from './routes/rule.js'
 import availableSeatRouter from './routes/availableSeat.js'
 import reservationPageRouter from './routes/client/reservation.js'
 import checkReservationPageRouter from './routes/admin/reservation.js'
-import signinPageRouter from './routes/admin/signin.js'
+import userPageRouter from './routes/admin/user.js'
+import customerServiceRouter from './routes/customerService.js'
+import waitlistRouter from './routes/waitlist.js'
+import waitlistPageRouter from './routes/admin/waitlist.js'
+import waitlistNumberPageRouter from './routes/client/waitlist.js'
+import restaurantPageRouter from './routes/admin/restaurant.js'
+import rulePageRouter from './routes/admin/rule.js'
+import tablePageRouter from './routes/admin/table.js'
 
 dotenv.config()
 const app = express()
+const server = createServer(app)
+export const io = new Server(server, {
+  cors: {
+    origin: process.env.DOMAIN,
+    methods: ['GET', 'POST']
+  }
+})
 
+app.set('io', io)
 app.use(express.json()) // parse json
 app.use(express.urlencoded({ extended: false })) // parse urlencoded
 app.use(cookieParser()) // parse cookie
 app.set('view engine', 'ejs')
 app.set('views', './views')
 app.use(expressLayouts)
-app.set('layout', './layouts/layout')
+app.set('layout', './layouts/global')
 app.use(express.static('public'))
 app.use(express.static('dist'))
 
@@ -49,10 +66,21 @@ app.use('/api', [
   tableRouter,
   reservationRouter,
   ruleRouter,
-  availableSeatRouter
+  availableSeatRouter,
+  customerServiceRouter,
+  waitlistRouter
 ])
 
-app.use('/', [reservationPageRouter, checkReservationPageRouter, signinPageRouter])
+app.use('/', [
+  reservationPageRouter,
+  checkReservationPageRouter,
+  userPageRouter,
+  waitlistPageRouter,
+  waitlistNumberPageRouter,
+  restaurantPageRouter,
+  rulePageRouter,
+  tablePageRouter
+])
 
 app.all('*', (req, res) => {
   res.status(404).render('./error/notFound')
@@ -63,7 +91,7 @@ app.use((err, req, res, next) => {
   console.error(err)
 })
 
-app.listen(process.env.PORT, () => {
+server.listen(process.env.PORT, () => {
   console.log(`Server is listening on ${process.env.PORT}`)
 })
 

@@ -5,15 +5,18 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "concurrently \"npm:watch-css\" \"nodemon server.js\"",
+    "watch-css": "tailwindcss -i ./public/css/styles.css -o ./public/css/output.css --watch",
+    "build-css": "tailwindcss build public/css/styles.css -o public/css/output.css"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-lex-runtime-v2": "^3.454.0",
     "amqplib": "^0.10.3",
     "argon2": "^0.31.2",
+    "autoprefixer": "^10.4.16",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
@@ -26,16 +29,22 @@
     "node-schedule": "^2.1.1",
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
+    "postcss": "^8.4.31",
+    "qrcode": "^1.5.3",
+    "socket.io": "^4.7.2",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.0",
+    "uuid": "^9.0.1",
     "validator": "^13.11.0"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "eslint": "^8.53.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-prettier": "^5.0.1",
+    "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
     "tailwindcss": "^3.3.5"
   }

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>候位號碼牌</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <main class="flex flex-col items-center h-screen mt-32 mb-32">
+        <div class="font-bold text-3xl mb-2"><%= restaurantName %></div>
+        <div class="mb-2"><%= restaurantPhone %></div>
+        <div class="mb-2"><%= restaurantAddress %></div>
+        <div id="details" class="w-full max-w-md text-center p-10 bg-white shadow-md rounded-lg"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        let showNumber
+        const waitingId = <%- JSON.stringify(waitingId) %>
+        const status = <%- JSON.stringify(status) %>
+        const number = <%- JSON.stringify(number) %>
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (status === 'waiting') {
+                document.querySelector('#details').innerHTML = 
+                `
+                <div class="text-xl mb-4"><%= name %> 您好，您的候位資訊：</div>
+                <div class="text-base mb-4">您的序號：<span id="number"><%= number %></span></div>
+                <div class="mb-4">
+                    <div>前面還有幾組</div>
+                    <div class="flex justify-center space-x-2 my-4" id="number-container">
+                    </div>
+                </div>
+                <button id="cancelBtn" class="mt-4 bg-red-500 text-white font-bold py-2 px-8 rounded hover:bg-red-600 transition duration-300">取消候位</button>
+                `
+
+                document.querySelector('#cancelBtn').addEventListener('click', async () => {
+                    try {
+                        const response = await axios.delete(`/api/waitlist/${waitingId}`)
+                        alert(response.data.message)
+                        location.reload()
+                    } catch (err) {
+                        alert(err)
+                    }
+                })
+
+                const restaurantId = <%- JSON.stringify(restaurantId) %>
+                const response = await axios.get(`/api/restaurant/${restaurantId}/waitlist/currentNumber`)
+                initializeNumberDisplay(number - response.data.data.currentNumber);
+            } else if (status === 'canceled') {
+                document.querySelector('#details').innerHTML = 
+                `
+                <div class="text-xl mb-4"><%= name %> 您好</div>
+                <div>您的候位已取消</div>
+                <div>希望很快可以再為您服務</div>
+                `
+            } else if (status === 'no_show') {
+                document.querySelector('#details').innerHTML = 
+                `
+                <div class="text-xl mb-4"><%= name %> 您好</div>
+                <div>您已過號，請再重新候位</div>
+                `
+            } else if (status === 'seated') {
+                document.querySelector('#details').innerHTML = 
+                `
+                <div class="text-xl mb-4"><%= name %> 您好</div>
+                <div>您已入座，感謝您的等候</div>
+                `
+            }
+        })
+
+        // 使用新的函数初始化数字
+        function initializeNumberDisplay(groupsAhead) {
+            const digits = String(groupsAhead).padStart(3, '0').split('');
+            const numberContainer = document.getElementById('number-container');
+            numberContainer.innerHTML = digits.map(digit => 
+                `<div class="number-box">
+                    <div class="number">${digit}</div>
+                </div>`
+            ).join('');
+        }
+
+        // 更新数字的函数
+        function updateNumberDisplay(groupsAhead) {
+            const digits = String(groupsAhead).padStart(3, '0').split('');
+            const numberBoxes = document.querySelectorAll('.number-box');
+
+            digits.forEach((digit, index) => {
+                const numberBox = numberBoxes[index];
+                const newDigit = document.createElement('div');
+                newDigit.className = 'number';
+                newDigit.textContent = digit;
+
+                // 插入新数字并移到底部
+                numberBox.appendChild(newDigit);
+                newDigit.style.transform = 'translateY(100%)';
+
+                // 动画滑动旧数字上移并新数字下滑
+                setTimeout(() => {
+                    const currentDigit = numberBox.querySelector('.number:not(.slide-up)');
+                    if (currentDigit) {
+                        currentDigit.classList.add('slide-up');
+                    }
+                    newDigit.style.transform = 'translateY(0)';
+                }, 20);
+
+                // 动画结束后移除旧数字
+                setTimeout(() => {
+                    if (numberBox.children.length > 1) {
+                        numberBox.removeChild(numberBox.children[0]);
+                    }
+                }, 520);
+            });
+        }
+
+        if (status === 'waiting') {
+            const socket = io()
+            socket.on('numberCalled', (newNumber) => {
+                const groupsAhead = number - newNumber
+                if (groupsAhead < 0) {
+                    window.location.reload()
+                }
+                updateNumberDisplay(groupsAhead);
+            });
+        }
+    </script>
+</body>
+</html>

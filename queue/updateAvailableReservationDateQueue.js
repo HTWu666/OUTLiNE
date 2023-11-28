@@ -1,9 +1,8 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 import amqp from 'amqplib'
-import queue from '../constants/queueConstants.js'
 
-dotenv.config()
+dotenv.config({ path: '../.env' })
 const { Pool } = pg
 
 const pool = new Pool({
@@ -12,6 +11,8 @@ const pool = new Pool({
   database: process.env.POSTGRE_DATABASE,
   password: process.env.POSTGRE_PASSWORD
 })
+
+const UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE = 'updateAvailableReservationDateQueue'
 
 const getTables = async (restaurantId) => {
   const { rows } = await pool.query(
@@ -76,11 +77,11 @@ const createAvailableSeats = async (restaurantId, maxBookingDay) => {
 }
 
 // 依照 rule 更新可訂位的日期
-const worker1 = async () => {
+const worker = async () => {
   try {
     const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
     const channel = await connection.createChannel()
-    const queueName = queue.UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE
+    const queueName = UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE
 
     console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
 
@@ -102,4 +103,4 @@ const worker1 = async () => {
   }
 }
 
-worker1()
+worker()

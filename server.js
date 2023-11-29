@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser'
 import fs from 'fs'
 import morganBody from 'morgan-body'
 import swaggerUi from 'swagger-ui-express'
-import swaggerDocument from './swagger.json' assert { 'type': 'json' }
+// import swaggerDocument from './swagger.json' assert { 'type': 'json' }
 import expressLayouts from 'express-ejs-layouts'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
@@ -29,7 +29,7 @@ import tablePageRouter from './routes/admin/table.js'
 dotenv.config()
 const app = express()
 const server = createServer(app)
-export const io = new Server(server, {
+const io = new Server(server, {
   cors: {
     origin: process.env.DOMAIN,
     methods: ['GET', 'POST']
@@ -50,7 +50,7 @@ app.use(express.static('dist'))
 // swagger
 // const outputFile = './swagger.json'
 // const endpointsFiles = ['./server.js']
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 const log = fs.createWriteStream('./logs/morganBody/morganBody.log', {
   flags: 'a'

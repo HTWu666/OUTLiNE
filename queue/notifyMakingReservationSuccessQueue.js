@@ -8,7 +8,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import nodemailer from 'nodemailer'
 
-dotenv.config({ path: '../.env' })
+dotenv.config()
 const { Pool } = pg
 
 const pool = new Pool({

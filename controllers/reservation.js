@@ -186,7 +186,9 @@ export const cancelReservationByCustomer = async (req, res) => {
   try {
     const { upn } = req.query
     const { reservationId } = res.locals
+    console.log(reservationId)
     const reservationDetails = await reservationModel.cancelReservation(reservationId)
+    console.log(reservationDetails)
     const restaurantDetails = await restaurantModel.getRestaurant(reservationDetails.restaurant_id)
     const reservationDate = new Date(reservationDetails.dining_date)
     const year = reservationDate.getFullYear()

@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid'
 const chatBot = async (req, res) => {
   try {
     const { userInput } = req.body
-    console.log(userInput)
     const client = new LexRuntimeV2Client({
       region: 'ap-southeast-2',
       credentials: {
@@ -27,8 +26,7 @@ const chatBot = async (req, res) => {
         sessionAttributes
       }
     }
-    console.log(111)
-    console.log(params)
+
     const command = new RecognizeTextCommand(params)
     const response = await client.send(command)
 

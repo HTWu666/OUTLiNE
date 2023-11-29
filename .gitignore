@@ -143,5 +143,11 @@ dist
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
-/logs
 /test
+.dockerignore
+Dockerfile
+deleteExpiredBookingDateDockerfile
+docker-compose.yml
+notifyMakingReservationSuccessDockerfile
+remindForDiningDockerfile
+updateAvailableReservationDateDockerfile

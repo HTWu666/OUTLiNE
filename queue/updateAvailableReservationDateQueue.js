@@ -1,6 +1,6 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
-import amqp from 'amqplib'
+import * as SQS from '../utils/SQS.js'
 
 dotenv.config({ path: '../.env' })
 const { Pool } = pg
@@ -15,7 +15,8 @@ const pool = new Pool({
   }
 })
 
-const UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE = 'updateAvailableReservationDateQueue'
+const UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-update-booking-date-queue'
 
 const getTables = async (restaurantId) => {
   const { rows } = await pool.query(
@@ -82,25 +83,18 @@ const createAvailableSeats = async (restaurantId, maxBookingDay) => {
 // 依照 rule 更新可訂位的日期
 const worker = async () => {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE
-
-    console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-
-    await channel.consume(
-      queueName,
-      async (job) => {
-        if (job !== null) {
-          const { restaurantId, maxBookingDay } = JSON.parse(job.content.toString())
-          channel.ack(job)
-          createAvailableSeats(restaurantId, maxBookingDay)
-          console.log('Successfully updated the available reservation date')
-          console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-        }
-      },
-      { noAck: false }
+    console.log(
+      `[*] Waiting for messages in updateAvailableReservationDateQueue. To exit press CTRL+C`
     )
+
+    while (true) {
+      const message = await SQS.receiveMessage(UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE_URL)
+      if (message) {
+        const { restaurantId, maxBookingDay } = JSON.parse(message.Body)
+        await createAvailableSeats(restaurantId, maxBookingDay)
+        console.log('Update available reservation date successfully')
+      }
+    }
   } catch (err) {
     console.error(err)
   }

@@ -1,29 +1,41 @@
-import schedule from 'node-schedule'
-import amqp from 'amqplib'
-import * as cronJob from '../utils/jobManager.js'
-import queue from '../constants/queueConstants.js'
+import { EventBridgeClient, PutRuleCommand, PutTargetsCommand } from '@aws-sdk/client-eventbridge'
+import moment from 'moment-timezone'
 
-const scheduleUpdateBookingDateJob = async (restaurantId, maxBookingDay, ruleHour, ruleMinute) => {
-  cronJob.cancelJob(`updateBookingDate-${restaurantId}`)
+const eventbridgeClient = new EventBridgeClient({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY
+  },
+  region: process.env.AWS_REGION
+})
 
-  const rule = new schedule.RecurrenceRule()
-  rule.hour = ruleHour
-  rule.minute = ruleMinute
-  rule.tz = 'Asia/Taipei'
+const scheduleUpdateBookingDateJob = async (
+  restaurantId,
+  maxBookingDay,
+  updateBookingTimeInHHmm
+) => {
+  const timeInUTC = moment.tz(updateBookingTimeInHHmm, 'HH:mm', 'Asia/Taipei').utc().format('HH:mm')
+  const updateBookingDateRuleParams = {
+    Name: `updateBookingDateRuleForRestaurant-${restaurantId}`,
+    ScheduleExpression: `cron(${timeInUTC.substring(3, 5)} ${timeInUTC.substring(0, 2)} * * ? *)`,
+    State: 'ENABLED'
+  }
+  await eventbridgeClient.send(new PutRuleCommand(updateBookingDateRuleParams))
 
-  const jobName = `updateBookingDate-${restaurantId}`
-  const updateBookingDateJob = schedule.scheduleJob(rule, async () => {
-    // 把 job 放入 queue 中, 觸發 worker 1 更新
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = queue.UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE
-    await channel.assertQueue(queueName, { durable: true })
-    const job = JSON.stringify({ restaurantId, maxBookingDay })
-    channel.sendToQueue(queueName, Buffer.from(job))
-    console.log('Trigger worker to update available reservation date')
-  })
-
-  cronJob.setJob(jobName, updateBookingDateJob)
+  const targetParams = {
+    Rule: `updateBookingDateRuleForRestaurant-${restaurantId}`,
+    Targets: [
+      {
+        Id: `restaurantId-${restaurantId}`,
+        Arn: 'arn:aws:sqs:ap-southeast-2:179428986360:outline-update-booking-date-queue',
+        Input: JSON.stringify({
+          restaurantId,
+          maxBookingDay
+        })
+      }
+    ]
+  }
+  await eventbridgeClient.send(new PutTargetsCommand(targetParams))
 }
 
 export default scheduleUpdateBookingDateJob

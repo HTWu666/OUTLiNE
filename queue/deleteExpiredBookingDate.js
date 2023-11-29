@@ -1,6 +1,7 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 import amqp from 'amqplib'
+import * as SQS from '../utils/SQS.js'
 
 dotenv.config({ path: '../.env' })
 const { Pool } = pg
@@ -15,7 +16,8 @@ const pool = new Pool({
   }
 })
 
-const DELETE_EXPIRED_BOOKING_DATE_QUEUE = 'deleteExpiredBookingDateQueue'
+const DELETE_EXPIRED_BOOKING_DATE_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-delete-expired-booking-date-queue'
 
 const deleteExpiredBookingDate = async (restaurantId) => {
   const today = new Date().toISOString().split('T')[0]
@@ -32,25 +34,15 @@ const deleteExpiredBookingDate = async (restaurantId) => {
 
 const worker = async () => {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = DELETE_EXPIRED_BOOKING_DATE_QUEUE
-
-    console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-
-    await channel.consume(
-      queueName,
-      async (job) => {
-        if (job !== null) {
-          const restaurantId = JSON.parse(job.content.toString())
-          channel.ack(job)
-          deleteExpiredBookingDate(restaurantId)
-          console.log('Delete expired booking date done')
-          console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-        }
-      },
-      { noAck: false }
-    )
+    console.log('[*] Waiting for messages in deleteExpiredBookingDate. To exit press CTRL+C')
+    while (true) {
+      const message = await SQS.receiveMessage(DELETE_EXPIRED_BOOKING_DATE_QUEUE_URL)
+      if (message) {
+        const restaurantId = message.Body
+        await deleteExpiredBookingDate(restaurantId)
+        console.log(`Delete expired booking date done for restaurantId: ${restaurantId}`)
+      }
+    }
   } catch (err) {
     console.error(err)
   }

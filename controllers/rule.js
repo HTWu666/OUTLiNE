@@ -1,3 +1,5 @@
+import { EventBridgeClient, PutRuleCommand, PutTargetsCommand } from '@aws-sdk/client-eventbridge'
+import moment from 'moment-timezone'
 import * as ruleModel from '../models/rule.js'
 import * as restaurantModel from '../models/restaurant.js'
 import scheduleUpdateBookingDateJob from '../jobs/updateBookingDateJob.js'
@@ -5,6 +7,7 @@ import pool from '../models/databasePool.js'
 import * as adjustAvailableSeats from '../utils/adjustAvailableSeats.js'
 import scheduleRemindForDiningJob from '../jobs/remindForDiningJob.js'
 import scheduleDeleteExpiredBookingDateJob from '../jobs/deleteExpiredBookingDateJob.js'
+import * as SQS from '../utils/SQS.js'
 
 const validateCreateRule = (
   contentType,
@@ -84,28 +87,15 @@ export const createRule = async (req, res) => {
     )
 
     // set cron job for updating available seat
-    const updateBookingTimeParts = updateBookingTime.split(':')
-    const [updateBookingTimeHour, updateBookingTimeMinute] = updateBookingTimeParts
-    scheduleUpdateBookingDateJob(
-      restaurantId,
-      maxBookingDay,
-      updateBookingTimeHour,
-      updateBookingTimeMinute
-    )
+    await scheduleUpdateBookingDateJob(restaurantId, maxBookingDay, updateBookingTime)
 
     // set cron job for the dining reminder
-    const diningReminderHour = 20
-    const diningReminderMinute = 0
-    scheduleRemindForDiningJob(restaurantId, diningReminderHour, diningReminderMinute)
+    const diningReminderTimeInHHmm = '20:00'
+    await scheduleRemindForDiningJob(restaurantId, diningReminderTimeInHHmm)
 
     // set cron job for deleting expired booking date
-    const deleteExpiredBookingDateHour = 0
-    const deleteExpiredBookingDateMinute = 0
-    scheduleDeleteExpiredBookingDateJob(
-      restaurantId,
-      deleteExpiredBookingDateHour,
-      deleteExpiredBookingDateMinute
-    )
+    const deleteExpiredBookingTime = '01:23'
+    await scheduleDeleteExpiredBookingDateJob(restaurantId, deleteExpiredBookingTime)
 
     res.status(200).json(ruleId)
   } catch (err) {
@@ -164,7 +154,6 @@ const validateUpdateRule = (
 
 export const updateRule = async (req, res) => {
   try {
-    const { userId } = res.locals
     const contentType = req.headers['content-type']
     const { maxPersonPerGroup, minBookingDay, maxBookingDay, updateBookingTime } = req.body
     const validation = validateUpdateRule(
@@ -242,9 +231,7 @@ export const updateRule = async (req, res) => {
         adjustAvailableSeats.createAvailableSeatsForPeriod(restaurantId, startDate, endDate)
       }
 
-      const parts = updateBookingTime.split(':')
-      const [hour, minute] = parts
-      scheduleUpdateBookingDateJob(restaurantId, maxBookingDay, hour, minute)
+      await scheduleUpdateBookingDateJob(restaurantId, maxBookingDay, updateBookingTime)
 
       res.status(200).json({ message: 'Update rule successfully' })
     } catch (err) {

@@ -1,12 +1,12 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
-import amqp from 'amqplib'
 import fs from 'fs'
 import ejs from 'ejs'
 import moment from 'moment-timezone'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import nodemailer from 'nodemailer'
+import * as SQS from '../utils/SQS.js'
 
 dotenv.config()
 const { Pool } = pg
@@ -29,8 +29,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILGUN_AUTH_PASS
   }
 })
-
-const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE = 'notifyMakingReservationSuccessfullyQueue'
 
 const sendMakingReservationSuccessfullyMail = async (reservationId) => {
   const { rows: reservationDetails } = await pool.query(
@@ -87,33 +85,27 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
   console.log({ info })
 }
 
+const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
+
 // 寄成功訂位通知信
 const worker = async () => {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE
-
-    console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-
-    await channel.consume(
-      queueName,
-      async (job) => {
-        if (job !== null) {
-          const reservationId = JSON.parse(job.content.toString())
-          console.log(reservationId)
-          channel.ack(job)
-          sendMakingReservationSuccessfullyMail(reservationId)
-
-          console.log(
-            'Successfully send the successfully making reservation mail for reservation Id: ',
-            reservationId
-          )
-          console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-        }
-      },
-      { noAck: false }
+    console.log(
+      '[*] Waiting for messages in notifyMakingReservationSuccessQueue. To exit press CTRL+C'
     )
+
+    while (true) {
+      const message = await SQS.receiveMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL)
+
+      if (message) {
+        const reservationId = message.Body
+        await sendMakingReservationSuccessfullyMail(reservationId)
+        console.log(
+          `Successfully send the successfully making reservation mail for reservation Id: ${reservationId}`
+        )
+      }
+    }
   } catch (err) {
     console.error(err)
   }

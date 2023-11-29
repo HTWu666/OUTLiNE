@@ -1,12 +1,12 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
-import amqp from 'amqplib'
 import fs from 'fs'
 import ejs from 'ejs'
 import moment from 'moment-timezone'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import nodemailer from 'nodemailer'
+import * as SQS from '../utils/SQS.js'
 
 dotenv.config({ path: '../.env' })
 const { Pool } = pg
@@ -21,6 +21,9 @@ const pool = new Pool({
   }
 })
 
+const DINING_REMINDER_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-dining-reminder-queue'
+
 const transporter = nodemailer.createTransport({
   host: process.env.MAILGUN_HOST,
   port: 587,
@@ -29,8 +32,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAILGUN_AUTH_PASS
   }
 })
-
-const REMIND_FOR_DINING = 'remindForDining'
 
 const sendReminderForDiningMail = async (restaurantId) => {
   // 只要是明天用餐的就要寄信
@@ -97,30 +98,15 @@ const sendReminderForDiningMail = async (restaurantId) => {
 // 寄成功訂位通知信
 const worker = async () => {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = REMIND_FOR_DINING
-
-    console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-
-    await channel.consume(
-      queueName,
-      async (job) => {
-        if (job !== null) {
-          const reservationId = JSON.parse(job.content.toString())
-          console.log(reservationId)
-          channel.ack(job)
-          sendReminderForDiningMail(reservationId)
-
-          console.log(
-            'Successfully send the reminder for reservation for restaurant Id: ',
-            reservationId
-          )
-          console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queueName)
-        }
-      },
-      { noAck: false }
-    )
+    console.log('[*] Waiting for messages in diningReminderWorker. To exit press CTRL+C')
+    while (true) {
+      const message = await SQS.receiveMessage(DINING_REMINDER_QUEUE_URL)
+      if (message) {
+        const restaurantId = message.Body
+        await sendReminderForDiningMail(restaurantId)
+        console.log(`Successfully sent dining reminder for restaurantId: ${restaurantId}`)
+      }
+    }
   } catch (err) {
     console.error(err)
   }

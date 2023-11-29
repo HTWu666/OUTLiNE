@@ -10,6 +10,7 @@ import * as restaurantModel from '../models/restaurant.js'
 import * as ruleModel from '../models/rule.js'
 import queue from '../constants/queueConstants.js'
 import pool from '../models/databasePool.js'
+import * as SQS from '../utils/SQS.js'
 
 const validateCreateReservation = (
   contentType,
@@ -98,6 +99,9 @@ const validateCreateReservation = (
   return { valid: true }
 }
 
+const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
+
 // for customer
 export const createReservationByCustomer = async (req, res) => {
   try {
@@ -124,9 +128,8 @@ export const createReservationByCustomer = async (req, res) => {
       restaurantId,
       maxPersonPerGroup
     )
-    console.log(111)
+
     if (!validation.valid) {
-      console.log(validation.error)
       return res.status(400).json({ error: validation.error })
     }
 
@@ -165,13 +168,7 @@ export const createReservationByCustomer = async (req, res) => {
       connection.release()
     }
 
-    // 預約成功時, 將訂位成功的信件丟給 worker 寄
-    const queueConnection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await queueConnection.createChannel()
-    const queueName = queue.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE
-    await channel.assertQueue(queueName, { durable: true })
-    const job = JSON.stringify(reservationId) // woker 根據 reservation Id 到資料庫撈資料寄信
-    channel.sendToQueue(queueName, Buffer.from(job))
+    await SQS.sendMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL, reservationId)
 
     res.status(200).json(reservationId)
   } catch (err) {

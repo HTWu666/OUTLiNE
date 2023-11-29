@@ -13,7 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.461.0",
     "@aws-sdk/client-lex-runtime-v2": "^3.454.0",
+    "@aws-sdk/client-sqs": "^3.461.0",
     "amqplib": "^0.10.3",
     "argon2": "^0.31.2",
     "autoprefixer": "^10.4.16",

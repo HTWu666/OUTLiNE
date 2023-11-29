@@ -76,8 +76,9 @@
                     maxPersonPerGroup: parseInt(document.getElementById('max-person-per-group').value, 10),
                     minBookingDay: parseInt(document.getElementById('min-booking-day').value, 10),
                     maxBookingDay: parseInt(document.getElementById('max-booking-day').value, 10),
-                    updateBookingTime: document.getElementById('update-booking-time').value
+                    updateBookingTime: document.getElementById('update-booking-time').value.substring(0, 5)
                 };
+
                 // 發送PUT請求更新訂位規則
                 const response = await axios.put(`/api/restaurant/${restaurantId}/rules`, updatedRules)
                 alert('Update rule successfully')

@@ -1,28 +1,37 @@
-import schedule from 'node-schedule'
-import amqp from 'amqplib'
-import * as cronJob from '../utils/jobManager.js'
-import queue from '../constants/queueConstants.js'
+import { EventBridgeClient, PutRuleCommand, PutTargetsCommand } from '@aws-sdk/client-eventbridge'
+import moment from 'moment-timezone'
 
-const scheduleRemindForDiningJob = async (restaurantId, ruleHour, ruleMinute) => {
-  cronJob.cancelJob(`remindForDining-${restaurantId}`)
+const eventbridgeClient = new EventBridgeClient({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY
+  },
+  region: process.env.AWS_REGION
+})
 
-  const rule = new schedule.RecurrenceRule()
-  rule.hour = ruleHour
-  rule.minute = ruleMinute
-  rule.tz = 'Asia/Taipei'
+const scheduleRemindForDiningJob = async (restaurantId, diningReminderTimeInHHmm) => {
+  const timeInUTC = moment
+    .tz(diningReminderTimeInHHmm, 'HH:mm', 'Asia/Taipei')
+    .utc()
+    .format('HH:mm')
+  const diningReminderRuleParams = {
+    Name: `diningReminderRuleForRestaurant-${restaurantId}`,
+    ScheduleExpression: `cron(${timeInUTC.substring(3, 5)} ${timeInUTC.substring(0, 2)} * * ? *)`,
+    State: 'ENABLED'
+  }
+  await eventbridgeClient.send(new PutRuleCommand(diningReminderRuleParams))
 
-  const jobName = `remindForDining-${restaurantId}`
-  const remindForDiningJob = schedule.scheduleJob(rule, async () => {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = queue.REMIND_FOR_DINING
-    await channel.assertQueue(queueName, { durable: true })
-    const job = JSON.stringify(restaurantId)
-    channel.sendToQueue(queueName, Buffer.from(job))
-    console.log('Trigger worker to send reminder for reservation')
-  })
-
-  cronJob.setJob(jobName, remindForDiningJob)
+  const targetParams = {
+    Rule: `diningReminderRuleForRestaurant-${restaurantId}`,
+    Targets: [
+      {
+        Id: `restaurantId-${restaurantId}`,
+        Arn: 'arn:aws:sqs:ap-southeast-2:179428986360:outline-dining-reminder-queue',
+        Input: JSON.stringify(restaurantId)
+      }
+    ]
+  }
+  await eventbridgeClient.send(new PutTargetsCommand(targetParams))
 }
 
 export default scheduleRemindForDiningJob

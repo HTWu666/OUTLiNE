@@ -8,8 +8,8 @@ const chatBot = async (req, res) => {
     const client = new LexRuntimeV2Client({
       region: 'ap-southeast-2',
       credentials: {
-        accessKeyId: process.env.LEX_ACCESS_KEY,
-        secretAccessKey: process.env.LEX_SECRET_KEY
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_KEY
       }
     })
     const sessionId = uuidv4()

@@ -1,28 +1,33 @@
-import schedule from 'node-schedule'
-import amqp from 'amqplib'
-import * as cronJob from '../utils/jobManager.js'
-import queue from '../constants/queueConstants.js'
+import { EventBridgeClient, PutRuleCommand, PutTargetsCommand } from '@aws-sdk/client-eventbridge'
+import moment from 'moment-timezone'
 
-const scheduleDeleteExpiredBookingDateJob = async (restaurantId, ruleHour, ruleMinute) => {
-  cronJob.cancelJob(`deleteExpiredBookingDateJob-${restaurantId}`)
+const eventbridgeClient = new EventBridgeClient({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY
+  },
+  region: process.env.AWS_REGION
+})
 
-  const rule = new schedule.RecurrenceRule()
-  rule.hour = ruleHour
-  rule.minute = ruleMinute
-  rule.tz = 'Asia/Taipei'
-
-  const jobName = `deleteExpiredBookingDateJob-${restaurantId}`
-  const deleteExpiredBookingDateJob = schedule.scheduleJob(rule, async () => {
-    const connection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await connection.createChannel()
-    const queueName = queue.DELETE_EXPIRED_BOOKING_DATE_QUEUE
-    await channel.assertQueue(queueName, { durable: true })
-    const job = JSON.stringify(restaurantId)
-    channel.sendToQueue(queueName, Buffer.from(job))
-    console.log('Trigger worker to delete expired booking date')
-  })
-
-  cronJob.setJob(jobName, deleteExpiredBookingDateJob)
+const scheduleDeleteExpiredBookingDateJob = async (restaurantId, deleteTimeInHHmm) => {
+  const timeInUTC = moment.tz(deleteTimeInHHmm, 'HH:mm', 'Asia/Taipei').utc().format('HH:mm')
+  const deleteExpiredBookingDateRuleParams = {
+    Name: `deleteExpiredBookingRuleForRestaurant-${restaurantId}`,
+    ScheduleExpression: `cron(${timeInUTC.substring(3, 5)} ${timeInUTC.substring(0, 2)} * * ? *)`,
+    State: 'ENABLED'
+  }
+  await eventbridgeClient.send(new PutRuleCommand(deleteExpiredBookingDateRuleParams))
+  const targetParams = {
+    Rule: `deleteExpiredBookingRuleForRestaurant-${restaurantId}`,
+    Targets: [
+      {
+        Id: `restaurantId-${restaurantId}`,
+        Arn: 'arn:aws:sqs:ap-southeast-2:179428986360:outline-delete-expired-booking-date-queue',
+        Input: JSON.stringify(restaurantId)
+      }
+    ]
+  }
+  await eventbridgeClient.send(new PutTargetsCommand(targetParams))
 }
 
 export default scheduleDeleteExpiredBookingDateJob

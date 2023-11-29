@@ -124,7 +124,9 @@ export const createReservationByCustomer = async (req, res) => {
       restaurantId,
       maxPersonPerGroup
     )
+    console.log(111)
     if (!validation.valid) {
+      console.log(validation.error)
       return res.status(400).json({ error: validation.error })
     }
 
@@ -249,6 +251,7 @@ export const createReservationByVendor = async (req, res) => {
       restaurantId,
       maxPersonPerGroup
     )
+
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }

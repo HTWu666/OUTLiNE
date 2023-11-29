@@ -305,6 +305,11 @@
                     return;
                 }
                 
+                let purpose = null
+                if (purposeRadio) {
+                    purpose = purposeRadio.value
+                }
+
                 const response = await axios.post(`/api/restaurant/${restaurantId}/reservation/click`,{
                     "adult": parseInt(adult, 10),
                     "child": parseInt(child, 10),
@@ -314,41 +319,15 @@
                     "gender": genderRadio.value,
                     "phone": phone,
                     "email": email,
-                    "purpose": purposeRadio.value,
+                    "purpose": purpose,
                     "note": note
                 });
                 alert('Making reservation successfully')
                 location.href = location.href
             } catch (err) {
-                console.log(err)
-                alert(err.response.error)
+                alert(err.response.data.error)
             }
         }
-
-        // function resetForm() {
-        //     document.querySelector('#name').value = '';
-        //     document.querySelector('input[name="title"]:checked').checked = false;
-        //     document.querySelector('#phone').value = '';
-        //     document.querySelector('#email').value = '';
-        //     document.querySelectorAll('.purpose-label').forEach(label => {
-        //         const radio = label.querySelector('input[type="radio"]');
-        //         radio.checked = false; // 取消选择单选按钮
-        //         label.classList.remove("bg-orange-500", "text-white"); // 移除背景和文本颜色类
-        //     });
-        //     document.querySelector('#note').value = '';
-        //     document.querySelector('#adult-selector').selectedIndex = 1;
-        //     document.querySelector('#child-selector').selectedIndex = 0;
-        //     // 重置用餐日期到明天
-        //     const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1));
-        //     document.querySelector('#date-selector').value = tomorrow.toISOString().split('T')[0];
-        //     // 如果有用餐时段的单选按钮已选中，则重置
-        //     const selectedTime = document.querySelector('input[name="bookingTime"]:checked');
-        //     if (selectedTime) {
-        //         selectedTime.checked = false;
-        //     }
-        //     // 重置任何可能在用餐时段部分动态创建的元素
-        //     document.querySelector('#time-field').innerHTML = '';
-        // }
 
         // chat bot
         async function callCustomerService(userInput) {

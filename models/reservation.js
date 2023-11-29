@@ -147,7 +147,7 @@ export const cancelReservation = async (reservationId) => {
       `,
       [reservationId]
     )
-
+    console.log(reservationDetails)
     await conn.query(
       `
       UPDATE available_seats
@@ -166,6 +166,7 @@ export const cancelReservation = async (reservationId) => {
     )
 
     await conn.query('COMMIT')
+    return reservationDetails[0]
   } catch (err) {
     await conn.query('ROLLBACK')
     throw err

@@ -9,7 +9,10 @@ const pool = new Pool({
   user: process.env.POSTGRE_USER,
   host: process.env.POSTGRE_HOST,
   database: process.env.POSTGRE_DATABASE,
-  password: process.env.POSTGRE_PASSWORD
+  password: process.env.POSTGRE_PASSWORD,
+  ssl: {
+    rejectUnauthorized: false
+  }
 })
 
 const UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE = 'updateAvailableReservationDateQueue'

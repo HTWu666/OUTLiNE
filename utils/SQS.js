@@ -1,4 +1,9 @@
-import { SQSClient, SendMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs'
+import {
+  SQSClient,
+  SendMessageCommand,
+  ReceiveMessageCommand,
+  DeleteMessageCommand
+} from '@aws-sdk/client-sqs'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -37,7 +42,14 @@ export const receiveMessage = async (queueUrl) => {
   try {
     const data = await sqsClint.send(new ReceiveMessageCommand(params))
     if (data.Messages && data.Messages.length > 0) {
-      return data.Messages[0]
+      const message = data.Messages[0]
+      const receiptHandle = message.ReceiptHandle
+      const deleteMessageParams = {
+        QueueUrl: queueUrl,
+        ReceiptHandle: receiptHandle
+      }
+      await sqsClint.send(new DeleteMessageCommand(deleteMessageParams))
+      return message
     }
     return null
   } catch (err) {

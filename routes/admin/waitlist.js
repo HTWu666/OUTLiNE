@@ -1,17 +1,20 @@
 import express from 'express'
 import { createWaitlistPage, checkWaitlistPage } from '../../controllers/admin/waitlist.js'
-import authenticateAdminPage from '../../middlewares/authenticateAdminPage.js'
+import authenticate from '../../middlewares/authenticate.js'
+import authByRestaurantId from '../../middlewares/authByRestaurantId.js'
 
 const router = express.Router()
 
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/createWaitlist',
-  authenticateAdminPage,
+  authenticate,
+  authByRestaurantId,
   createWaitlistPage
 )
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/checkWaitlist',
-  authenticateAdminPage,
+  authenticate,
+  authByRestaurantId,
   checkWaitlistPage
 )
 

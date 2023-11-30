@@ -44,14 +44,19 @@
                 cancelButton.innerText = '取消訂位';
                 cancelButton.className = 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded';
                 cancelButton.addEventListener('click', async () => {
+                const isConfirmed = confirm('您確定要取消訂位嗎?');
+                if (isConfirmed) {
                     try {
                         const response = await axios.delete(cancelLink);
                         alert('訂位取消成功');
+                        window.location = window.location;
                     } catch (err) {
                         console.error(err);
                         alert('取消訂位失敗');
                     }
-                });
+                }
+            });
+
                 statusDiv.appendChild(cancelButton);
                 break;
         }

@@ -11,6 +11,7 @@ export const reservationPage = async (req, res) => {
 
     res.status(200).render('./client/makeReservation', {
       layout: false,
+      restaurantPic: `${process.env.AWS_CDN_URL}/${restaurantDetails.picture}`,
       restaurantName: restaurantDetails.name,
       restaurantPhone: restaurantDetails.phone,
       restaurantAddress: restaurantDetails.address,

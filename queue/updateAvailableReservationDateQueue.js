@@ -1,6 +1,6 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
-import * as SQS from './SQS.js'
+import * as SQS from '../utils/SQS.js'
 
 dotenv.config()
 const { Pool } = pg

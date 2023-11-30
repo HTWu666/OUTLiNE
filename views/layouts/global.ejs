@@ -4,6 +4,7 @@
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         let token
         document.addEventListener('DOMContentLoaded', async () => {
@@ -16,13 +17,13 @@
                 }
             }
             if (token === undefined) {
-                window.location.href = '/signin'
+                window.location.href = '/'
             }
         })
 
         const restaurantId = localStorage.getItem('restaurantId');
         if (!restaurantId) {
-            window.location.href = '/signin'
+            window.location.href = '/'
         }
     </script>
 </body>

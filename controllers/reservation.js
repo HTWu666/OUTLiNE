@@ -1,14 +1,8 @@
 import moment from 'moment-timezone'
-import amqp from 'amqplib'
-import path from 'path'
-import fs from 'fs'
-import ejs from 'ejs'
-import { fileURLToPath } from 'url'
 import jwt from 'jsonwebtoken'
 import * as reservationModel from '../models/reservation.js'
 import * as restaurantModel from '../models/restaurant.js'
 import * as ruleModel from '../models/rule.js'
-import queue from '../constants/queueConstants.js'
 import pool from '../models/databasePool.js'
 import * as SQS from '../utils/SQS.js'
 
@@ -81,17 +75,23 @@ const validateCreateReservation = (
   if (!['先生', '小姐', '其他'].includes(gender)) {
     return { valid: false, error: 'Gender must be 先生, 小姐, 其他' }
   }
+  const phoneRegex = /^09\d{8}$/
+  if (!phoneRegex.test(phone)) {
+    return { valid: false, error: '電話號碼格式錯誤' }
+  }
   if (typeof phone !== 'string') {
     return { valid: false, error: 'Phone must be a string' }
   }
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
   if (!emailPattern.test(email)) {
-    return { valid: false, error: 'Invalid email format' }
+    return { valid: false, error: '信箱格式錯誤' }
   }
-  if (!['生日', '家庭聚餐', '情人約會', '結婚紀念', '朋友聚餐', '商務聚餐'].includes(purpose)) {
+  if (
+    purpose &&
+    !['生日', '家庭聚餐', '情人約會', '結婚紀念', '朋友聚餐', '商務聚餐'].includes(purpose)
+  ) {
     return { valid: false, error: 'Purpose is wrong' }
   }
-
   if (note && typeof note !== 'string') {
     return { valid: false, error: 'Note must be a string' }
   }
@@ -167,7 +167,6 @@ export const createReservationByCustomer = async (req, res) => {
     } finally {
       connection.release()
     }
-
     await SQS.sendMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL, reservationId)
 
     res.status(200).json(reservationId)
@@ -185,9 +184,7 @@ export const cancelReservationByCustomer = async (req, res) => {
   try {
     const { upn } = req.query
     const { reservationId } = res.locals
-    console.log(reservationId)
     const reservationDetails = await reservationModel.cancelReservation(reservationId)
-    console.log(reservationDetails)
     const restaurantDetails = await restaurantModel.getRestaurant(reservationDetails.restaurant_id)
     const reservationDate = new Date(reservationDetails.dining_date)
     const year = reservationDate.getFullYear()
@@ -288,13 +285,7 @@ export const createReservationByVendor = async (req, res) => {
       connection.release()
     }
 
-    // 預約成功時, 將訂位成功的信件丟給 worker 寄
-    const queueConnection = await amqp.connect(process.env.RABBITMQ_SERVER)
-    const channel = await queueConnection.createChannel()
-    const queueName = queue.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_QUEUE
-    await channel.assertQueue(queueName, { durable: true })
-    const job = JSON.stringify(reservationId) // woker 根據 reservation Id 到資料庫撈資料寄信
-    channel.sendToQueue(queueName, Buffer.from(job))
+    await SQS.sendMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL, reservationId)
 
     res.status(200).json(reservationId)
   } catch (err) {

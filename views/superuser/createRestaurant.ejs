@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-10">
+    <form id="create-restaurant-form" enctype="multipart/form-data" class="max-w-2xl mx-auto bg-white p-8 rounded shadow-lg">
+        <h2 class="text-3xl font-bold mb-6 text-center">新增餐廳</h2>
+
+        <div class="mb-4">
+            <label for="name" class="block text-gray-700 text-base font-bold mb-2">餐廳名稱:</label>
+            <input type="text" id="name" name="name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        <div class="mb-4">
+            <label for="address" class="block text-gray-700 text-base font-bold mb-2">餐廳地址:</label>
+            <input type="text" id="address" name="address" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        <div class="mb-4">
+            <label for="phone" class="block text-gray-700 text-base font-bold mb-2">餐廳電話:</label>
+            <input type="tel" id="phone" name="phone" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        <div class="mb-4">
+            <label for="parking" class="block text-gray-700 text-base font-bold mb-2">餐廳停車場:</label>
+            <input type="text" id="parking" name="parking" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        <div class="mb-4">
+            <label for="payment" class="block text-gray-700 text-base font-bold mb-2">餐廳付款方式:</label>
+            <input type="text" id="payment" name="payment" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        <div class="mb-4">
+            <label for="kids-chair" class="block text-gray-700 text-base font-bold mb-2">有沒有兒童座椅:</label>
+            <input type="checkbox" id="kids-chair" name="kids-chair" class="leading-tight">
+        </div>
+
+        <div class="mb-4">
+            <label for="vegetarian-option" class="block text-gray-700 text-base font-bold mb-2">有沒有素食:</label>
+            <input type="checkbox" id="vegetarian-option" name="vegetarian-option" class="leading-tight">
+        </div>
+
+        <div class="mb-6">
+            <label for="photo" class="block w-24 bg-gray-300 text-white font-bold py-2 px-4 rounded cursor-pointer hover:bg-blue-700 transition-colors">
+                選擇照片
+            </label>
+            <input type="file" id="photo" name="photo" accept="image/*" class="hidden" onchange="loadFile(event)">
+            
+            <div id="preview-container" class="mt-4 hidden">
+                <img id="photo-preview" class="max-w-xs max-h-64 rounded object-cover" />
+            </div>            
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="submit" id="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">提交</button>
+        </div>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function loadFile(event) {
+            const output = document.getElementById('photo-preview');
+            output.src = URL.createObjectURL(event.target.files[0]);
+            output.onload = function() {
+                URL.revokeObjectURL(output.src) // free memory
+            }
+            document.getElementById('preview-container').classList.remove('hidden');
+        }
+
+        const form = document.getElementById('create-restaurant-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const fileInput = document.getElementById('photo');
+            if (!fileInput.files.length) {
+                alert('請選擇圖片');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('parking', document.getElementById('parking').value);
+            formData.append('payment', document.getElementById('payment').value);
+            formData.append('kids-chair', document.getElementById('kids-chair').checked ? 'yes' : 'no');
+            formData.append('vegetarian-option', document.getElementById('vegetarian-option').checked ? 'yes' : 'no');
+            
+            if (fileInput.files[0]) {
+                formData.append('photo', fileInput.files[0]);
+            }
+            try {
+                const response = await axios.post('/api/restaurant', formData);
+                alert('Create restaurant successfully');
+                // Handle response or redirect
+            } catch (err) {
+                console.error(err);
+                alert('Failed to create restaurant');
+                // Handle error
+            }
+        });
+    </script>
+</body>
+</html>

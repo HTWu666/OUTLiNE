@@ -1,12 +1,22 @@
 import pool from './databasePool.js'
+import * as cache from '../utils/cache.js'
 
-export const createRestaurant = async (name, address, phone) => {
+export const createRestaurant = async (
+  name,
+  address,
+  phone,
+  parking,
+  payment,
+  kidChair,
+  vegetarian,
+  picture
+) => {
   const { rows } = await pool.query(
     `
-    INSERT INTO restaurants (name, address, phone)
-    VALUES ($1, $2, $3) RETURNING id
+    INSERT INTO restaurants (name, address, phone, parking_lot, payment, kid_chair, vegetarian, picture)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
     `,
-    [name, address, phone]
+    [name, address, phone, parking, payment, kidChair, vegetarian, picture]
   )
 
   return rows[0].id
@@ -60,4 +70,17 @@ export const getRestaurantByUserId = async (userId) => {
   )
 
   return restaurantDetails
+}
+
+export const userHasRestaurant = async (userId) => {
+  const { rows } = await pool.query(
+    `
+    SELECT restaurant_id FROM user_restaurant
+    WHERE user_id = $1
+    `,
+    [userId]
+  )
+  const restaurantIds = rows.map((row) => row.restaurant_id)
+
+  return restaurantIds
 }

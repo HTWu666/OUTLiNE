@@ -5,14 +5,11 @@
 @import "tailwindcss/utilities";
 
 .user-message {
-    @apply max-w-xs ml-auto bg-blue-100 text-right p-2 rounded;
-    /* 其他样式 */
+  @apply w-auto max-w-xs ml-auto bg-blue-100 text-left p-2 rounded break-words;
 }
 
-/* 后端响应消息样式：左对齐 */
 .server-message {
-    @apply max-w-xs mr-auto bg-gray-100 text-left p-2 rounded;
-    /* 其他样式 */
+  @apply w-auto max-w-xs mr-auto bg-gray-100 text-left p-2 rounded break-words;
 }
 
 @keyframes slide-up-first {
@@ -43,4 +40,34 @@
   .slide-up {
     transform: translateY(-100%);
   }
+
+  @keyframes popIn {
+    from {
+        transform: scale(0.5) translateX(100%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateX(0) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes popOut {
+    from {
+        transform: scale(1) translateX(0) translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0.5) translateX(100%) translateY(100%);
+        opacity: 0;
+    }
+}
+
+.chat-pop-in {
+    animation: popIn 0.3s forwards;
+}
+
+.chat-pop-out {
+    animation: popOut 0.3s forwards;
+}
 

@@ -8,7 +8,7 @@
 </head>
 <body>
     <main class="mt-20 ml-20 mr-20 mb-20">
-        <div class="relative w-100 h-96 overflow-hidde mb-5"><img src="/images/海底撈.jpg" class="absolute w-full h-full object-cover"></div>
+        <div class="relative w-100 h-96 overflow-hidde mb-5"><img src="<%= restaurantPic %>" class="absolute w-full h-full object-cover"></div>
         <div id="restaurant-name" class="text-6xl mb-3"><%= restaurantName %></div>
         <div id="restaurant-address" class="mb-3"><%= restaurantAddress %></div>
         <div id="restaurant-phone" class="flex mb-3">
@@ -111,13 +111,23 @@
         <button id="make-reservation" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out w-full mt-5">確認訂位</button>
     </main>
 
-    <div id="chat-container" class="fixed bottom-10 right-10 bg-white p-4 rounded-lg shadow-lg transform scale-0 w-96">
-        <div id="chat-box" class="overflow-y-auto h-64 mb-4 space-y-2">
+    <div id="chat-container" class="fixed bottom-10 right-10 bg-white rounded-lg shadow-xl transform scale-0 transition-transform duration-300 ease-in-out w-96">
+        <div class="bg-gray-200 p-2 flex justify-between items-center rounded-t-lg shadow-sm">
+            <span class="font-semibold text-lg">AI 客服</span>
+            <button id="close-chat" class="text-gray-600 hover:text-gray-800 rounded-full text-lg font-bold p-1">x</button>
         </div>
-        <input type="text" id="chat-input" class="border p-2 w-full mb-4" placeholder="輸入問題...">
-        <button id="send-message" class="bg-blue-500 text-white p-2 rounded">送出</button>
+        <div id="chat-box" class="overflow-y-auto h-64 mb-4 space-y-2 p-2 shadow-inner">
+        </div>
+        <div class="p-2 flex items-center gap-2">
+            <input type="text" id="chat-input" class="border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 flex-grow p-2 rounded-l-md transition duration-200 ease-in-out" placeholder="輸入問題...">
+            <button id="send-message" class="bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-white px-4 py-2 rounded-r-md transition duration-200 ease-in-out">送出</button>
+        </div>
     </div>
-    <button id="toggle-chat" class="fixed bottom-10 right-10 bg-blue-500 text-white p-4 rounded-full">AI 客服</button>
+    <button id="toggle-chat" class="fixed bottom-10 right-10 bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-white p-4 rounded-full transition-colors duration-300 ease-in-out">AI 客服</button>
+    
+    
+    
+    
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
@@ -296,9 +306,19 @@
                     alert('請填寫手機號碼');
                     return;
                 }
+                const phoneRegex = /^09\d{8}$/
+                if (phoneRegex.test(phone)) {
+                    alert('手機號碼格是不正確')
+                    return
+                }
                 if (!email) {
                     alert('請填寫 Email');
                     return;
+                }
+                const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+                if (!emailPattern.test(email)) {
+                    alert('信箱格式不正確')
+                    return
                 }
                 if (!diningTimeRadio) {
                     alert('請選擇用餐時段');
@@ -362,6 +382,19 @@
             addMessageToChat(response, false);
         }
 
+        document.querySelector('#chat-input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const userInput = document.querySelector('#chat-input').value;
+
+                if (userInput.trim() !== '') {
+                    addMessageToChat(userInput, true);
+                    callCustomerService(userInput);
+                    document.querySelector('#chat-input').value = '';
+                }
+            }
+        });
+
         document.querySelector('#send-message').addEventListener('click', function() {
             const userInput = document.querySelector('#chat-input').value;
 
@@ -374,13 +407,18 @@
 
         document.querySelector('#toggle-chat').addEventListener('click', function() {
             const chatContainer = document.querySelector('#chat-container');
-            if (chatContainer.classList.contains('scale-0')) {
-                chatContainer.classList.remove('scale-0');
-                chatContainer.classList.add('scale-100');
-            } else {
-                chatContainer.classList.add('scale-0');
-                chatContainer.classList.remove('scale-100');
-            }
+            const toggleChatButton = document.querySelector('#toggle-chat');
+            chatContainer.classList.remove('scale-0', 'chat-pop-out');
+            chatContainer.classList.add('scale-100', 'chat-pop-in');
+            toggleChatButton.classList.add('hidden');
+        });
+
+        document.querySelector('#close-chat').addEventListener('click', function() {
+            const chatContainer = document.querySelector('#chat-container');
+            const toggleChatButton = document.querySelector('#toggle-chat');
+            chatContainer.classList.remove('scale-100', 'chat-pop-in');
+            chatContainer.classList.add('scale-0', 'chat-pop-out');
+            setTimeout(() => toggleChatButton.classList.remove('hidden'), 300); // Delay to match animation duration
         });
     </script>
 </body>

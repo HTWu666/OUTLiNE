@@ -22,9 +22,10 @@ import customerServiceRouter from './routes/customerService.js'
 import waitlistRouter from './routes/waitlist.js'
 import waitlistPageRouter from './routes/admin/waitlist.js'
 import waitlistNumberPageRouter from './routes/client/waitlist.js'
-import restaurantPageRouter from './routes/admin/restaurant.js'
+import adminRestaurantPageRouter from './routes/admin/restaurant.js'
 import rulePageRouter from './routes/admin/rule.js'
 import tablePageRouter from './routes/admin/table.js'
+import superuserRestaurantPage from './routes/superuser/restaurant.js'
 
 dotenv.config()
 const app = express()
@@ -45,7 +46,7 @@ app.set('views', './views')
 app.use(expressLayouts)
 app.set('layout', './layouts/global')
 app.use(express.static('public'))
-app.use(express.static('dist'))
+app.use(express.static('uploads'))
 
 // swagger
 // const outputFile = './swagger.json'
@@ -77,9 +78,10 @@ app.use('/', [
   userPageRouter,
   waitlistPageRouter,
   waitlistNumberPageRouter,
-  restaurantPageRouter,
+  adminRestaurantPageRouter,
   rulePageRouter,
-  tablePageRouter
+  tablePageRouter,
+  superuserRestaurantPage
 ])
 
 app.all('*', (req, res) => {
@@ -102,7 +104,19 @@ const outputLogStream = fs.createWriteStream('./logs/console/console.log', {
 if (process.env.SERVER_STATUS === 'development') {
   const originalConsoleLog = console.log
   console.log = (...args) => {
-    const message = args.join(' ')
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2)
+          } catch {
+            return 'Unstringifiable Object'
+          }
+        }
+        return String(arg)
+      })
+      .join(' ')
+
     outputLogStream.write(`${message}\n`)
     originalConsoleLog(...args)
   }

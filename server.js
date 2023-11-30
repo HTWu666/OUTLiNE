@@ -88,7 +88,7 @@ app.all('*', (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err)
+  console.error(err.stack)
 })
 
 server.listen(process.env.PORT, () => {

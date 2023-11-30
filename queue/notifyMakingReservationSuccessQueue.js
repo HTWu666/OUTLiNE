@@ -22,11 +22,10 @@ const pool = new Pool({
 })
 
 const transporter = nodemailer.createTransport({
-  host: process.env.MAILGUN_HOST,
-  port: 587,
+  service: 'gmail',
   auth: {
-    user: process.env.MAILGUN_AUTH_USER,
-    pass: process.env.MAILGUN_AUTH_PASS
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD
   }
 })
 
@@ -76,12 +75,14 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
     link: `${process.env.DOMAIN}/reservation/click?upn=${upn}`
   })
 
-  const info = await transporter.sendMail({
+  const mailOptions = {
     from: process.env.MAILGUN_SENDMAIL_FROM,
     to: reservationDetails[0].email,
     subject: `您在 ${restaurantDetails[0].name} 預訂 ${month}月${day}日${dayOfWeek} ${formattedTime} ${person}人`,
     html: emailContent
-  })
+  }
+
+  const info = await transporter.sendMail(mailOptions)
   console.log({ info })
 }
 

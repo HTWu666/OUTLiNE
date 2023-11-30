@@ -172,7 +172,7 @@ export const createReservationByCustomer = async (req, res) => {
 
     res.status(200).json(reservationId)
   } catch (err) {
-    console.error(err)
+    console.error(err.stack)
     if (err instanceof Error) {
       return res.status(400).json({ error: err.message })
     }
@@ -214,7 +214,7 @@ export const cancelReservationByCustomer = async (req, res) => {
       link: `${process.env.DOMAIN}/api/reservation/click?upn=${upn}`
     })
   } catch (err) {
-    console.error(err)
+    console.error(err.stack)
     if (err instanceof Error) {
       return res.status(400).json({ error: err.message })
     }
@@ -298,7 +298,7 @@ export const createReservationByVendor = async (req, res) => {
 
     res.status(200).json(reservationId)
   } catch (err) {
-    console.error(err)
+    console.error(err.stack)
     if (err instanceof Error) {
       return res.status(400).json({ error: err.message })
     }
@@ -319,7 +319,7 @@ export const getReservations = async (req, res) => {
 
     res.status(200).json({ data: formattedReservations })
   } catch (err) {
-    console.error(err)
+    console.error(err.stack)
     if (err instanceof Error) {
       return res.status(400).json({ error: err.message })
     }

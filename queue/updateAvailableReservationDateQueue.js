@@ -1,10 +1,9 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
-import * as SQS from '../utils/SQS.js'
+import * as SQS from './SQS.js'
 
-dotenv.config({ path: '../.env' })
+dotenv.config()
 const { Pool } = pg
-
 const pool = new Pool({
   user: process.env.POSTGRE_USER,
   host: process.env.POSTGRE_HOST,

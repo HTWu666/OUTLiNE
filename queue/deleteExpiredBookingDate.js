@@ -1,9 +1,8 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
-import amqp from 'amqplib'
 import * as SQS from '../utils/SQS.js'
 
-dotenv.config({ path: '../.env' })
+dotenv.config()
 const { Pool } = pg
 
 const pool = new Pool({

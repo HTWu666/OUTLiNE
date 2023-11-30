@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url'
 import nodemailer from 'nodemailer'
 import * as SQS from '../utils/SQS.js'
 
-dotenv.config({ path: '../.env' })
+dotenv.config()
 const { Pool } = pg
 
 const pool = new Pool({
@@ -25,11 +25,10 @@ const DINING_REMINDER_QUEUE_URL =
   'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-dining-reminder-queue'
 
 const transporter = nodemailer.createTransport({
-  host: process.env.MAILGUN_HOST,
-  port: 587,
+  service: 'gmail',
   auth: {
-    user: process.env.MAILGUN_AUTH_USER,
-    pass: process.env.MAILGUN_AUTH_PASS
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD
   }
 })
 
@@ -85,12 +84,14 @@ const sendReminderForDiningMail = async (restaurantId) => {
       link: `${process.env.DOMAIN}/api/reservation?upn=${upn}`
     })
 
-    const info = await transporter.sendMail({
+    const mailOptions = {
       from: process.env.MAILGUN_SENDMAIL_FROM,
       to: reservation.email,
       subject: `提醒您明天在 ${restaurantDetails.name} ${formattedTime} ${person}人 用餐`,
       html: emailContent
-    })
+    }
+
+    const info = await transporter.sendMail(mailOptions)
     console.log({ info })
   })
 }

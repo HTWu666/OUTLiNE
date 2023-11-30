@@ -1,38 +1,36 @@
-import { LexRuntimeV2Client, RecognizeTextCommand } from '@aws-sdk/client-lex-runtime-v2'
-import { v4 as uuidv4 } from 'uuid'
+import OpenAI from 'openai'
+import * as restaurantModel from '../models/restaurant.js'
 
-// 需要加上 restaurantId 的資訊給 lex
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
 const chatBot = async (req, res) => {
   try {
     const { userInput } = req.body
-    const client = new LexRuntimeV2Client({
-      region: 'ap-southeast-2',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY,
-        secretAccessKey: process.env.AWS_SECRET_KEY
+    const { restaurantId } = req.params
+    const restaurantInfo = await restaurantModel.getRestaurant(restaurantId)
+    const messages = [
+      {
+        role: 'system',
+        content: JSON.stringify(restaurantInfo)
+      },
+      {
+        role: 'system',
+        content: `你的設定是一個餐廳客服機器人, 我稍早提供的資訊是關於這間餐廳的資訊,
+          請幫我依照那個資料回答 user 的問題, 請用一句話回答`
+      },
+      {
+        role: 'user',
+        content: userInput
       }
+    ]
+    const response = await client.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages
     })
-    const sessionId = uuidv4()
-    const sessionAttributes = {
-      restaurantId: req.params.restaurantId
-    }
-    const params = {
-      botId: 'EUMJUSI4PU',
-      botAliasId: 'TSTALIASID',
-      localeId: 'zh_CN',
-      sessionId,
-      text: userInput,
-      sessionState: {
-        sessionAttributes
-      }
-    }
 
-    const command = new RecognizeTextCommand(params)
-    const response = await client.send(command)
-
-    res.status(200).json({ message: response.messages[0].content })
+    res.status(200).json({ message: response.choices[0].message.content })
   } catch (err) {
-    console.error(err)
+    console.error(err.stack)
     if (err instanceof Error) {
       return res.status(400).json({ error: err.message })
     }

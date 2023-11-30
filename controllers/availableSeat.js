@@ -32,7 +32,7 @@ export const getAvailableSeats = async (req, res) => {
 
     res.status(200).json({ data: transformedData })
   } catch (err) {
-    console.error(err)
+    console.error(err.stack)
     if (err instanceof Error) {
       return res.status(err.status).json({ error: err.message })
     }

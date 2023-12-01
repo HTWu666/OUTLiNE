@@ -307,8 +307,8 @@
                     return;
                 }
                 const phoneRegex = /^09\d{8}$/
-                if (phoneRegex.test(phone)) {
-                    alert('手機號碼格是不正確')
+                if (!phoneRegex.test(phone)) {
+                    alert('手機號碼格式不正確')
                     return
                 }
                 if (!email) {

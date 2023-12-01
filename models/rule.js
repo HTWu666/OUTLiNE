@@ -72,20 +72,6 @@ export const updateRule = async (
   }
 
   values.push(restaurantId)
-
-  // const conn = await pool.connect()
-  // try {
-  // await conn.query('BEGIN')
-  // // get old rule
-  // const { rows: oldRule } = await conn.query(
-  //   `
-  //   SELECT * FROM rules
-  //   WHERE restaurant_id = $1
-  //   `,
-  //   [restaurantId]
-  // )
-  // console.log(oldRule)
-  // update rule
   await connection.query(
     `
         UPDATE rules
@@ -94,22 +80,4 @@ export const updateRule = async (
       `,
     values
   )
-
-  // // Get new rule
-  // const { rows: newRule } = await conn.query(
-  //   `
-  //   SELECT * FROM rules
-  //   WHERE restaurant_id = $1
-  //   `,
-  //   [restaurantId]
-  // )
-  // console.log(newRule)
-
-  // await conn.query('COMMIT')
-  // } catch (err) {
-  //   await conn.query('ROLLBACK')
-  //   throw err
-  // } finally {
-  //   conn.release()
-  // }
 }

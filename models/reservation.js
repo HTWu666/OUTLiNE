@@ -147,7 +147,7 @@ export const cancelReservation = async (reservationId) => {
       `,
       [reservationId]
     )
-    console.log(reservationDetails)
+
     await conn.query(
       `
       UPDATE available_seats

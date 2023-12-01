@@ -37,7 +37,6 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
     `,
     [reservationId]
   )
-
   const reservationDate = new Date(reservationDetails[0].dining_date)
   const month = reservationDate.getMonth() + 1
   const day = reservationDate.getDate()

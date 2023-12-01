@@ -1,7 +1,7 @@
 import moment from 'moment-timezone'
 import * as availableModel from '../models/availableSeat.js'
 
-export const getAvailableSeats = async (req, res) => {
+const getAvailableSeats = async (req, res) => {
   try {
     const restaurantId = parseInt(req.params.restaurantId, 10)
     const { date } = req.query
@@ -34,10 +34,10 @@ export const getAvailableSeats = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(err.status).json({ error: err.message })
+      return res.status(400).json({ error: err.message })
     }
     res.status(500).json({ error: 'Get available seats failed' })
   }
 }
 
-export const updateAvailableSeats = async (req, res) => {}
+export default getAvailableSeats

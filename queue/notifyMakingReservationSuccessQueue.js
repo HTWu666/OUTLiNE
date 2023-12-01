@@ -29,28 +29,27 @@ const transporter = nodemailer.createTransport({
   }
 })
 
-const sendMakingReservationSuccessfullyMail = async (reservationId) => {
-  const { rows: reservationDetails } = await pool.query(
-    `
-    SELECT * FROM reservations
-    WHERE id = $1
-    `,
-    [reservationId]
-  )
-  const reservationDate = new Date(reservationDetails[0].dining_date)
+const sendMakingReservationSuccessfullyMail = async (
+  restaurantId,
+  adult,
+  child,
+  diningDate,
+  utcDiningTime,
+  name,
+  gender,
+  email,
+  upn
+) => {
+  const reservationDate = new Date(diningDate)
   const month = reservationDate.getMonth() + 1
   const day = reservationDate.getDate()
   const week = reservationDate.getDay()
   const days = ['(日)', '(一)', '(二)', '(三)', '(四)', '(五)', '(六)']
   const dayOfWeek = days[week]
-  const utcDiningTime = reservationDetails[0].dining_time
+  // const utcDiningTime = reservationDetails[0].dining_time
   const diningTimeInTaipei = moment.utc(utcDiningTime, 'HH:mm:ss').tz('Asia/Taipei')
   const formattedTime = diningTimeInTaipei.format('HH:mm')
-  const person =
-    parseInt(reservationDetails[0].adult, 10) + parseInt(reservationDetails[0].child, 10)
-  const { upn } = reservationDetails[0]
-
-  const restaurantId = reservationDetails[0].restaurant_id
+  const person = adult + child
   const { rows: restaurantDetails } = await pool.query(
     `
     SELECT * FROM restaurants
@@ -64,19 +63,19 @@ const sendMakingReservationSuccessfullyMail = async (reservationId) => {
   const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf-8')
   const emailContent = ejs.render(emailTemplate, {
     restaurantName: restaurantDetails[0].name,
-    customerName: reservationDetails[0].name,
-    gender: reservationDetails[0].gender,
+    customerName: name,
+    gender,
     diningDate: `${month}月${day}日`,
     dayOfWeek,
     diningTime: formattedTime,
-    adult: reservationDetails[0].adult,
-    child: reservationDetails[0].child,
+    adult,
+    child,
     link: `${process.env.DOMAIN}/reservation/click?upn=${upn}`
   })
 
   const mailOptions = {
     from: process.env.MAILGUN_SENDMAIL_FROM,
-    to: reservationDetails[0].email,
+    to: email,
     subject: `您在 ${restaurantDetails[0].name} 預訂 ${month}月${day}日${dayOfWeek} ${formattedTime} ${person}人`,
     html: emailContent
   }
@@ -97,10 +96,30 @@ const worker = async () => {
 
     while (true) {
       const message = await SQS.receiveMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL)
-
       if (message) {
-        const reservationId = message.Body
-        await sendMakingReservationSuccessfullyMail(reservationId)
+        const {
+          restaurantId,
+          reservationId,
+          adult,
+          child,
+          diningDate,
+          utcDiningTime,
+          name,
+          gender,
+          email,
+          upn
+        } = JSON.parse(message.Body)
+        await sendMakingReservationSuccessfullyMail(
+          restaurantId,
+          adult,
+          child,
+          diningDate,
+          utcDiningTime,
+          name,
+          gender,
+          email,
+          upn
+        )
         console.log(
           `Successfully send the successfully making reservation mail for reservation Id: ${reservationId}`
         )

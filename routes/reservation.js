@@ -1,11 +1,10 @@
 import express from 'express'
 import {
-  createReservationByCustomer,
-  createReservationByVendor,
   getReservations,
   cancelReservationByCustomer,
   cancelReservationByVendor,
-  confirmReservation
+  confirmReservation,
+  createReservation
 } from '../controllers/reservation.js'
 import authenticate from '../middlewares/authenticate.js'
 import { parseUpnForReservation } from '../middlewares/parseUpn.js'
@@ -13,7 +12,7 @@ import { parseUpnForReservation } from '../middlewares/parseUpn.js'
 const router = express.Router()
 
 // for business
-router.post('/restaurant/:restaurantId(\\d+)/reservation', authenticate, createReservationByVendor)
+router.post('/restaurant/:restaurantId(\\d+)/reservation', authenticate, createReservation)
 router.get('/restaurant/:restaurantId(\\d+)/reservation', authenticate, getReservations)
 router.put(
   '/restaurant/:restaurantId(\\d+)/reservation/:reservationId(\\d+)',
@@ -27,7 +26,7 @@ router.delete(
 )
 
 // for customer
-router.post('/restaurant/:restaurantId(\\d+)/reservation/click', createReservationByCustomer) // 前端從 url 取得餐廳 id, 再回傳
+router.post('/restaurant/:restaurantId(\\d+)/reservation/click', createReservation) // 前端從 url 取得餐廳 id, 再回傳
 router.delete('/reservation/click', parseUpnForReservation, cancelReservationByCustomer)
 
 export default router

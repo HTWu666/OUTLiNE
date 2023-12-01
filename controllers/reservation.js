@@ -18,8 +18,7 @@ const validateCreateReservation = (
   email,
   purpose,
   note,
-  restaurantId,
-  maxPersonPerGroup
+  restaurantId
 ) => {
   if (contentType !== 'application/json') {
     return { valid: false, error: 'Wrong content type' }
@@ -54,11 +53,6 @@ const validateCreateReservation = (
   }
   if (typeof restaurantId !== 'number') {
     return { valid: false, error: 'Restaurant Id query string must be a number' }
-  }
-
-  const person = adult + child
-  if (person > maxPersonPerGroup) {
-    return { valid: false, error: 'Exceed the limit of max person per reservation' }
   }
 
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/
@@ -102,15 +96,13 @@ const validateCreateReservation = (
 const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
   'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
 
-// for customer
-export const createReservationByCustomer = async (req, res) => {
+// for customer and business
+export const createReservation = async (req, res) => {
   try {
     const contentType = req.headers['content-type']
     const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
       req.body
     const restaurantId = parseInt(req.params.restaurantId, 10)
-    const results = await ruleModel.getRule(restaurantId)
-    const maxPersonPerGroup = results.max_person_per_group
 
     // validate
     const validation = validateCreateReservation(
@@ -125,8 +117,7 @@ export const createReservationByCustomer = async (req, res) => {
       email,
       purpose,
       note,
-      restaurantId,
-      maxPersonPerGroup
+      restaurantId
     )
 
     if (!validation.valid) {
@@ -137,6 +128,7 @@ export const createReservationByCustomer = async (req, res) => {
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     let reservationId
+    let upn
     const connection = await pool.connect()
     try {
       await connection.query('BEGIN')
@@ -157,7 +149,7 @@ export const createReservationByCustomer = async (req, res) => {
 
       // create token (reservationId), 返回訂位資訊的頁面再根據 reservationId 去撈資料
       const payload = { reservationId }
-      const upn = jwt.sign(payload, process.env.JWT_KEY)
+      upn = jwt.sign(payload, process.env.JWT_KEY)
       await reservationModel.createUpnForReservation(upn, reservationId, connection)
 
       await connection.query('COMMIT')
@@ -167,7 +159,23 @@ export const createReservationByCustomer = async (req, res) => {
     } finally {
       connection.release()
     }
-    await SQS.sendMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL, reservationId)
+
+    const message = {
+      restaurantId,
+      reservationId,
+      adult,
+      child,
+      diningDate,
+      utcDiningTime,
+      name,
+      gender,
+      email,
+      upn
+    }
+    await SQS.sendMessage(
+      NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
+      JSON.stringify(message)
+    )
 
     res.status(200).json(reservationId)
   } catch (err) {
@@ -210,84 +218,6 @@ export const cancelReservationByCustomer = async (req, res) => {
       child: reservationDetails.child,
       link: `${process.env.DOMAIN}/api/reservation/click?upn=${upn}`
     })
-  } catch (err) {
-    console.error(err.stack)
-    if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
-    }
-    res.status(500).json({ error: 'Get reservations failed' })
-  }
-}
-
-// for business
-export const createReservationByVendor = async (req, res) => {
-  try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
-    const contentType = req.headers['content-type']
-    const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
-      req.body
-    const results = await ruleModel.getRule(restaurantId)
-    const maxPersonPerGroup = results.max_person_per_group
-
-    // validate
-    const validation = validateCreateReservation(
-      contentType,
-      adult,
-      child,
-      diningDate,
-      diningTime,
-      name,
-      gender,
-      phone,
-      email,
-      purpose,
-      note,
-      restaurantId,
-      maxPersonPerGroup
-    )
-
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
-    }
-
-    // create reservation
-    const timezone = 'Asia/Taipei'
-    const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
-    let reservationId
-    const connection = await pool.connect()
-    try {
-      await connection.query('BEGIN')
-      reservationId = await reservationModel.createReservation(
-        restaurantId,
-        adult,
-        child,
-        diningDate,
-        utcDiningTime,
-        name,
-        gender,
-        phone,
-        email,
-        purpose,
-        note,
-        connection
-      )
-
-      // create token (reservationId), 返回訂位資訊的頁面再根據 reservationId 去撈資料
-      const payload = { reservationId }
-      const upn = jwt.sign(payload, process.env.JWT_KEY)
-      await reservationModel.createUpnForReservation(upn, reservationId, connection)
-
-      await connection.query('COMMIT')
-    } catch (err) {
-      await connection.query('ROLLBACK')
-      throw err
-    } finally {
-      connection.release()
-    }
-
-    await SQS.sendMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL, reservationId)
-
-    res.status(200).json(reservationId)
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {

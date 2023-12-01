@@ -1,4 +1,5 @@
 import pool from './databasePool.js'
+import * as cache from '../utils/cache.js'
 
 export const createReservation = async (
   restaurantId,
@@ -15,19 +16,42 @@ export const createReservation = async (
   connection
 ) => {
   const person = adult + child
+  const rawSeatQty = await cache.get(`restaurant:${restaurantId}:seatQty`)
+  let seatQty = JSON.parse(rawSeatQty)
+  if (!seatQty) {
+    const { rows: seats } = await pool.query(
+      `
+      SELECT seat_qty FROM tables
+      WHERE restaurant_id = $1
+      `,
+      [restaurantId]
+    )
 
-  // 取得最小所需座位數
-  const { rows } = await pool.query(
-    `
-    SELECT MIN (seat_qty) AS min_seat_qty
-    FROM tables
-    WHERE seat_qty >= $1
-    `,
-    [person]
-  )
+    seatQty = []
+    seats.forEach((seat) => {
+      if (!seatQty.includes(seat.seat_qty)) {
+        seatQty.push(seat.seat_qty)
+      }
+    })
+    seatQty.sort((a, b) => a - b)
+    await cache.set(`restaurant:${restaurantId}:seatQty`, JSON.stringify(seatQty))
+  }
 
-  const requiredSeats = rows[0].min_seat_qty
-  if (!requiredSeats) {
+  let start = 0
+  let end = seatQty.length - 1
+  let requiredSeats = -1
+
+  while (start <= end) {
+    const mid = Math.floor((start + end) / 2)
+
+    if (seatQty[mid] >= person) {
+      requiredSeats = seatQty[mid]
+      end = mid - 1
+    } else {
+      start = mid + 1
+    }
+  }
+  if (requiredSeats === -1) {
     const err = new Error('Exceed the limit of max person per reservation')
     err.status = 400
     throw err
@@ -36,15 +60,15 @@ export const createReservation = async (
   // 取得可訂位的時間並 lock the row
   const { rows: availableSeat } = await connection.query(
     `
-        SELECT id, table_id, table_name
-        FROM available_seats
-        WHERE restaurant_id = $1
-          AND seat_qty = $2
-          AND available_date = $3
-          AND available_time = $4
-          AND availability = TRUE
-        FOR UPDATE
-      `,
+      SELECT id, table_id, table_name
+      FROM available_seats
+      WHERE restaurant_id = $1
+        AND seat_qty = $2
+        AND available_date = $3
+        AND available_time = $4
+        AND availability = TRUE
+      FOR UPDATE
+    `,
     [restaurantId, requiredSeats, diningDate, diningTime]
   )
 
@@ -58,23 +82,23 @@ export const createReservation = async (
   const tableName = availableSeat[0].table_name
   const { rows: reservation } = await connection.query(
     `
-        INSERT INTO reservations (
-          restaurant_id,
-          adult,
-          child,
-          dining_date,
-          dining_time,
-          table_id,
-          table_name,
-          name,
-          gender,
-          phone,
-          email,
-          purpose,
-          note
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING id
-      `,
+      INSERT INTO reservations (
+        restaurant_id,
+        adult,
+        child,
+        dining_date,
+        dining_time,
+        table_id,
+        table_name,
+        name,
+        gender,
+        phone,
+        email,
+        purpose,
+        note
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      RETURNING id
+    `,
     [
       restaurantId,
       adult,
@@ -95,10 +119,10 @@ export const createReservation = async (
   const availableSeatId = availableSeat[0].id
   await connection.query(
     `
-        UPDATE available_seats
-        SET availability = FALSE
-        WHERE id = $1
-      `,
+      UPDATE available_seats
+      SET availability = FALSE
+      WHERE id = $1
+    `,
     [availableSeatId]
   )
 

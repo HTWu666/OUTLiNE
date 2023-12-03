@@ -170,7 +170,6 @@ export const createReservation = async (req, res) => {
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     let reservationId
-    let upn
     const connection = await pool.connect()
     try {
       await connection.query('BEGIN')
@@ -190,11 +189,6 @@ export const createReservation = async (req, res) => {
         connection
       )
 
-      // create token (reservationId), 返回訂位資訊的頁面再根據 reservationId 去撈資料
-      const payload = { reservationId }
-      upn = jwt.sign(payload, process.env.JWT_KEY)
-      await reservationModel.createUpnForReservation(upn, reservationId, connection)
-
       await connection.query('COMMIT')
     } catch (err) {
       await connection.query('ROLLBACK')
@@ -202,6 +196,11 @@ export const createReservation = async (req, res) => {
     } finally {
       connection.release()
     }
+
+    // create token (reservationId), 返回訂位資訊的頁面再根據 reservationId 去撈資料
+    const payload = { reservationId }
+    const upn = jwt.sign(payload, process.env.JWT_KEY)
+    await reservationModel.createUpnForReservation(upn, reservationId, connection)
 
     const message = {
       restaurantId,

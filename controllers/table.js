@@ -1,5 +1,6 @@
 import moment from 'moment-timezone'
 import * as tableModel from '../models/table.js'
+import * as cache from '../utils/cache.js'
 
 const validateCreateTable = (contentType, tableName, seatQty, availableTime) => {
   if (contentType !== 'application/json') {
@@ -29,7 +30,6 @@ const validateCreateTable = (contentType, tableName, seatQty, availableTime) => 
 
 export const createTable = async (req, res) => {
   try {
-    const { userId } = res.locals
     const contentType = req.headers['content-type']
     const { tableName, seatQty, availableTime } = req.body
     const validation = validateCreateTable(contentType, tableName, seatQty)
@@ -39,6 +39,7 @@ export const createTable = async (req, res) => {
 
     const restaurantId = parseInt(req.params.restaurantId, 10)
     const tableId = await tableModel.createTable(restaurantId, tableName, seatQty)
+    await cache.del(`restaurant:${restaurantId}:seatQty`)
     const timezone = 'Asia/Taipei'
     if (typeof availableTime === 'string' && availableTime.length > 0) {
       const utcAvailableTime = moment.tz(availableTime, 'HH:mm', timezone).utc().format('HH:mm:ss')

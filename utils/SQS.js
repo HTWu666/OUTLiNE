@@ -36,7 +36,7 @@ export const receiveMessage = async (queueUrl) => {
   const params = {
     QueueUrl: queueUrl,
     MaxNumberOfMessages: 1,
-    WaitTimeSeconds: 10
+    WaitTimeSeconds: 20
   }
 
   try {

@@ -109,6 +109,7 @@ const worker = async () => {
           email,
           upn
         } = JSON.parse(message.Body)
+
         await sendMakingReservationSuccessfullyMail(
           restaurantId,
           adult,

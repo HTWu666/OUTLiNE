@@ -5,6 +5,7 @@ export const createReservation = async (
   restaurantId,
   adult,
   child,
+  requiredSeats,
   diningDate,
   diningTime,
   name,
@@ -15,48 +16,6 @@ export const createReservation = async (
   note,
   connection
 ) => {
-  const person = adult + child
-  const rawSeatQty = await cache.get(`restaurant:${restaurantId}:seatQty`)
-  let seatQty = JSON.parse(rawSeatQty)
-  if (!seatQty) {
-    const { rows: seats } = await pool.query(
-      `
-      SELECT seat_qty FROM tables
-      WHERE restaurant_id = $1
-      `,
-      [restaurantId]
-    )
-
-    seatQty = []
-    seats.forEach((seat) => {
-      if (!seatQty.includes(seat.seat_qty)) {
-        seatQty.push(seat.seat_qty)
-      }
-    })
-    seatQty.sort((a, b) => a - b)
-    await cache.set(`restaurant:${restaurantId}:seatQty`, JSON.stringify(seatQty))
-  }
-
-  let start = 0
-  let end = seatQty.length - 1
-  let requiredSeats = -1
-
-  while (start <= end) {
-    const mid = Math.floor((start + end) / 2)
-
-    if (seatQty[mid] >= person) {
-      requiredSeats = seatQty[mid]
-      end = mid - 1
-    } else {
-      start = mid + 1
-    }
-  }
-  if (requiredSeats === -1) {
-    const err = new Error('Exceed the limit of max person per reservation')
-    err.status = 400
-    throw err
-  }
-
   // 取得可訂位的時間並 lock the row
   const { rows: availableSeat } = await connection.query(
     `
@@ -68,14 +27,13 @@ export const createReservation = async (
         AND available_time = $4
         AND availability = TRUE
       FOR UPDATE
+      LIMIT 1
     `,
     [restaurantId, requiredSeats, diningDate, diningTime]
   )
 
   if (!availableSeat[0]) {
-    const err = new Error('No available seat')
-    err.status = 400
-    throw err
+    throw new Error('No available seat')
   }
 
   const tableId = availableSeat[0].table_id

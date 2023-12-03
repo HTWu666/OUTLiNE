@@ -42,7 +42,7 @@
             case 'not_seated':
                 const cancelButton = document.createElement('button');
                 cancelButton.innerText = '取消訂位';
-                cancelButton.className = 'bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded';
+                cancelButton.className = 'bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded';
                 cancelButton.addEventListener('click', async () => {
                 const isConfirmed = confirm('您確定要取消訂位嗎?');
                 if (isConfirmed) {

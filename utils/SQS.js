@@ -7,7 +7,7 @@ import {
 import dotenv from 'dotenv'
 
 dotenv.config()
-console.log(process.env.AWS_ACCESS_KEY)
+
 const sqsClint = new SQSClient({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,

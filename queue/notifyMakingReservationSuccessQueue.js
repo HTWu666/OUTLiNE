@@ -46,7 +46,6 @@ const sendMakingReservationSuccessfullyMail = async (
   const week = reservationDate.getDay()
   const days = ['(日)', '(一)', '(二)', '(三)', '(四)', '(五)', '(六)']
   const dayOfWeek = days[week]
-  // const utcDiningTime = reservationDetails[0].dining_time
   const diningTimeInTaipei = moment.utc(utcDiningTime, 'HH:mm:ss').tz('Asia/Taipei')
   const formattedTime = diningTimeInTaipei.format('HH:mm')
   const person = adult + child
@@ -103,19 +102,18 @@ const worker = async () => {
           adult,
           child,
           diningDate,
-          utcDiningTime,
+          diningTime,
           name,
           gender,
           email,
           upn
         } = JSON.parse(message.Body)
-
         await sendMakingReservationSuccessfullyMail(
           restaurantId,
           adult,
           child,
           diningDate,
-          utcDiningTime,
+          diningTime,
           name,
           gender,
           email,

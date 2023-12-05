@@ -1,6 +1,7 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
+import moment from 'moment-timezone'
 import * as SQS from '../utils/SQS.js'
 
 dotenv.config({ path: '../.env' })
@@ -92,7 +93,8 @@ const writeBackToDB = async (
     email,
     upn
   }
-
+  console.log('mailMessage')
+  console.log(mailMessage)
   await SQS.sendMessage(
     NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
     JSON.stringify(mailMessage)
@@ -127,7 +129,7 @@ const worker = async () => {
           purpose,
           note
         } = JSON.parse(message.Body)
-
+        console.log(diningTime)
         const reservationId = await writeBackToDB(
           availableSeatId,
           restaurantId,

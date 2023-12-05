@@ -5,7 +5,6 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 const chatBot = async (req, res) => {
   try {
-    return res.status(200).json({ message: 'ok' })
     const { userInput } = req.body
     const { restaurantId } = req.params
     const restaurantInfo = await restaurantModel.getRestaurant(restaurantId)

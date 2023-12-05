@@ -94,7 +94,7 @@ export const createRule = async (req, res) => {
     await scheduleRemindForDiningJob(restaurantId, diningReminderTimeInHHmm)
 
     // set cron job for deleting expired booking date
-    const deleteExpiredBookingTime = '01:23'
+    const deleteExpiredBookingTime = '10:00'
     await scheduleDeleteExpiredBookingDateJob(restaurantId, deleteExpiredBookingTime)
 
     res.status(200).json(ruleId)

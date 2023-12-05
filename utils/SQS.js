@@ -6,8 +6,8 @@ import {
 } from '@aws-sdk/client-sqs'
 import dotenv from 'dotenv'
 
-dotenv.config()
-
+dotenv.config({ path: '../.env' })
+console.log(process.env.AWS_ACCESS_KEY)
 const sqsClint = new SQSClient({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,

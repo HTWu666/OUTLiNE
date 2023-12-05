@@ -1,5 +1,8 @@
 import moment from 'moment-timezone'
 import jwt from 'jsonwebtoken'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import * as fs from 'fs'
 import * as reservationModel from '../models/reservation.js'
 import * as restaurantModel from '../models/restaurant.js'
 import * as ruleModel from '../models/rule.js'
@@ -96,6 +99,8 @@ const validateCreateReservation = (
 
 const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
   'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
+const CACHE_WRITE_BACK_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/redis-writeback-queue'
 
 // for customer and business
 export const createReservation = async (req, res) => {
@@ -124,7 +129,8 @@ export const createReservation = async (req, res) => {
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
-
+    const timezone = 'Asia/Taipei'
+    const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     // check whether the person exceed the limit
     const person = adult + child
     const rawSeatQty = await cache.get(`restaurant:${restaurantId}:seatQty`)
@@ -166,61 +172,40 @@ export const createReservation = async (req, res) => {
       throw new Error('Exceed the limit of max person per reservation')
     }
 
-    // create reservation
-    const timezone = 'Asia/Taipei'
-    const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
-    let reservationId
-    const connection = await pool.connect()
-    try {
-      await connection.query('BEGIN')
-      reservationId = await reservationModel.createReservation(
-        restaurantId,
-        adult,
-        child,
-        requiredSeats,
-        diningDate,
-        utcDiningTime,
-        name,
-        gender,
-        phone,
-        email,
-        purpose,
-        note,
-        connection
-      )
-
-      await connection.query('COMMIT')
-    } catch (err) {
-      await connection.query('ROLLBACK')
-      throw err
-    } finally {
-      connection.release()
+    const stringifyAvailableSeat = await cache.rpop(
+      `restaurant:${restaurantId}:availableDate:${diningDate}:availableTime:${utcDiningTime}:seatQty:${requiredSeats}`
+    )
+    if (!stringifyAvailableSeat) {
+      throw new Error('No available seat')
     }
-
-    // create token (reservationId), 返回訂位資訊的頁面再根據 reservationId 去撈資料
-    const payload = { reservationId }
-    const upn = jwt.sign(payload, process.env.JWT_KEY)
-    await reservationModel.createUpnForReservation(upn, reservationId, connection)
-
-    const message = {
+    // console.log(stringifyAvailableSeat)
+    const availableSeat = JSON.parse(stringifyAvailableSeat)
+    const writeBackData = {
+      availableSeatId: availableSeat.id,
       restaurantId,
-      reservationId,
       adult,
       child,
       diningDate,
-      utcDiningTime,
+      diningTime,
+      tableId: availableSeat.tableId,
+      tableName: availableSeat.tableName,
       name,
       gender,
+      phone,
       email,
-      upn
+      purpose,
+      note
     }
+    const dataString = JSON.stringify(writeBackData, null, 2)
+    fs.appendFile('spike.txt', `${dataString},`, (err) => {
+      if (err) {
+        console.error('Error appending to file:', err)
+      }
+    })
+    await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
-    await SQS.sendMessage(
-      NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
-      JSON.stringify(message)
-    )
-
-    res.status(200).json(reservationId)
+    // res.status(200).json(reservationId)
+    res.status(200).json({ message: 'ok' })
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {

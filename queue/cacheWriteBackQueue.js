@@ -80,8 +80,29 @@ const writeBackToDB = async (
     [upn, reservationId]
   )
 
+  const mailMessage = {
+    restaurantId,
+    reservationId,
+    adult,
+    child,
+    diningDate,
+    diningTime,
+    name,
+    gender,
+    email,
+    upn
+  }
+
+  await SQS.sendMessage(
+    NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
+    JSON.stringify(mailMessage)
+  )
+
   return reservationId
 }
+
+const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
+  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
 
 const worker = async () => {
   try {

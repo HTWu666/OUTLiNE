@@ -178,7 +178,7 @@ export const createReservation = async (req, res) => {
     if (!stringifyAvailableSeat) {
       throw new Error('No available seat')
     }
-    // console.log(stringifyAvailableSeat)
+
     const availableSeat = JSON.parse(stringifyAvailableSeat)
     const writeBackData = {
       availableSeatId: availableSeat.id,
@@ -196,16 +196,10 @@ export const createReservation = async (req, res) => {
       purpose,
       note
     }
-    const dataString = JSON.stringify(writeBackData, null, 2)
-    fs.appendFile('spike.txt', `${dataString},`, (err) => {
-      if (err) {
-        console.error('Error appending to file:', err)
-      }
-    })
+
     await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
-    // res.status(200).json(reservationId)
-    res.status(200).json({ message: 'ok' })
+    res.status(200).json({ message: 'Making reservation successfully' })
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {

@@ -127,6 +127,7 @@ const worker = async () => {
           purpose,
           note
         } = JSON.parse(message.Body)
+
         const reservationId = await writeBackToDB(
           availableSeatId,
           restaurantId,

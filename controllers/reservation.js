@@ -178,7 +178,6 @@ export const createReservation = async (req, res) => {
     if (!stringifyAvailableSeat) {
       throw new Error('No available seat')
     }
-
     const availableSeat = JSON.parse(stringifyAvailableSeat)
     const writeBackData = {
       availableSeatId: availableSeat.id,
@@ -187,8 +186,8 @@ export const createReservation = async (req, res) => {
       child,
       diningDate,
       diningTime,
-      tableId: availableSeat.tableId,
-      tableName: availableSeat.tableName,
+      tableId: availableSeat.table_id,
+      tableName: availableSeat.table_name,
       name,
       gender,
       phone,

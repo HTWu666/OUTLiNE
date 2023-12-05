@@ -78,21 +78,23 @@
                             <td class="text-center align-middle py-3">${reservation.status}</td>
                         `;
                         tbody.appendChild(tr);
-                        const confirmBtnTd = document.createElement('td')
-                        const confirmBtn = document.createElement('button')
-                        confirmBtn.textContent = '確認入座'
-                        confirmBtn.classList.add("bg-emerald-500", "hover:bg-emerald-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out")
-                        confirmBtn.onclick = () => sendConfirmRequest(reservation.id)
-                        confirmBtnTd.appendChild(confirmBtn)
-                        tr.appendChild(confirmBtnTd)
+                        const confirmBtnTd = document.createElement('td');
+                        confirmBtnTd.classList.add("text-center", "align-middle");
+                        const confirmBtn = document.createElement('button');
+                        confirmBtn.textContent = '確認入座';
+                        confirmBtn.classList.add("bg-emerald-500", "hover:bg-emerald-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
+                        confirmBtn.onclick = () => sendConfirmRequest(reservation.id);
+                        confirmBtnTd.appendChild(confirmBtn);
+                        tr.appendChild(confirmBtnTd);
 
-                        const cancelBtnTd = document.createElement('td')
-                        const cancelBtn = document.createElement('button')
-                        cancelBtn.textContent = '取消訂位'
-                        cancelBtn.classList.add("bg-rose-500", "hover:bg-rose-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out")
-                        cancelBtn.onclick = () => sendCancelRequest(reservation.id)
-                        cancelBtnTd.appendChild(cancelBtn)
-                        tr.appendChild(cancelBtnTd)
+                        const cancelBtnTd = document.createElement('td');
+                        cancelBtnTd.classList.add("text-center", "align-middle");
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.textContent = '取消訂位';
+                        cancelBtn.classList.add("bg-rose-500", "hover:bg-rose-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
+                        cancelBtn.onclick = () => sendCancelRequest(reservation.id);
+                        cancelBtnTd.appendChild(cancelBtn);
+                        tr.appendChild(cancelBtnTd);
                     });
                 } catch (err) {
                     alert(err)

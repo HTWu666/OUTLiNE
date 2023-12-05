@@ -60,14 +60,9 @@ const getAvailableSeats = async (req, res) => {
     }
 
     const result = []
-
-    // 用于存储不同时间的映射
     const timeMap = {}
-    // 遍历输入数据
     for (const item of availableSeats) {
-      // 解析元素的各个部分
       const parts = item.split(':')
-      // 如果元素包含时间和座位数量信息
       if (parts.length === 10) {
         const available_time = moment
           .utc(`${parts[5]}:${parts[6]}:${parts[7]}`, 'HH:mm:ss')
@@ -76,7 +71,6 @@ const getAvailableSeats = async (req, res) => {
 
         const max_person = parseInt(parts[9])
 
-        // 将时间映射到 max_person
         if (!timeMap[max_person]) {
           timeMap[max_person] = []
         }
@@ -85,36 +79,11 @@ const getAvailableSeats = async (req, res) => {
       }
     }
 
-    // 将映射转换为结果数组
     for (const max_person in timeMap) {
       if (timeMap.hasOwnProperty(max_person)) {
         result.push({ max_person: parseInt(max_person), available_time: timeMap[max_person] })
       }
     }
-
-    // // 每次都從資料庫取資料,
-    // // 若 cache 裡面沒有指定日期的資料 (可能訂完或是沒有更新 redis), 從資料庫取得指定日期的所有可訂位的時間, 更新 redis, 每筆資料依序寫入
-    // let availableSeats = await cache.scanForMatches(
-    //   `restaurant:${restaurantId}:availableDate:${date}*`,
-    //   100
-    // )
-    // // 用一個 redis 標示說有從資料庫撈那天的資料, 這樣之後訂位可以刪除被訂走的 cache, 避免全部刪除的時候, 資料庫還沒更新狀態, 而導致不可訂位的資料又出現
-    // // await cache.scanForMatches(`restaurant:${restaurantId}:availableDate:${date}`)
-    // if (!availableSeats) {
-    //   availableSeats = await availableSeatsModel.getAvailableSeats(restaurantId, date)
-    //   await cache.hset(`restaurant:${restaurantId}:availableDate:${date}`, 'isUpdated', 'Y')
-    //   availableSeats.forEach(async (seat) => {
-    //     for (const [field, value] of Object.entries(seat)) {
-    //       await cache.hset(
-    //         `restaurant:${restaurantId}:availableDate:${seat.available_date}:availableTime:${seat.available_time}:seatQty:${seat.seat_qty}:availableId:${seat.id}`,
-    //         field,
-    //         value
-    //       )
-    //     }
-    //   })
-    // }
-
-    // 若 cache 裡面有指定日期的資料, 回傳給前端的資料則依序從 redis 中取出並轉換
 
     res.status(200).json({ data: result })
   } catch (err) {

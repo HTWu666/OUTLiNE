@@ -21,9 +21,10 @@ const getAvailableSeats = async (req, res) => {
         'lock'
       )
       while (!availableSeats && isLockSet === 0) {
-        availableSeats = await cache.scanAllMatches(
-          `restaurant:${restaurantId}:availableDate:${date}*`,
-          100
+        availableSeats = await cache.lrange(
+          `restaurant:${restaurantId}:availableDate:${date}`,
+          0,
+          -1
         )
       }
     }

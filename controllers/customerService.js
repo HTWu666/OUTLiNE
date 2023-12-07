@@ -5,6 +5,10 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 const chatBot = async (req, res) => {
   try {
+    if (process.env.SERVER_STATUS === 'development') {
+      return res.status(200).json({ message: '抱歉，目前處於開發階段，不開放客服機器人。' })
+    }
+
     const { userInput } = req.body
     const { restaurantId } = req.params
     const restaurantInfo = await restaurantModel.getRestaurant(restaurantId)

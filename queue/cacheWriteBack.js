@@ -1,12 +1,12 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
-import moment from 'moment-timezone'
+import fs from 'fs'
 import * as SQS from '../utils/SQS.js'
 
 dotenv.config({ path: '../.env' })
-const { Pool } = pg
 
+const { Pool } = pg
 const pool = new Pool({
   user: process.env.POSTGRE_USER,
   host: process.env.POSTGRE_HOST,
@@ -157,3 +157,42 @@ const worker = async () => {
 }
 
 worker()
+
+const outputLogStream = fs.createWriteStream('./logs/console/cacheWriteBackConsole.log', {
+  flags: 'a'
+})
+
+if (process.env.SERVER_STATUS === 'development') {
+  const originalConsoleLog = console.log
+  console.log = (...args) => {
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2)
+          } catch {
+            return 'Unstringifiable Object'
+          }
+        }
+        return String(arg)
+      })
+      .join(' ')
+
+    outputLogStream.write(`${message}\n`)
+    originalConsoleLog(...args)
+  }
+
+  const originalConsoleError = console.error
+  console.error = (...args) => {
+    const message = args.join(' ')
+    outputLogStream.write(`[ERROR] ${message}\n`)
+
+    args.forEach((arg) => {
+      if (arg instanceof Error) {
+        outputLogStream.write(`[ERROR Stack Trace] ${arg.stack}\n`)
+      }
+    })
+
+    originalConsoleError(...args)
+  }
+}

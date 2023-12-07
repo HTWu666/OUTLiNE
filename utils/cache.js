@@ -52,7 +52,7 @@ export const scanAllMatches = async (pattern, count) => {
 
     do {
       const reply = await cache.scan(cursor, 'MATCH', pattern, 'COUNT', count)
-      cursor = reply[0] // 更新 cursor
+      cursor = reply[0]
       const keys = reply[1]
       for (const key of keys) {
         matches.push(key)
@@ -64,40 +64,6 @@ export const scanAllMatches = async (pattern, count) => {
     }
 
     return matches
-
-    // do {
-    //   const reply = await cache.scan(cursor, 'MATCH', pattern, 'COUNT', count)
-    //   cursor = reply[0] // 更新 cursor
-    //   const keys = reply[1]
-    //   const promises = []
-    //   console.log(keys)
-    //   for (const key of keys) {
-    //     promises.push(
-    //       (async () => {
-    //         const details = await cache.lrange(key, 0, -1) // 获取列表的所有元素
-    //         if (details[0] !== 'yes') {
-    //           for (const detail of details) {
-    //             try {
-    //               const detailObject = JSON.parse(detail) // 尝试解析 JSON 字符串
-    //               matches.push(detailObject) // 将解析后的对象添加到 matches 数组
-    //             } catch (error) {
-    //               console.error(`Error parsing JSON for key ${key}:`, error)
-    //               // 处理解析错误，如跳过当前项或记录错误
-    //             }
-    //           }
-    //         } else {
-    //           matches.push('yes')
-    //         }
-    //       })()
-    //     )
-    //   }
-    //   await Promise.all(promises) // 并发处理
-    // } while (cursor !== '0')
-
-    // if (matches.length === 0) {
-    //   return null
-    // }
-    // return matches
   } catch (err) {
     return null
   }
@@ -150,6 +116,18 @@ export const rpop = async (key) => {
   try {
     const result = await cache.rpop(key)
     return result
+  } catch (err) {
+    return null
+  }
+}
+
+export const setnx = async (key, value) => {
+  try {
+    const lockSet = await cache.setnx(key, value)
+    if (lockSet) {
+      return 1
+    }
+    return 0
   } catch (err) {
     return null
   }

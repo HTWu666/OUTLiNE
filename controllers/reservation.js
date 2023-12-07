@@ -109,7 +109,7 @@ export const createReservation = async (req, res) => {
     const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
       req.body
     const restaurantId = parseInt(req.params.restaurantId, 10)
-
+    console.time('post data validation')
     // validate
     const validation = validateCreateReservation(
       contentType,
@@ -125,7 +125,7 @@ export const createReservation = async (req, res) => {
       note,
       restaurantId
     )
-
+    console.timeEnd('post data validation')
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
@@ -153,7 +153,7 @@ export const createReservation = async (req, res) => {
       seatQty.sort((a, b) => a - b)
       await cache.set(`restaurant:${restaurantId}:seatQty`, JSON.stringify(seatQty))
     }
-
+    console.time('calculate the required seat')
     let start = 0
     let end = seatQty.length - 1
     let requiredSeats = -1
@@ -171,7 +171,7 @@ export const createReservation = async (req, res) => {
     if (requiredSeats === -1) {
       throw new Error('Exceed the limit of max person per reservation')
     }
-
+    console.timeEnd('calculate the required seat')
     const stringifyAvailableSeat = await cache.rpop(
       `restaurant:${restaurantId}:availableDate:${diningDate}:availableTime:${utcDiningTime}:seatQty:${requiredSeats}`
     )

@@ -28,9 +28,12 @@ const getAvailableSeats = async (req, res) => {
       }
     }
     console.timeEnd('lock the key')
-    console.time('summarize data after DB')
+    console.time('all DB')
     if (!availableSeats) {
+      console.time('get data from DB')
       availableSeats = await availableSeatsModel.getAvailableSeats(restaurantId, date)
+      console.timeEnd('get data from DB')
+      console.time('put data into cache')
       const cachePromises = availableSeats.map((seat) => {
         const value = {
           id: seat.id,
@@ -50,6 +53,8 @@ const getAvailableSeats = async (req, res) => {
         )
       })
       await Promise.all(cachePromises)
+      console.timeEnd('put data into cache')
+      console.time('summarize data for DB')
       const transformedData = availableSeats.reduce((acc, seat) => {
         const existing = acc.find((entry) => entry.max_person === seat.seat_qty)
         const convertedTime = moment
@@ -72,7 +77,7 @@ const getAvailableSeats = async (req, res) => {
         return acc
       }, [])
       transformedData.sort((a, b) => a.max_person - b.max_person)
-      console.timeEnd('summarize data after DB')
+      console.timeEnd('summarize datafor DB')
       return res.status(200).json({ data: transformedData })
     }
     console.time('summarize data for cache')

@@ -52,6 +52,7 @@ export const scanAllMatches = async (pattern, count) => {
 
     do {
       const reply = await cache.scan(cursor, 'MATCH', pattern, 'COUNT', count)
+      console.log(reply)
       cursor = reply[0]
       const keys = reply[1]
       for (const key of keys) {
@@ -128,6 +129,15 @@ export const setnx = async (key, value) => {
       return 1
     }
     return 0
+  } catch (err) {
+    return null
+  }
+}
+
+export const exists = async (key) => {
+  try {
+    const isExist = await cache.exists(key)
+    return isExist
   } catch (err) {
     return null
   }

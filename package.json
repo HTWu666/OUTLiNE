@@ -11,8 +11,7 @@
     "server": "nodemon server.js",
     "notify-making-reservation-success": "nodemon ./queue/notifyMakingReservationSuccess.js",
     "remind-for-dining": "nodemon ./queue/remindForDining.js",
-    "update-available-reservation-date": "nodemon ./queue/updateAvailableReservationDate.js",
-    "delete-expired-booking-date": "nodemon ./queue/deleteExpiredBookingDate.js",
+    "update-booking-date": "nodemon ./queue/updateBookingDate.js",
     "cache-write-back": "nodemon ./queue/cacheWriteBack.js"
   },
   "keywords": [],

@@ -5,7 +5,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "concurrently \"npm:watch-css\" \"npm:server\" \"npm:notify-making-reservation-success\" \"npm:remind-for-dining\" \"npm:update-available-reservation-date\" \"npm:delete-expired-booking-date\" \"npm:cache-write-back\" ",
+    "start": "concurrently \"npm:watch-css\" \"npm:server\" \"npm:notify-making-reservation-success\" \"npm:remind-for-dining\" \"npm:update-booking-date\" \"npm:cache-write-back\" ",
     "watch-css": "tailwindcss -i ./public/css/styles.css -o ./public/css/output.css --watch",
     "build-css": "tailwindcss build public/css/styles.css -o public/css/output.css",
     "server": "nodemon server.js",

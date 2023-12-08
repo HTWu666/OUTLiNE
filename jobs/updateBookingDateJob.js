@@ -27,7 +27,7 @@ const scheduleUpdateBookingDateJob = async (
     Targets: [
       {
         Id: `restaurantId-${restaurantId}`,
-        Arn: 'arn:aws:sqs:ap-southeast-2:179428986360:outline-update-booking-date-queue',
+        Arn: 'arn:aws:lambda:ap-southeast-2:179428986360:function:updateAvailableReservationDate',
         Input: JSON.stringify({
           restaurantId,
           maxBookingDay

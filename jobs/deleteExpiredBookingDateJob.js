@@ -22,7 +22,7 @@ const scheduleDeleteExpiredBookingDateJob = async (restaurantId, deleteTimeInHHm
     Targets: [
       {
         Id: `restaurantId-${restaurantId}`,
-        Arn: 'arn:aws:sqs:ap-southeast-2:179428986360:outline-delete-expired-booking-date-queue',
+        Arn: 'arn:aws:lambda:ap-southeast-2:179428986360:function:deleteExpiredBookingDate',
         Input: JSON.stringify(restaurantId)
       }
     ]

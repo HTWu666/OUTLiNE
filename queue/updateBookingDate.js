@@ -15,7 +15,7 @@ app.set('views', '../views')
 app.use(expressLayouts)
 app.set('layout', './layouts/global')
 
-const log = fs.createWriteStream(`./logs/morganBody/deleteExpiredBookingDateMorganBody.log`, {
+const log = fs.createWriteStream(`./logs/morganBody/updateBookingDateMorganBody.log`, {
   flags: 'a'
 })
 morganBody(app, {
@@ -34,6 +34,83 @@ const pool = new Pool({
   }
 })
 
+const getTables = async (restaurantId) => {
+  const { rows } = await pool.query(
+    `
+        SELECT
+          tables.id AS table_id,
+          tables.name,
+          tables.seat_qty,
+          table_available_time.available_time
+        FROM tables
+        INNER JOIN table_available_time
+        ON tables.id = table_available_time.table_id
+        WHERE tables.restaurant_id = $1
+      `,
+    [restaurantId]
+  )
+  return rows
+}
+
+const createAvailableSeats = async (restaurantId, maxBookingDay) => {
+  const updatedDate = new Date()
+  updatedDate.setDate(updatedDate.getDate() + maxBookingDay)
+  const year = updatedDate.getFullYear()
+  const month = updatedDate.getMonth() + 1
+  const day = updatedDate.getDate()
+  const formattedDate = `${year}-${month}-${day}`
+  const tableData = await getTables(restaurantId)
+
+  const values = tableData
+    .map((row) => [
+      restaurantId,
+      row.table_id,
+      row.name,
+      row.seat_qty,
+      formattedDate,
+      row.available_time
+    ])
+    .flat()
+
+  const placeholders = tableData
+    .map(
+      (_, i) =>
+        `($${i * 6 + 1}, $${i * 6 + 2}, $${i * 6 + 3}, $${i * 6 + 4}, $${i * 6 + 5}, $${i * 6 + 6})`
+    )
+    .join(', ')
+
+  const { rows: availableSeatIds } = await pool.query(
+    `
+      INSERT INTO available_seats (
+          restaurant_id,
+          table_id,
+          table_name,
+          seat_qty,
+          available_date,
+          available_time
+      ) VALUES ${placeholders}
+      `,
+    values
+  )
+
+  return availableSeatIds
+}
+
+app.post('/api/updateAvailableReservationDate', async (req, res) => {
+  try {
+    const { restaurantId, maxBookingDay } = req.body
+    await createAvailableSeats(restaurantId, maxBookingDay)
+    console.log(`Successfully update available booking date for restaurantId: ${restaurantId}`)
+    res.status(200).json({ message: 'Successfully update available reservation date' })
+  } catch (err) {
+    console.error(err.stack)
+    if (err instanceof Error) {
+      return res.status(400).json({ error: err.message })
+    }
+    res.status(500).json({ error: 'Update available reservation date failed' })
+  }
+})
+
 const deleteExpiredBookingDate = async (restaurantId) => {
   const today = new Date().toISOString().split('T')[0]
 
@@ -41,7 +118,7 @@ const deleteExpiredBookingDate = async (restaurantId) => {
     `
     DELETE FROM available_seats
     WHERE restaurant_id = $1
-      AND available_date = $2
+      AND available_date < $2
     `,
     [restaurantId, today]
   )
@@ -78,7 +155,7 @@ app.listen(port, () => {
   console.log(`Delete expired booking date worker is listening on ${port}`)
 })
 
-const outputLogStream = fs.createWriteStream('./logs/console/deleteExpiredBookingDateConsole.log', {
+const outputLogStream = fs.createWriteStream('./logs/console/updateBookingDateConsole.log', {
   flags: 'a'
 })
 

@@ -93,8 +93,7 @@ const writeBackToDB = async (
     email,
     upn
   }
-  console.log('mailMessage')
-  console.log(mailMessage)
+
   await SQS.sendMessage(
     NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
     JSON.stringify(mailMessage)

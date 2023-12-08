@@ -8,9 +8,9 @@ import { fileURLToPath } from 'url'
 import nodemailer from 'nodemailer'
 import * as SQS from '../utils/SQS.js'
 
-dotenv.config()
-const { Pool } = pg
+dotenv.config({ path: '../.env' })
 
+const { Pool } = pg
 const pool = new Pool({
   user: process.env.POSTGRE_USER,
   host: process.env.POSTGRE_HOST,

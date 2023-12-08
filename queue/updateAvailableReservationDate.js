@@ -4,7 +4,6 @@ import express from 'express'
 import fs from 'fs'
 import morganBody from 'morgan-body'
 import expressLayouts from 'express-ejs-layouts'
-import * as SQS from '../utils/SQS.js'
 
 dotenv.config({ path: '../.env' })
 const app = express()
@@ -16,14 +15,9 @@ app.set('views', '../views')
 app.use(expressLayouts)
 app.set('layout', './layouts/global')
 
-const log = fs.createWriteStream(
-  `
-  ./logs/morganBody/updateAvailableReservationDateMorganBody.log
-  `,
-  {
-    flags: 'a'
-  }
-)
+const log = fs.createWriteStream('./logs/morganBody/updateAvailableReservationDateMorganBody.log', {
+  flags: 'a'
+})
 morganBody(app, {
   noColors: true,
   stream: log
@@ -39,9 +33,6 @@ const pool = new Pool({
     rejectUnauthorized: false
   }
 })
-
-const UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-update-booking-date-queue'
 
 const getTables = async (restaurantId) => {
   const { rows } = await pool.query(
@@ -105,29 +96,7 @@ const createAvailableSeats = async (restaurantId, maxBookingDay) => {
   return availableSeatIds
 }
 
-// 依照 rule 更新可訂位的日期
-// const worker = async () => {
-//   try {
-//     console.log(
-//       `[*] Waiting for messages in updateAvailableReservationDateQueue. To exit press CTRL+C`
-//     )
-
-//     while (true) {
-//       const message = await SQS.receiveMessage(UPDATE_AVAILABLE_RESERVATION_DATE_QUEUE_URL)
-//       if (message) {
-//         const { restaurantId, maxBookingDay } = JSON.parse(message.Body)
-//         await createAvailableSeats(restaurantId, maxBookingDay)
-//         console.log('Update available reservation date successfully')
-//       }
-//     }
-//   } catch (err) {
-//     console.error(err)
-//   }
-// }
-
-// worker()
-
-app.post('/updateAvailableReservationDate', async (req, res) => {
+app.post('/api/updateAvailableReservationDate', async (req, res) => {
   try {
     const { restaurantId, maxBookingDay } = req.body
     await createAvailableSeats(restaurantId, maxBookingDay)
@@ -155,7 +124,7 @@ app.use((err, req, res, next) => {
 })
 
 app.listen(port, () => {
-  console.log(`Delete expired booking date worker is listening on ${port}`)
+  console.log(`Update available reservation date worker is listening on ${port}`)
 })
 
 const outputLogStream = fs.createWriteStream(

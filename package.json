@@ -9,11 +9,11 @@
     "watch-css": "tailwindcss -i ./public/css/styles.css -o ./public/css/output.css --watch",
     "build-css": "tailwindcss build public/css/styles.css -o public/css/output.css",
     "server": "nodemon server.js",
-    "notify-making-reservation-success": "nodemon ./queue/notifyMakingReservationSuccessQueue.js",
+    "notify-making-reservation-success": "nodemon ./queue/notifyMakingReservationSuccess.js",
     "remind-for-dining": "nodemon ./queue/remindForDining.js",
-    "update-available-reservation-date": "nodemon ./queue/updateAvailableReservationDateQueue.js",
+    "update-available-reservation-date": "nodemon ./queue/updateAvailableReservationDate.js",
     "delete-expired-booking-date": "nodemon ./queue/deleteExpiredBookingDate.js",
-    "cache-write-back": "nodemon ./queue/cacheWriteBackQueue.js"
+    "cache-write-back": "nodemon ./queue/cacheWriteBack.js"
   },
   "keywords": [],
   "author": "",

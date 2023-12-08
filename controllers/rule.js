@@ -1,13 +1,9 @@
-import { EventBridgeClient, PutRuleCommand, PutTargetsCommand } from '@aws-sdk/client-eventbridge'
-import moment from 'moment-timezone'
 import * as ruleModel from '../models/rule.js'
-import * as restaurantModel from '../models/restaurant.js'
 import scheduleUpdateBookingDateJob from '../jobs/updateBookingDateJob.js'
 import pool from '../models/databasePool.js'
 import * as adjustAvailableSeats from '../utils/adjustAvailableSeats.js'
 import scheduleRemindForDiningJob from '../jobs/remindForDiningJob.js'
 import scheduleDeleteExpiredBookingDateJob from '../jobs/deleteExpiredBookingDateJob.js'
-import * as SQS from '../utils/SQS.js'
 
 const validateCreateRule = (
   contentType,

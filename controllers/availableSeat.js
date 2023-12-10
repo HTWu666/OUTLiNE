@@ -14,15 +14,18 @@ const getAvailableSeats = async (req, res) => {
 
     if (!availableSeats) {
       const lockValue = await cache.get(`restaurant:${restaurantId}:availableDate:${date}:lock`)
-      console.log(lockValue)
       if (!lockValue) {
-        console.log(111)
         const isLockSet = await cache.setnx(
           `restaurant:${restaurantId}:availableDate:${date}:lock`,
           'lock'
         )
-        console.log(222)
-        console.log(333)
+        while (!availableSeats && isLockSet === 0) {
+          availableSeats = await cache.lrange(
+            `restaurant:${restaurantId}:availableDate:${date}`,
+            0,
+            -1
+          )
+        }
       } else if (lockValue === 'noData') {
         return res.status(200).json({ data: [] })
       } else {

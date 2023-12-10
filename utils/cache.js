@@ -13,6 +13,7 @@ export const get = async (key) => {
     const value = await cache.get(key)
     return value
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -22,6 +23,7 @@ export const set = async (key, value) => {
     const result = await cache.set(key, value)
     return result
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -31,6 +33,7 @@ export const del = async (key) => {
     const result = await cache.del(key)
     return result
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -66,6 +69,7 @@ export const scanAllMatches = async (pattern, count) => {
 
     return matches
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -88,6 +92,7 @@ export const findOneMatch = async (pattern, count) => {
 
     return { key: null, object: null }
   } catch (err) {
+    console.error(err)
     return { key: null, object: null }
   }
 }
@@ -100,6 +105,7 @@ export const lrange = async (key, startIndex, endIndex) => {
     }
     return result
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -109,6 +115,7 @@ export const lpush = async (key, value) => {
     const result = await cache.lpush(key, value)
     return result
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -118,6 +125,7 @@ export const rpop = async (key) => {
     const result = await cache.rpop(key)
     return result
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -130,6 +138,7 @@ export const setnx = async (key, value) => {
     }
     return 0
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -139,6 +148,7 @@ export const exists = async (key) => {
     const isExist = await cache.exists(key)
     return isExist
   } catch (err) {
+    console.error(err)
     return null
   }
 }
@@ -146,10 +156,9 @@ export const exists = async (key) => {
 export const executeLuaScript = async (luaScript, keys, args) => {
   try {
     const result = await cache.eval(luaScript, keys.length, ...keys, ...args)
-    console.log(result)
     return result
   } catch (err) {
-    console.log(err)
+    console.error(err)
     return null
   }
 }

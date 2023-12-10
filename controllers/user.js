@@ -158,7 +158,6 @@ export const signIn = async (req, res) => {
 
     // verify
     const user = await userModel.findUserByEmail(email)
-    console.log(user)
     const isValidPassword = await argon2.verify(user.password, password, {
       secret: Buffer.from(process.env.ARGON2_PEPPER)
     })

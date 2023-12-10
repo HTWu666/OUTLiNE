@@ -98,8 +98,6 @@ const validateCreateReservation = (
   return { valid: true }
 }
 
-const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
 const CACHE_WRITE_BACK_QUEUE_URL =
   'https://sqs.ap-southeast-2.amazonaws.com/179428986360/redis-writeback-queue'
 
@@ -188,7 +186,6 @@ export const createReservation = async (req, res) => {
     )
 
     if (!stringifyAvailableSeat) {
-      console.log('no available seats')
       return res.status(200).json({ message: 'no available seats' })
     }
     const availableSeat = JSON.parse(stringifyAvailableSeat)
@@ -208,9 +205,9 @@ export const createReservation = async (req, res) => {
       purpose,
       note
     }
-    console.log('before message')
+
     await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
-    console.log('after message')
+
     res.status(200).json({ message: 'Making reservation successfully' })
   } catch (err) {
     console.error(err.stack)

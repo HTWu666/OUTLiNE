@@ -6,35 +6,43 @@ const getAvailableSeats = async (req, res) => {
   try {
     const restaurantId = parseInt(req.params.restaurantId, 10)
     const { date } = req.query
-    console.time('get tag cache')
     let availableSeats = await cache.lrange(
       `restaurant:${restaurantId}:availableDate:${date}`,
       0,
       -1
     )
-    console.timeEnd('get tag cache')
-    console.time('lock the key')
+
     if (!availableSeats) {
-      // lock
-      const isLockSet = await cache.setnx(
-        `restaurant:${restaurantId}:availableDate:${date}:lock`,
-        'lock'
-      )
-      while (!availableSeats && isLockSet === 0) {
-        availableSeats = await cache.lrange(
-          `restaurant:${restaurantId}:availableDate:${date}`,
-          0,
-          -1
+      const lockValue = await cache.get(`restaurant:${restaurantId}:availableDate:${date}:lock`)
+      console.log(lockValue)
+      if (!lockValue) {
+        console.log(111)
+        const isLockSet = await cache.setnx(
+          `restaurant:${restaurantId}:availableDate:${date}:lock`,
+          'lock'
         )
+        console.log(222)
+        console.log(333)
+      } else if (lockValue === 'noData') {
+        return res.status(200).json({ data: [] })
+      } else {
+        while (!availableSeats) {
+          availableSeats = await cache.lrange(
+            `restaurant:${restaurantId}:availableDate:${date}`,
+            0,
+            -1
+          )
+        }
       }
     }
-    console.timeEnd('lock the key')
-    console.time('all DB')
+
     if (!availableSeats) {
-      console.time('get data from DB')
       availableSeats = await availableSeatsModel.getAvailableSeats(restaurantId, date)
-      console.timeEnd('get data from DB')
-      console.time('put data into cache')
+      if (availableSeats.length === 0) {
+        await cache.set(`restaurant:${restaurantId}:availableDate:${date}:lock`, 'noData')
+        return res.status(200).json({ data: availableSeats })
+      }
+
       const cachePromises = []
       const bookingInfoMap = {}
       availableSeats.forEach((seat) => {
@@ -53,11 +61,8 @@ const getAvailableSeats = async (req, res) => {
           cache.lpush(`restaurant:${restaurantId}:availableDate:${date}`, bookingKey)
         )
       })
-
       await Promise.all(cachePromises)
 
-      console.timeEnd('put data into cache')
-      console.time('summarize data for DB')
       const bookingMap = {}
       availableSeats.forEach((seat) => {
         if (!bookingMap[seat.seat_qty]) {
@@ -75,20 +80,14 @@ const getAvailableSeats = async (req, res) => {
         max_person: parseInt(max_person, 10),
         available_time: Array.from(availableTimes).sort()
       }))
-
       transformedData.sort((a, b) => a.max_person - b.max_person)
-
-      console.timeEnd('summarize data for DB')
-      console.timeEnd('all DB')
       return res.status(200).json({ data: transformedData })
     }
-    console.time('check key exist')
+
     const getAvailableSeatsPromises = availableSeats.map((availableSeatInfo) => {
       return cache.exists(`restaurant:${restaurantId}:availableDate:${date}:${availableSeatInfo}`)
     })
     const results = await Promise.all(getAvailableSeatsPromises)
-    console.timeEnd('check key exist')
-    console.time('summarize data for cache')
     const dataTransformedSet = new Set()
     const seatsMap = new Map()
     availableSeats.forEach((item, index) => {
@@ -109,7 +108,6 @@ const getAvailableSeats = async (req, res) => {
       max_person,
       available_time: Array.from(available_times).sort()
     })).sort((a, b) => a.max_person - b.max_person)
-    console.timeEnd('summarize data for cache')
 
     res.status(200).json({ data: result })
   } catch (err) {

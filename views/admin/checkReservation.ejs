@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>確認訂位</title>
+    <title>確認訂位 - Outline</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body>
@@ -64,40 +64,46 @@
                     const reservations = response.data.data;
                     const tbody = document.getElementById('reservations-body');
                     tbody.innerHTML = '';
-                    reservations.forEach((reservation, index) => {
-                        const tr = document.createElement('tr');
-                        tr.id = `reservation${reservation.id}`;
-                        tr.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50'); // 交错背景色
-                        tr.innerHTML = `
-                            <td class="text-center align-middle py-3">${reservation.name}</td>
-                            <td class="text-center align-middle py-3">${reservation.phone}</td>
-                            <td class="text-center align-middle py-3">${reservation.adult}</td>
-                            <td class="text-center align-middle py-3">${reservation.child}</td>
-                            <td class="text-center align-middle py-3">${reservation.table_name}</td>
-                            <td class="text-center align-middle py-3">${reservation.dining_time}</td>
-                            <td class="text-center align-middle py-3">${reservation.status}</td>
-                        `;
-                        tbody.appendChild(tr);
-                        const confirmBtnTd = document.createElement('td');
-                        confirmBtnTd.classList.add("text-center", "align-middle");
-                        const confirmBtn = document.createElement('button');
-                        confirmBtn.textContent = '確認入座';
-                        confirmBtn.classList.add("bg-emerald-500", "hover:bg-emerald-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
-                        confirmBtn.onclick = () => sendConfirmRequest(reservation.id);
-                        confirmBtnTd.appendChild(confirmBtn);
-                        tr.appendChild(confirmBtnTd);
+                    if (reservations.length === 0) {
+                        const noDataTr = document.createElement('tr')
+                        noDataTr.innerHTML = `<td class="text-center align-middle py-6" colspan="10">這天沒有人訂位</td>`
+                        tbody.appendChild(noDataTr)
+                    } else {
+                        reservations.forEach((reservation, index) => {
+                            const tr = document.createElement('tr');
+                            tr.id = `reservation${reservation.id}`;
+                            tr.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
+                            tr.innerHTML = `
+                                <td class="text-center align-middle py-3">${reservation.name}</td>
+                                <td class="text-center align-middle py-3">${reservation.phone}</td>
+                                <td class="text-center align-middle py-3">${reservation.adult}</td>
+                                <td class="text-center align-middle py-3">${reservation.child}</td>
+                                <td class="text-center align-middle py-3">${reservation.table_name}</td>
+                                <td class="text-center align-middle py-3">${reservation.dining_time}</td>
+                                <td class="text-center align-middle py-3">${reservation.status}</td>
+                            `;
+                            tbody.appendChild(tr);
+                            const confirmBtnTd = document.createElement('td');
+                            confirmBtnTd.classList.add("text-center", "align-middle");
+                            const confirmBtn = document.createElement('button');
+                            confirmBtn.textContent = '確認入座';
+                            confirmBtn.classList.add("bg-emerald-500", "hover:bg-emerald-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
+                            confirmBtn.onclick = () => sendConfirmRequest(reservation.id);
+                            confirmBtnTd.appendChild(confirmBtn);
+                            tr.appendChild(confirmBtnTd);
 
-                        const cancelBtnTd = document.createElement('td');
-                        cancelBtnTd.classList.add("text-center", "align-middle");
-                        const cancelBtn = document.createElement('button');
-                        cancelBtn.textContent = '取消訂位';
-                        cancelBtn.classList.add("bg-rose-500", "hover:bg-rose-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
-                        cancelBtn.onclick = () => sendCancelRequest(reservation.id);
-                        cancelBtnTd.appendChild(cancelBtn);
-                        tr.appendChild(cancelBtnTd);
-                    });
+                            const cancelBtnTd = document.createElement('td');
+                            cancelBtnTd.classList.add("text-center", "align-middle");
+                            const cancelBtn = document.createElement('button');
+                            cancelBtn.textContent = '取消訂位';
+                            cancelBtn.classList.add("bg-rose-500", "hover:bg-rose-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
+                            cancelBtn.onclick = () => sendCancelRequest(reservation.id);
+                            cancelBtnTd.appendChild(cancelBtn);
+                            tr.appendChild(cancelBtnTd);
+                        });
+                    }
                 } catch (err) {
-                    alert(err)
+                    alert(err.response.data.error)
                 }
             }
             dateSelector.addEventListener('change', fetchReservations);
@@ -116,7 +122,7 @@
                 alert(response.data.message)
                 document.querySelector(`#reservation${reservationId}`).remove()
             } catch (err) {
-                alert(err)
+                alert(err.response.data.error)
             }
         }
 

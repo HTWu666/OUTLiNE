@@ -5,7 +5,7 @@ import fs from 'fs'
 import morganBody from 'morgan-body'
 import expressLayouts from 'express-ejs-layouts'
 
-dotenv.config({ path: '../.env' })
+dotenv.config()
 const app = express()
 const port = 3001
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>確認候位</title>
+    <title>確認候位 - Outline</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body>
@@ -59,21 +59,27 @@
             });
             const waitingList = response.data.data;
             const waitingListBody = document.getElementById('waiting-list-body');
-            waitingList.forEach(item => {
-                totalWaiting++
-                const row = document.createElement('tr');
-                row.id = `waitlist-item-${item.id}`;
-                row.innerHTML = `
-                    <td class="text-center align-middle py-3">${item.name}</td>
-                    <td class="text-center align-middle py-3">${item.phone}</td>
-                    <td class="text-center align-middle py-3">${item.adult}</td>
-                    <td class="text-center align-middle py-3">${item.child}</td>
-                    <td class="text-center align-middle py-3">${item.number}</td>
-                    <td class="text-center align-middle py-3"><button onclick="confirmSeat('${item.id}')" class="bg-emerald-500 hover:bg-emerald-700 text-white py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out">確認入座</button></td>
-                    <td class="text-center align-middle py-3"><button onclick="cancelWaitlist('${item.id}')" class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out">取消候位</button></td>
-                    `;
-                waitingListBody.appendChild(row);
-            });
+            if (waitingList.length === 0) {
+                const noDataTr = document.createElement('tr')
+                noDataTr.innerHTML = `<td class="text-center align-middle py-6" colspan="10">目前沒有人在候位</td>`
+                waitingListBody.appendChild(noDataTr)
+            } else {
+                waitingList.forEach(item => {
+                    totalWaiting++
+                    const row = document.createElement('tr');
+                    row.id = `waitlist-item-${item.id}`;
+                    row.innerHTML = `
+                        <td class="text-center align-middle py-3">${item.name}</td>
+                        <td class="text-center align-middle py-3">${item.phone}</td>
+                        <td class="text-center align-middle py-3">${item.adult}</td>
+                        <td class="text-center align-middle py-3">${item.child}</td>
+                        <td class="text-center align-middle py-3">${item.number}</td>
+                        <td class="text-center align-middle py-3"><button onclick="confirmSeat('${item.id}')" class="bg-emerald-500 hover:bg-emerald-700 text-white py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out">確認入座</button></td>
+                        <td class="text-center align-middle py-3"><button onclick="cancelWaitlist('${item.id}')" class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out">取消候位</button></td>
+                        `;
+                    waitingListBody.appendChild(row);
+                });
+            }
 
             const currentNumberResponse = await axios.get(`/api/restaurant/${restaurantId}/waitlist/currentNumber`)
             showCurrentNumber.textContent = currentNumberResponse.data.data.currentNumber

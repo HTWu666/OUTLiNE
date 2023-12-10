@@ -142,3 +142,14 @@ export const exists = async (key) => {
     return null
   }
 }
+
+export const executeLuaScript = async (luaScript, keys, args) => {
+  try {
+    const result = await cache.eval(luaScript, keys.length, ...keys, ...args)
+    console.log(result)
+    return result
+  } catch (err) {
+    console.log(err)
+    return null
+  }
+}

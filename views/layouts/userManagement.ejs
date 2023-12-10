@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body >
+    <%- include('./global.ejs') %>
+    <div class="flex min-h-screen">
+        <%- include('../partials/sidebar.ejs') %>
+        <div class="flex-grow p-10">
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-4xl font-bold text-gray-700">使用者管理</div>
+                <div class="flex items-center space-x-3">
+                    <a id="profile" class="bg-cyan-500 text-white px-4 py-2 rounded shadow hover:bg-cyan-600 transition duration-200">個人資料</a>
+                    <a id="reviewApplication" class="bg-cyan-500 text-white px-4 py-2 rounded shadow hover:bg-cyan-600 transition duration-200">審核申請</a>
+                </div>
+            </div>
+            <%- body %>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const profile = document.getElementById('profile');
+            profile.href = `/restaurant/${restaurantId}/admin/profile`;
+
+            const reviewApplication = document.getElementById('reviewApplication');
+            reviewApplication.href = `/restaurant/${restaurantId}/admin/reviewApplication`;
+        })
+    </script>
+</body>
+</html>

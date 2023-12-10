@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - Outline</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="w-full max-w-4xl mx-auto p-6 flex justify-center">
+        <div id="user-form-container" class="w-96">
+            <form id="create-user-form" class="bg-white shadow-md rounded px-8 pt-8 pb-8 mb-4">
+                <div class="mb-4 border-b-4 border-gray-300">
+                    <h1 class="text-2xl font-bold text-gray-700 text-center mb-2">Outline 註冊</h1>
+                </div>
+                <div class="mb-4">
+                    <input type="name" placeholder="姓名" id="sign-up-name" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-4">
+                    <input type="email" placeholder="電子郵件地址" id="sign-up-email" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-4">
+                    <input type="password" placeholder="密碼" id="sign-up-password" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-6">
+                    <input type="password" placeholder="確認密碼" id="confirm-sign-up-password" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="flex items-center justify-between">
+                    <button id="sign-up-btn" class="form-btn bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                        註冊
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="choose-next-step" class="hidden w-full max-w-sm mx-auto bg-white shadow-md rounded px-8 pt-8 pb-8 mb-4">
+        <div class="mb-4 border-b-4 border-gray-300">
+                <h1 class="text-2xl font-bold text-gray-700 text-center mb-2">請選擇下一步</h1>
+            </div>
+            <button id="apply-to-join-btn" class="form-btn bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-6">申請加入餐廳</button>
+            <button id="create-restaurant-btn" class="form-btn bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">建立新的餐廳</button>
+        </div>
+    </div>
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    document.getElementById('sign-up-btn').addEventListener('click', async () => {
+        // Validate user form data
+        const name = document.getElementById('sign-up-name').value
+        const email = document.getElementById('sign-up-email').value;
+        const password = document.getElementById('sign-up-password').value;
+        const confirmPassword = document.getElementById('confirm-sign-up-password').value;
+        if (!name) {
+            alert('請填寫姓名');
+            return;
+        }
+        if (!email) {
+            alert('請填寫電子郵件地址');
+            return;
+        }
+        if (!password) {
+            alert('請填寫密碼');
+            return;
+        }
+        if (password !== confirmPassword) {
+            alert('請確認兩次輸入的密碼是否一致');
+            return;
+        }
+
+        try {
+            const response = await axios.post('/api/user/signup', {
+                name,
+                email,
+                password
+            })
+            const now = new Date();
+            const expires = new Date(now.getTime() + `${response.data.data.access_expired}` * 1000)
+            document.cookie = `token=${encodeURIComponent(response.data.data.access_token)}; expires=${expires.toUTCString()};`
+            alert('註冊成功')
+            document.getElementById('user-form-container').classList.add('hidden');
+            document.getElementById('choose-next-step').classList.remove('hidden');
+        } catch (err) {
+            console.log(err)
+            alert(err.response.data.error)
+        }   
+    });
+
+    document.getElementById('apply-to-join-btn').addEventListener('click', () => {
+        try {
+            window.location.href = '/joinRestaurant'
+        } catch (err) {
+            console.error(err)
+        }
+    })
+
+    document.getElementById('create-restaurant-btn').addEventListener('click', () => {
+        try {
+            window.location.href = '/createRestaurant'
+        } catch (err) {
+            console.error(err)
+        }
+    })
+</script>
+</html>

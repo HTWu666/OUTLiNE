@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人資料 - Outline</title>
+</head>
+<body>
+    <div class="flex flex-col items-center min-h-screen">
+        <div class="p-8 m-4 w-full max-w-xl">
+            <div class="text-3xl mb-8 text-center font-bold border-b-4 border-gray-300">
+                <div class="mb-3">個人資料</div>
+            </div>
+            <div id="user-name-container" class="flex items-center mb-4">
+                <span id="user-name" class="text-xl font-medium"></span>
+                <span class="text-xl">，您好</span>
+            </div>
+            <div id="restaurant-name-container" class="mb-4">
+                <span class="text-xl">餐廳名稱：</span>
+                <span id="restaurant-name" class="text-xl font-medium"></span>
+            </div>
+            <div id="restaurant-id-container" class="mb-4">
+                <span class="text-xl">餐廳 ID：</span>
+                <span id="restaurant-id" class="text-xl font-medium"></span>
+            </div>
+            <div id="role-container" class="mb-8">
+                <span class="text-xl">您的身分：</span>
+                <span id="role" class="text-xl font-medium"></span>
+            </div>
+            <button id="logoutButton" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded w-full">登出</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await axios.get(`/api/user/restaurant/${restaurantId}/profile`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+                const profileData = response.data.data
+                document.getElementById('user-name').textContent = profileData.userName
+                document.getElementById('restaurant-name').textContent = profileData.restaurantName
+                document.getElementById('restaurant-id').textContent = profileData.restaurantId
+                document.getElementById('role').textContent = profileData.role
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        })
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            try {
+                document.cookie = 'token=; Max-Age=0; path=/';
+                localStorage.removeItem('restaurantId');
+                const response = await axios.post('/api/user/signout');
+                window.location.href = '/signin';
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        });
+    </script>
+</body>
+</html>

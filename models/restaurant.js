@@ -56,7 +56,7 @@ export const getRestaurantByUserId = async (userId) => {
   )
 
   if (restaurantIds.length === 0) {
-    return []
+    return null
   }
 
   const ids = restaurantIds.map((item) => item.restaurant_id)

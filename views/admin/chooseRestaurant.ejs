@@ -7,25 +7,43 @@
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 flex justify-center items-center h-screen">
-    <div class="w-full max-w-xs">
-        <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <div class="mb-4 border-b-4 border-gray-300">
-                <h1 class="text-lg font-bold text-gray-700 text-center">Outline</h1>
+    <div class="w-full max-w-sm bg-white shadow-md rounded px-10 py-10">
+        <form>
+            <div class="mb-6 border-b-4 border-gray-300">
+                <h1 class="text-2xl font-bold text-gray-700 text-center mb-3">Outline</h1>
             </div>
             <div>
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="restaurant-select">
-                    選擇餐廳
+                <label class="block text-gray-700 text-base font-bold mb-4" for="restaurant-select">
+                    選擇要登入的餐廳訂位系統
                 </label>
-                <div class="mb-4">
+                <div class="mb-6">
                     <select id="restaurant-select" class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded leading-tight focus:outline-none focus:border-orange-500">
                         <!-- 餐廳選項將在這裡動態插入 -->
                     </select>
                 </div>
                 <button id="confirm-button" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    確定
+                    登入餐廳
                 </button>
             </div>
         </form>
+
+        <div class="my-6 flex items-center">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="mx-4 text-gray-500 font-semibold">OR</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+        
+        <div class="mb-5">
+            <button id="jump-to-create-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                建立新的餐廳
+            </button>
+        </div>
+
+        <div>
+            <button id="jump-to-join-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                申請加入餐廳
+            </button>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -45,6 +63,14 @@
             localStorage.setItem('restaurantId', restaurantId);
             window.location.href = `/restaurant/${restaurantId}/admin/checkReservation`
         });
+
+        document.querySelector('#jump-to-create-restaurant-btn').addEventListener('click', () => {
+            window.location.href = '/createRestaurant'
+        })
+
+        document.querySelector('#jump-to-join-restaurant-btn').addEventListener('click', () => {
+            window.location.href = '/joinRestaurant'
+        })
     </script>
 </body>
 </html>

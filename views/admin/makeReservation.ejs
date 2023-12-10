@@ -185,7 +185,14 @@
             const today = new Date().toISOString().split('T')[0];
             dateSelector.value = today;
 
-            async function fetchAndUpdateAvailableTimes() {
+            fetchAndUpdateAvailableTimes();
+
+            adultSelector.addEventListener('change', updateAvailableTimes);
+            childSelector.addEventListener('change', updateAvailableTimes);
+            dateSelector.addEventListener('change', fetchAndUpdateAvailableTimes);
+        });
+
+        async function fetchAndUpdateAvailableTimes() {
                 try {
                     const response = await axios.get(`/api/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
                     availableSeatsData = response.data.data;
@@ -199,7 +206,13 @@
                 const adultCount = parseInt(adultSelector.value, 10) || 0;
                 const childCount = parseInt(childSelector.value, 10) || 0;
                 const totalCount = adultCount + childCount;
-                const suitableOption = availableSeatsData.find(option => option.max_person >= totalCount);
+                const largerTableSize = availableSeatsData
+                    .map(option => option.max_person)
+                    .filter(size => size > totalCount)
+                    .sort((a, b) => a - b)[0];
+                const suitableOption = availableSeatsData.find(option =>
+                    option.max_person >= totalCount && (!largerTableSize || option.max_person < largerTableSize)
+                );
                 timeField.innerHTML = '';
 
                 if (suitableOption) {
@@ -212,7 +225,6 @@
                         radioButton.setAttribute('name', 'bookingTime');
                         radioButton.setAttribute('value', time);
                         radioButton.classList.add("hidden");
-
                         label.addEventListener('click', () => {
                             document.querySelectorAll('#time-field label').forEach(el => {
                                 el.classList.remove("bg-orange-500", "text-white");
@@ -233,13 +245,6 @@
                     timeField.appendChild(timeDiv);
                 }
             }
-
-            fetchAndUpdateAvailableTimes();
-
-            adultSelector.addEventListener('change', updateAvailableTimes);
-            childSelector.addEventListener('change', updateAvailableTimes);
-            dateSelector.addEventListener('change', fetchAndUpdateAvailableTimes);
-        });
 
         document.querySelectorAll('.purpose-label input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', function() {

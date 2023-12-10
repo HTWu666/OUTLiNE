@@ -13,7 +13,7 @@ const authenticate = async (req, res, next) => {
       token = req.cookies ? req.cookies.jwtToken : null
     }
     if (!token) {
-      return res.status(401).json({ error: 'No token' })
+      return res.status(401).redirect('/')
     }
     const decoded = await jwtVerify(token, process.env.JWT_KEY)
     const { userId } = decoded
@@ -23,9 +23,9 @@ const authenticate = async (req, res, next) => {
     console.error(err)
 
     if (err.name === 'TokenExpiredError') {
-      res.status(403).json({ message: 'Invalid token' })
+      res.status(403).redirect('/')
     } else if (err.name === 'JsonWebTokenError') {
-      res.status(403).json({ message: 'Invalid token' })
+      res.status(403).redirect('/')
     } else {
       res.status(500).json({ errors: 'authenticate failed' })
     }

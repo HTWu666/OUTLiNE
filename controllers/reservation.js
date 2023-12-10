@@ -1,7 +1,8 @@
 import moment from 'moment-timezone'
 import jwt from 'jsonwebtoken'
 import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import path from 'path'
+import { readFile } from 'fs/promises'
 import * as fs from 'fs'
 import * as reservationModel from '../models/reservation.js'
 import * as restaurantModel from '../models/restaurant.js'
@@ -109,7 +110,7 @@ export const createReservation = async (req, res) => {
     const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
       req.body
     const restaurantId = parseInt(req.params.restaurantId, 10)
-    console.time('post data validation')
+
     // validate
     const validation = validateCreateReservation(
       contentType,
@@ -125,7 +126,7 @@ export const createReservation = async (req, res) => {
       note,
       restaurantId
     )
-    console.timeEnd('post data validation')
+
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
@@ -153,7 +154,7 @@ export const createReservation = async (req, res) => {
       seatQty.sort((a, b) => a - b)
       await cache.set(`restaurant:${restaurantId}:seatQty`, JSON.stringify(seatQty))
     }
-    console.time('calculate the required seat')
+
     let start = 0
     let end = seatQty.length - 1
     let requiredSeats = -1
@@ -171,12 +172,24 @@ export const createReservation = async (req, res) => {
     if (requiredSeats === -1) {
       throw new Error('Exceed the limit of max person per reservation')
     }
-    console.timeEnd('calculate the required seat')
-    const stringifyAvailableSeat = await cache.rpop(
-      `restaurant:${restaurantId}:availableDate:${diningDate}:availableTime:${utcDiningTime}:seatQty:${requiredSeats}`
+    const filename = fileURLToPath(import.meta.url)
+    const dirname = path.dirname(filename)
+    const updateLockScript = await readFile(path.join(dirname, '../utils/updateLock.lua'), {
+      encoding: 'utf8'
+    })
+
+    const stringifyAvailableSeat = await cache.executeLuaScript(
+      updateLockScript,
+      [
+        `restaurant:1:availableDate:2023-12-25:availableTime:04:00:00:seatQty:2`,
+        `restaurant:${restaurantId}:availableDate:${diningDate}:lock`
+      ],
+      []
     )
+
     if (!stringifyAvailableSeat) {
-      throw new Error('No available seat')
+      console.log('no available seats')
+      return res.status(200).json({ message: 'no available seats' })
     }
     const availableSeat = JSON.parse(stringifyAvailableSeat)
     const writeBackData = {
@@ -195,9 +208,9 @@ export const createReservation = async (req, res) => {
       purpose,
       note
     }
-
+    console.log('before message')
     await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
-
+    console.log('after message')
     res.status(200).json({ message: 'Making reservation successfully' })
   } catch (err) {
     console.error(err.stack)

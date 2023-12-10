@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加入餐廳 - Outline</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div id="user-form-container" class="w-96 bg-white shadow-md rounded px-8 pt-8 pb-8 mb-4">
+        <form id="create-user-form">
+            <div class="mb-6 border-b-4 border-gray-300">
+                <h1 class="text-2xl font-bold text-gray-700 text-center mb-2">Outline 申請加入餐廳</h1>
+            </div>
+            <div class="mb-4">
+                <input type="number" placeholder="餐廳 ID" id="restaurant-id" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="flex items-center justify-between">
+                <button id="sign-up-btn" class="form-btn bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                    申請加入
+                </button>
+            </div>
+        </form>
+
+        <div class="my-6 flex items-center">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="mx-4 text-gray-500 font-semibold">OR</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+        
+        <div>
+            <button id="jump-to-create-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                建立餐廳
+            </button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.querySelector('#sign-up-btn').addEventListener('click', async () => {
+            try {
+                const restaurantId = document.getElementById('restaurant-id').value
+                const response = await axios.post('/api/restaurant/join', { restaurantId })
+                alert(`申請加入成功, 請等待餐廳管理員審核, 會以信件通知審核結果。\n您申請的餐廳 ID: ${restaurantId}`)
+                window.location.reload()
+            } catch (err) {
+                console.error(err)
+                alert(err.response.data.error)
+            }
+        })
+
+        document.querySelector('#jump-to-create-restaurant-btn').addEventListener('click', () => {
+            window.location.href = '/createRestaurant'
+        })
+    </script>    
+</body>
+</html>

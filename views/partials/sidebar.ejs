@@ -13,9 +13,9 @@
             <span><img src="/images/rule.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
             <span class="text-xl">規則管理</span>
         </a>
-        <a id="memberManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+        <a id="userManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
             <span><img src="/images/user.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
-            <span class="text-xl">管理員中心</span>
+            <span class="text-xl">使用者管理</span>
         </a>
     </div>
 </div>
@@ -30,7 +30,7 @@
             const ruleManagementLink = document.getElementById('ruleManagementLink');
             ruleManagementLink.href = `/restaurant/${restaurantId}/admin/rule`;
 
-            const memberManagementLink = document.getElementById('memberManagementLink');
-            memberManagementLink.href = `/restaurant/${restaurantId}/admin/member`;
+            const userManagementLink = document.getElementById('userManagementLink');
+            userManagementLink.href = `/restaurant/${restaurantId}/admin/profile`;
         })
 </script>

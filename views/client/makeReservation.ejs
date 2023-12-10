@@ -210,11 +210,15 @@
 
             async function fetchAndUpdateAvailableTimes() {
                 try {
+                    console.log(111)
                     const response = await axios.get(`/api/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
+                    console.log(response)
+                    console.log(222)
                     availableSeatsData = response.data.data;
+                    console.log(availableSeatsData)
                     updateAvailableTimes();
                 } catch (err) {
-                    console.error(err);
+                    console.log(err);
                 }
             }
 
@@ -342,7 +346,7 @@
                     "purpose": purpose,
                     "note": note
                 });
-                alert('Making reservation successfully')
+                alert(response.data.message)
                 location.href = location.href
             } catch (err) {
                 alert(err.response.data.error)

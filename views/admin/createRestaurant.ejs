@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增餐廳 - Outline</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="py-10 px-20">
+    <%- include('../layouts/global.ejs') %>
+    <div id="restaurant-form-container" class=" mx-auto p-6 w-full">
+        <form id="create-restaurant-form" enctype="multipart/form-data" class="mx-auto">
+            <div class="mb-12 border-b-4 border-gray-300">
+                <h1 class="text-3xl font-bold text-gray-700 text-center mb-2">Outline 建立新的餐廳</h1>
+            </div>
+    
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700 text-lg font-bold mb-2">餐廳名稱:</label>
+                <input type="text" id="name" name="name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+    
+            <div class="mb-4">
+                <label for="address" class="block text-gray-700 text-lg font-bold mb-2">餐廳地址:</label>
+                <input type="text" id="address" name="address" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+    
+            <div class="mb-4">
+                <label for="phone" class="block text-gray-700 text-lg font-bold mb-2">餐廳電話:</label>
+                <input type="tel" id="phone" name="phone" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+    
+
+            <div class="mb-4">
+                <label for="time" class="block text-gray-700 text-lg font-bold mb-2">餐廳營業時間:</label>
+                <input type="text" id="time" placeholder="e.g. 每週一到週五早上 10 點到晚上 8 點" name="time" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+    
+            <div class="mb-4">
+                <label for="parking" class="block text-gray-700 text-lg font-bold mb-2">餐廳停車場:</label>
+                <input type="text" id="parking" name="parking" placeholder="e.g. 沒有停車場或停車場地址" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+    
+            <div class="mb-4">
+                <label for="payment" class="block text-gray-700 text-lg font-bold mb-2">餐廳付款方式:</label>
+                <input type="text" id="payment" placeholder="e.g. 現金支付, 信用卡支付, line pay..." name="payment" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+    
+            <div class="mb-4">
+                <label for="kids-chair" class="block text-gray-700 text-lg font-bold mb-2">有沒有兒童座椅:</label>
+                <input type="checkbox" id="kids-chair" name="kids-chair" class="leading-tight">
+            </div>
+    
+            <div class="mb-4">
+                <label for="vegetarian-option" class="block text-gray-700 text-lg font-bold mb-2">有沒有素食:</label>
+                <input type="checkbox" id="vegetarian-option" name="vegetarian-option" class="leading-tight">
+            </div>
+    
+            <div class="mb-6">
+                <label for="photo" class="block text-lg font-bold text-gray-700 mb-2">選擇餐廳照片:</label>
+                <input type="file" id="photo" name="photo" accept="image/*" onchange="loadFile(event)" class="form-input mt-1 block w-full border file:border-none file:rounded file:bg-blue-50 file:text-blue-700 file:px-4 file:py-2 file:shadow-sm file:cursor-pointer hover:file:bg-blue-100">
+                <div id="preview-container" class="mt-4 hidden">
+                    <img id="photo-preview" class="max-w-xs max-h-32 rounded object-cover" />
+                </div> 
+            </div>
+    
+            <div class="flex items-center justify-between">
+                <button id="submit-btn" class=" bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
+                    建立餐廳
+                </button>
+            </div>
+        </form>
+
+        <div class="my-6 flex items-center">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="mx-4 text-gray-500 font-semibold">OR</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <div>
+            <button id="jump-to-join-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                加入餐廳
+            </button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function loadFile(event) {
+            const output = document.getElementById('photo-preview');
+            output.src = URL.createObjectURL(event.target.files[0]);
+            output.onload = function() {
+                URL.revokeObjectURL(output.src) // free memory
+            }
+            document.getElementById('preview-container').classList.remove('hidden');
+        }
+
+        const form = document.getElementById('create-restaurant-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const fileInput = document.getElementById('photo');
+            if (!fileInput.files.length) {
+                alert('請選擇圖片');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('time', document.getElementById('time').value);
+            formData.append('parking', document.getElementById('parking').value);
+            formData.append('payment', document.getElementById('payment').value);
+            formData.append('kids-chair', document.getElementById('kids-chair').checked ? 'yes' : 'no');
+            formData.append('vegetarian-option', document.getElementById('vegetarian-option').checked ? 'yes' : 'no');
+            
+            if (fileInput.files[0]) {
+                formData.append('photo', fileInput.files[0]);
+            }
+            try {
+                const response = await axios.post('/api/restaurant', formData);
+                alert('Create restaurant successfully');
+                // Handle response or redirect
+            } catch (err) {
+                console.error(err);
+                alert('Failed to create restaurant');
+                // Handle error
+            }
+        });
+
+        document.querySelector('#jump-to-join-restaurant-btn').addEventListener('click', () => {
+            window.location.href = '/joinRestaurant'
+        })
+    </script>
+</body>
+</html>

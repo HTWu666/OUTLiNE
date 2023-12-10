@@ -55,14 +55,22 @@ export const getApplications = async (restaurantId) => {
   return applications
 }
 
-export const approveApplication = async (userRoleId) => {
-  await pool.query(
+export const approveApplication = async (restaurantId, userRoleId) => {
+  const { rows } = await pool.query(
     `
     UPDATE user_role
     SET status = 'active'
     WHERE id = $1
+    RETURNING user_id
     `,
     [userRoleId]
+  )
+  await pool.query(
+    `
+    INSERT INTO user_restaurant (user_id, restaurant_id)
+    VALUES ($1, $2)    
+    `,
+    [rows[0].user_id, restaurantId]
   )
 }
 

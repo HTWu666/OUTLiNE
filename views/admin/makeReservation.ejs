@@ -182,23 +182,19 @@
             const childSelector = document.getElementById('child-selector');
             const timeField = document.getElementById('time-field');
             let availableSeatsData
-            const today = new Date().toISOString().split('T')[0];
-            dateSelector.value = today;
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            dateSelector.value = tomorrow.toISOString().split('T')[0];
 
-            fetchAndUpdateAvailableTimes();
-
-            adultSelector.addEventListener('change', updateAvailableTimes);
-            childSelector.addEventListener('change', updateAvailableTimes);
-            dateSelector.addEventListener('change', fetchAndUpdateAvailableTimes);
-        });
-
-        async function fetchAndUpdateAvailableTimes() {
+            async function fetchAndUpdateAvailableTimes() {
                 try {
                     const response = await axios.get(`/api/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
                     availableSeatsData = response.data.data;
+
                     updateAvailableTimes();
                 } catch (err) {
-                    console.error(err);
+                    console.log(err);
                 }
             }
 
@@ -245,6 +241,12 @@
                     timeField.appendChild(timeDiv);
                 }
             }
+
+            fetchAndUpdateAvailableTimes();
+            adultSelector.addEventListener('change', updateAvailableTimes);
+            childSelector.addEventListener('change', updateAvailableTimes);
+            dateSelector.addEventListener('change', fetchAndUpdateAvailableTimes);
+        });
 
         document.querySelectorAll('.purpose-label input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', function() {

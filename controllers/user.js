@@ -248,8 +248,8 @@ export const getApplications = async (req, res) => {
 
 export const approveApplication = async (req, res) => {
   try {
-    const { userRoleId } = req.params
-    await userModel.approveApplication(userRoleId)
+    const { restaurantId, userRoleId } = req.params
+    await userModel.approveApplication(restaurantId, userRoleId)
     res.status(200).json({ message: 'Approve application successfully' })
   } catch (err) {
     console.error(err)

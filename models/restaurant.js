@@ -1,7 +1,7 @@
 import pool from './databasePool.js'
-import * as cache from '../utils/cache.js'
 
 export const createRestaurant = async (
+  userId,
   name,
   address,
   phone,
@@ -11,15 +11,24 @@ export const createRestaurant = async (
   vegetarian,
   picture
 ) => {
-  const { rows } = await pool.query(
+  const { rows: restaurant } = await pool.query(
     `
     INSERT INTO restaurants (name, address, phone, parking_lot, payment, kid_chair, vegetarian, picture)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING id
     `,
     [name, address, phone, parking, payment, kidChair, vegetarian, picture]
   )
 
-  return rows[0].id
+  const { rows: userRestaurant } = await pool.query(
+    `
+    INSERT INTO user_restaurant (user_id, restaurant_id)
+    VALUES ($1, $2)
+    `,
+    [userId, restaurant[0].id]
+  )
+
+  return restaurant[0].id
 }
 
 export const findRestaurantByUserId = async (userId) => {
@@ -42,7 +51,9 @@ export const getRestaurant = async (restaurantId) => {
     `,
     [restaurantId]
   )
-
+  if (!rows[0]) {
+    throw new Error('餐廳不存在')
+  }
   return rows[0]
 }
 
@@ -80,6 +91,7 @@ export const userHasRestaurant = async (userId) => {
     `,
     [userId]
   )
+
   const restaurantIds = rows.map((row) => row.restaurant_id)
 
   return restaurantIds

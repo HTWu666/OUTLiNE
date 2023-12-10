@@ -38,6 +38,7 @@ export const initializeRole = async (userId, restaurantId) => {
     `
     INSERT INTO user_role (user_id, role_id, status)
     VALUES ($1, $2, $3)
+    RETURNING id
     `,
     [userId, adminRoleId[0].id, 'active']
   )
@@ -85,21 +86,20 @@ export const createRole = async (userId, restaurantId) => {
 }
 
 export const getRole = async (userId, restaurantId) => {
-  const { rows: userRole } = await pool.query(
+  const { rows } = await pool.query(
     `
-    SELECT * FROM user_role
-    WHERE user_id = $1
+    SELECT r.name
+    FROM user_role ur
+    JOIN roles r ON ur.role_id = r.id
+    WHERE ur.user_id = $1 AND r.name LIKE $2
     `,
-    [userId]
+    [userId, `%_restaurantId_${restaurantId}`]
   )
-  const { rows: role } = await pool.query(
-    `
-    SELECT name FROM roles
-    WHERE id = $1 AND name LIKE $2
-    `,
-    [userRole[0].role_id, `%_restaurantId_${restaurantId}`]
-  )
-  const parts = role[0].name.split('_')
 
+  if (rows.length === 0) {
+    throw new Error('角色不存在')
+  }
+
+  const parts = rows[0].name.split('_')
   return parts[0]
 }

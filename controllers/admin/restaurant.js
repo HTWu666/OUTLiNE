@@ -20,7 +20,7 @@ export const chooseRestaurantPage = async (req, res) => {
 
 export const joinRestaurantPage = async (req, res) => {
   try {
-    res.status(200).render('./admin/joinRestaurant')
+    res.status(200).render('./admin/joinRestaurant', { layout: false })
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
@@ -32,7 +32,7 @@ export const joinRestaurantPage = async (req, res) => {
 
 export const createRestaurantPage = async (req, res) => {
   try {
-    res.status(200).render('./admin/createRestaurant')
+    res.status(200).render('./admin/createRestaurant', { layout: false })
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {

@@ -40,14 +40,14 @@ const fileFilter = (req, file, cb) => {
   }
 
   const kidChair = req.body['kids-chair']
-  if (kidChair !== 'yes' || kidChair !== 'no') {
+  if (kidChair !== 'yes' && kidChair !== 'no') {
     const err = new Error(`Please choose yes or no for kids chair`)
     err.status = 400
     return cb(err, false)
   }
 
   const vegetarian = req.body['vegetarian-option']
-  if (vegetarian !== 'yes' || vegetarian !== 'no') {
+  if (vegetarian !== 'yes' && vegetarian !== 'no') {
     const err = new Error(`Please choose yes or no for vegetarian option`)
     err.status = 400
     return cb(err, false)

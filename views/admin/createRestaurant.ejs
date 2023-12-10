@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新增餐廳 - Outline</title>
+    <title>建立餐廳 - Outline</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="py-10 px-20">
-    <%- include('../layouts/global.ejs') %>
     <div id="restaurant-form-container" class=" mx-auto p-6 w-full">
         <form id="create-restaurant-form" enctype="multipart/form-data" class="mx-auto">
             <div class="mb-12 border-b-4 border-gray-300">
@@ -116,11 +115,11 @@
             }
             try {
                 const response = await axios.post('/api/restaurant', formData);
-                alert('Create restaurant successfully');
-                // Handle response or redirect
+                alert('成功建立餐廳！');
+                window.location.reload()
             } catch (err) {
                 console.error(err);
-                alert('Failed to create restaurant');
+                alert('建立餐廳失敗！');
                 // Handle error
             }
         });

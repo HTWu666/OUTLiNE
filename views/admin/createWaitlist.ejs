@@ -92,11 +92,14 @@
             <div class="flex justify-end">
                 <button id="close-modal" class="text-black">&times;</button>
             </div>
-            <div id="qrcode-url"></div>
-            <!-- QR Code 显示区域 -->
-            <img id="qrcode-container" alt="QR Code" class="p-4">
-                <!-- QR Code 数据将在这里显示 -->
-            </img>
+            <div class="flex flex-col justify-center items-center">
+                <div class="text-xl text-center w-full font-semibold">候位號碼牌</div>
+                <div id="qrcode-url" class="mt-5"></div>
+                <!-- QR Code 显示区域 -->
+                <img id="qrcode-container" alt="QR Code" class="p-4">
+                    <!-- QR Code 数据将在这里显示 -->
+                </img>
+            </div>
         </div>
     </div>
 
@@ -178,7 +181,8 @@
                 const name = document.querySelector('#name').value
                 const gender = document.querySelector('input[name="title"]:checked').value
                 const phone = document.querySelector('#phone').value
-                const purpose = document.querySelector('input[name="purpose"]:checked').value
+                const purposeElement = document.querySelector('input[name="purpose"]:checked');
+                const purpose = purposeElement ? purposeElement.value : null;
                 const note = document.querySelector('#note').value
                 const response = await axios.post(`/api/restaurant/${restaurantId}/waitlist`,{
                     "adult": adult,
@@ -194,13 +198,13 @@
                     }
                 });
 
-                alert('Successfully waitlisted')
+                alert('候位成功')
 
                 document.getElementById('qrcode-container').src = response.data.data.qrCode;
-                document.querySelector('#qrcode-url').innerHTML = response.data.data.url
+                document.querySelector('#qrcode-url').innerHTML = `<a class='mt-8 text-blue-500' href=${response.data.data.url}>LINK</a>`;
                 document.getElementById('qrcode-modal').classList.remove('hidden');
             } catch (err) {
-                console.log(err.response.data.error)
+                console.log(err)
                 alert(err.response.data.error)
             }
         }
@@ -209,7 +213,7 @@
             document.getElementById('qrcode-modal').classList.add('hidden');
             initializeSelectors()
             document.getElementById('name').value = '';
-            document.querySelector('input[name="title"]:checked').checked = false; // 假设至少有一个选项被选中
+            document.querySelector('input[name="title"]:checked').checked = false;
             document.getElementById('phone').value = '';
             document.getElementById('note').value = '';
             document.querySelectorAll('input[name="purpose"]').forEach(radio => {

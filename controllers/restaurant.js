@@ -53,6 +53,7 @@ export const createRestaurant = async (req, res) => {
 
     // create restaurant
     const restaurantId = await restaurantModel.createRestaurant(
+      userId,
       name,
       address,
       phone,
@@ -87,7 +88,7 @@ export const createRestaurant = async (req, res) => {
     await scheduleRemindForDiningJob(restaurantId, diningReminderTimeInHHmm)
 
     // set cron job for deleting expired booking date
-    const deleteExpiredBookingTime = '18:24'
+    const deleteExpiredBookingTime = '22:00'
     await scheduleDeleteExpiredBookingDateJob(restaurantId, deleteExpiredBookingTime)
 
     res.status(200).json({ restaurantId, userRoleId, ruleId })

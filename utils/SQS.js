@@ -13,7 +13,7 @@ const sqsClint = new SQSClient({
     accessKeyId: process.env.AWS_ACCESS_KEY,
     secretAccessKey: process.env.AWS_SECRET_KEY
   },
-  region: 'ap-southeast-2'
+  region: process.env.AWS_REGION
 })
 
 export const sendMessage = async (queueUrl, messageBody) => {
@@ -24,7 +24,7 @@ export const sendMessage = async (queueUrl, messageBody) => {
 
   try {
     const data = await sqsClint.send(new SendMessageCommand(params))
-    console.log(`Success, message sent. Message ID: d${data.MessageId}`)
+    console.log(`Success, message sent. Message ID: ${data.MessageId}`)
     return data
   } catch (err) {
     console.error(err.stack)

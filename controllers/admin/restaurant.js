@@ -5,7 +5,10 @@ export const chooseRestaurantPage = async (req, res) => {
     const { userId } = res.locals
     const restaurants = await restaurantModel.getRestaurantByUserId(userId)
     if (!restaurants) {
-      return res.status(200).render('./admin/joinRestaurant', { layout: false })
+      return res.status(200).render('./admin/joinRestaurant', {
+        layout: false,
+        message: '您尚未有權限管理任何餐廳，請先選擇加入現有的餐廳或是建立新的餐廳'
+      })
     }
 
     res.status(200).render('./admin/chooseRestaurant', { layout: false, restaurants })

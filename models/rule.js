@@ -1,3 +1,4 @@
+import moment from 'moment-timezone'
 import pool from './databasePool.js'
 
 export const createRule = async (
@@ -7,6 +8,10 @@ export const createRule = async (
   maxBookingDay,
   updateBookingTime
 ) => {
+  const updateBookingTimeInUTC = moment
+    .tz(updateBookingTime, 'HH:mm', 'Asia/Taipei')
+    .utc()
+    .format('HH:mm')
   const { rows } = await pool.query(
     `
     INSERT INTO rules (
@@ -18,7 +23,7 @@ export const createRule = async (
     ) VALUES ($1, $2, $3, $4, $5)
     RETURNING id
     `,
-    [restaurantId, maxPersonPerGroup, minBookingDay, maxBookingDay, updateBookingTime]
+    [restaurantId, maxPersonPerGroup, minBookingDay, maxBookingDay, updateBookingTimeInUTC]
   )
 
   return rows[0].id
@@ -33,7 +38,13 @@ export const getRule = async (restaurantId) => {
     [restaurantId]
   )
 
-  return rows[0]
+  const rule = rows[0]
+  rule.update_booking_time = moment
+    .tz(rule.update_booking_time, 'HH:mm', 'Asia/Taipei')
+    .utc()
+    .format('HH:mm')
+
+  return rule
 }
 
 export const updateRule = async (
@@ -63,8 +74,12 @@ export const updateRule = async (
   }
 
   if (updateBookingTime !== undefined) {
+    const updateBookingTimeInUTC = moment
+      .tz(updateBookingTime, 'HH:mm', 'Asia/Taipei')
+      .utc()
+      .format('HH:mm')
     updates.push(`update_booking_time = $${updates.length + 1}`)
-    values.push(updateBookingTime)
+    values.push(updateBookingTimeInUTC)
   }
 
   if (updates.length === 0) {

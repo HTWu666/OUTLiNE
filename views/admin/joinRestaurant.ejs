@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <%- include('../layouts/global.ejs') %>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>加入餐廳 - Outline</title>
@@ -10,7 +11,7 @@
     <div id="user-form-container" class="w-96 bg-white shadow-md rounded px-8 pt-8 pb-8 mb-4">
         <form id="create-user-form">
             <div class="mb-6 border-b-4 border-gray-300">
-                <h1 class="text-2xl font-bold text-gray-700 text-center mb-2">Outline 申請加入餐廳</h1>
+                <h1 class="text-2xl font-bold text-gray-700 text-center mb-4">Outline 申請加入餐廳</h1>
             </div>
             <div class="mb-4">
                 <input type="number" placeholder="餐廳 ID" id="restaurant-id" class="form-input w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline">
@@ -27,10 +28,22 @@
             <span class="mx-4 text-gray-500 font-semibold">OR</span>
             <div class="flex-grow border-t border-gray-300"></div>
         </div>
+
+        <div class="mb-5">
+            <button id="jump-to-signin-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                登入餐廳
+            </button>
+        </div>
         
-        <div>
+        <div class="mb-5">
             <button id="jump-to-create-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
                 建立餐廳
+            </button>
+        </div>
+
+        <div>
+            <button id="log-out-btn" class="form-btn bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                登出
             </button>
         </div>
     </div>
@@ -50,6 +63,27 @@
 
         document.querySelector('#jump-to-create-restaurant-btn').addEventListener('click', () => {
             window.location.href = '/createRestaurant'
+        })
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            <% if (typeof message !== 'undefined') { %>
+                const message = <%- JSON.stringify(message) %>;
+                alert(message);
+                window.location.href = '/joinRestaurant';
+            <% } %>
+        })
+
+        document.querySelector('#jump-to-create-restaurant-btn').addEventListener('click', () => {
+            window.location.href = '/createRestaurant'
+        })
+
+        document.querySelector('#jump-to-signin-restaurant-btn').addEventListener('click', async () => {
+            window.location.href = '/admin/chooseRestaurant'
+        })
+
+        document.querySelector('#log-out-btn').addEventListener('click', async () => {
+            await axios.post('/api/user/signout')
+            window.location.href = '/'
         })
     </script>    
 </body>

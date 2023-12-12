@@ -64,7 +64,7 @@ export const createRole = async (userId, restaurantId) => {
   }
 
   if (userRoleId.length === 0) {
-    throw new Error('User role combination already exists or role not found')
+    throw new Error('您已經申請過了或是餐廳不存在。')
   }
 
   const { rows: userRoleStatus } = await pool.query(
@@ -77,7 +77,7 @@ export const createRole = async (userId, restaurantId) => {
   )
 
   if (userRoleStatus.length > 0 && userRoleStatus[0].status === 'pending') {
-    throw new Error('已經申請過了，請等待管理員審核您的申請！')
+    throw new Error('您已經申請過了，請等待管理員審核您的申請！')
   }
 
   if (userRoleStatus.length > 0 && userRoleStatus[0].status === 'rejected') {

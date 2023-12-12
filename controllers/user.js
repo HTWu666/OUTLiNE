@@ -44,7 +44,7 @@ const validateSignUp = (contentType, name, email, password) => {
 
   // Verify the password
   if (!validator.isLength(password, { min: 8 })) {
-    return { valid: false, error: 'The password must be at lease 8 characters' }
+    return { valid: false, error: 'The password must be at least 8 characters' }
   }
 
   if (!/[A-Z]/.test(password)) {
@@ -196,7 +196,7 @@ export const signOut = async (req, res) => {
     res
       .cookie('jwtToken', '', { maxAge: 0, httpOnly: true, path: '/' })
       .status(200)
-      .json({ message: 'Sing out successfully' })
+      .json({ message: '登出成功' })
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {

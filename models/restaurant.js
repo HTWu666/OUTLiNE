@@ -96,3 +96,16 @@ export const userHasRestaurant = async (userId) => {
 
   return restaurantIds
 }
+
+export const deleteRestaurant = async (restaurantId) => {
+  await pool.query(
+    `
+    DELETE FROM table_available_time
+    WHERE table_id IN (
+      SELECT id FROM tables
+      WHERE restaurant_id = $1
+    )
+    `,
+    [restaurantId]
+  )
+}

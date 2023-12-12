@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-auto-scaling": "^3.470.0",
     "@aws-sdk/client-eventbridge": "^3.461.0",
     "@aws-sdk/client-lex-runtime-v2": "^3.454.0",
     "@aws-sdk/client-s3": "^3.462.0",

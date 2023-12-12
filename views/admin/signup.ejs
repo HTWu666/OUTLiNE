@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/images/outline_icon.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>註冊 - Outline</title>
+    <link rel="icon" href="/images/outline_icon.png" type="image/png">
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 flex justify-center items-center h-screen">
     <div class="w-full max-w-4xl mx-auto p-6 flex justify-center">
         <div id="user-form-container" class="w-96">
             <form id="create-user-form" class="bg-white shadow-md rounded px-8 pt-8 pb-8 mb-4">
-                <div class="mb-4 border-b-4 border-gray-300">
+                <div class="mb-6 border-b-4 border-gray-300">
                     <h1 class="text-2xl font-bold text-gray-700 text-center mb-2">Outline 註冊</h1>
                 </div>
                 <div class="mb-4">
@@ -30,6 +32,14 @@
                         註冊
                     </button>
                 </div>
+
+                <div class="my-6 flex items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="mx-4 text-gray-500 font-semibold">OR</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <div>已經有帳號了嗎？<a href="/" class="text-blue-600">前往登入</a></div>
             </form>
         </div>
 
@@ -59,10 +69,22 @@
             alert('請填寫電子郵件地址');
             return;
         }
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailRegex.test(email)) {
+            alert('請填寫有效的電子郵件地址');
+            return;
+        }
+
         if (!password) {
             alert('請填寫密碼');
             return;
         }
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            alert('密碼格式不正確\n必須包含至少 8 個字符，其中包括至少一個大寫字母，一個小寫字母，一個數字，一個特殊字符');
+            return;
+        }
+
         if (password !== confirmPassword) {
             alert('請確認兩次輸入的密碼是否一致');
             return;

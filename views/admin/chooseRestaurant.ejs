@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <%- include('../layouts/global.ejs') %>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outline 餐廳管理系統</title>
+    <title>登入餐廳 - Outline</title>
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 flex justify-center items-center h-screen">
@@ -39,9 +40,15 @@
             </button>
         </div>
 
-        <div>
+        <div class="mb-5">
             <button id="jump-to-join-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
                 申請加入餐廳
+            </button>
+        </div>
+
+        <div>
+            <button id="log-out-btn" class="form-btn bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
+                登出
             </button>
         </div>
     </div>
@@ -70,6 +77,11 @@
 
         document.querySelector('#jump-to-join-restaurant-btn').addEventListener('click', () => {
             window.location.href = '/joinRestaurant'
+        })
+
+        document.querySelector('#log-out-btn').addEventListener('click', async () => {
+            await axios.post('/api/user/signout')
+            window.location.href = '/'
         })
     </script>
 </body>

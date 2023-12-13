@@ -83,8 +83,6 @@
             const now = new Date();
             const expires = new Date(now.getTime() + `${response.data.data.access_expired}` * 1000)
             document.cookie = `token=${encodeURIComponent(response.data.data.access_token)}; expires=${expires.toUTCString()};`
-
-            // alert('登入成功')
             window.location.href = '/admin/chooseRestaurant'
         } catch (err) {
             alert(`Failed: ${err.response.data.error}`)

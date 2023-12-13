@@ -8,13 +8,13 @@
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body>
-    <main class="mt-20 ml-20 mr-20 mb-20">
-        <div class="relative w-100 h-96 overflow-hidde mb-5"><img src="<%= restaurantPic %>" class="absolute w-full h-full object-cover"></div>
+    <main class="mt-20 mx-32 mb-20">
+        <div class="relative w-100 h-[500px] overflow-hidde mb-5"><img src="<%= restaurantPic %>" class="absolute w-full h-full object-cover"></div>
         <div id="restaurant-name" class="text-6xl mb-3"><%= restaurantName %></div>
         <div id="restaurant-address" class="mb-3"><%= restaurantAddress %></div>
-        <div id="restaurant-phone" class="flex mb-3">
-            <img src="/images/phone.png" class="w-5 h-5 mr-2">
-            <a href="tel:<%= restaurantPhone %>" class="flex-2"><%= restaurantPhone %></a>
+        <div id="restaurant-phone" class="flex items-center mb-3">
+            <img src="/images/phone.png" class="w-4 h-4 mr-2">
+            <a href="tel:<%= restaurantPhone %>" class="flex-2 text-orange-400 font-bold"><%= restaurantPhone %></a>
         </div>
         <hr>
         <div id="booking-selector" class="flex w-full mb-10 mt-6">
@@ -109,7 +109,7 @@
                 <textarea id="note" name="note" rows="3" maxlength="400" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"></textarea>
             </div>
         </form>
-        <button id="make-reservation" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out w-full mt-5">確認訂位</button>
+        <button id="make-reservation" class="bg-orange-400 hover:bg-orange-600 text-white text-lg font-bold py-2 px-4 h-12 rounded hover:shadow-lg transition duration-200 ease-in-out w-full mt-5">確認訂位</button>
     </main>
 
     <div id="chat-container" class="fixed bottom-10 right-10 bg-white rounded-lg shadow-xl transform scale-0 transition-transform duration-300 ease-in-out w-96">

@@ -48,7 +48,7 @@ const writeBackToDB = async (
   const { rows } = await pool.query(
     `
     INSERT INTO reservations (restaurant_id, adult, child, dining_date, dining_time,
-        table_id, table_name, name, gender, phone, email, purpose, note)
+      table_id, table_name, name, gender, phone, email, purpose, note)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     RETURNING id
     `,

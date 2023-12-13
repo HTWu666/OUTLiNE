@@ -26,6 +26,8 @@ import adminRestaurantPageRouter from './routes/admin/restaurant.js'
 import rulePageRouter from './routes/admin/rule.js'
 import tablePageRouter from './routes/admin/table.js'
 import superuserRestaurantPage from './routes/superuser/restaurant.js'
+import dashboardRouter from './routes/dashboard.js'
+import dashboardPageRouter from './routes/admin/dashboard.js'
 
 dotenv.config()
 const app = express()
@@ -69,7 +71,8 @@ app.use('/api', [
   ruleRouter,
   availableSeatRouter,
   customerServiceRouter,
-  waitlistRouter
+  waitlistRouter,
+  dashboardRouter
 ])
 
 app.use('/', [
@@ -81,7 +84,8 @@ app.use('/', [
   adminRestaurantPageRouter,
   rulePageRouter,
   tablePageRouter,
-  superuserRestaurantPage
+  superuserRestaurantPage,
+  dashboardPageRouter
 ])
 
 app.all('*', (req, res) => {

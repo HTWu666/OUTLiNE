@@ -176,10 +176,13 @@ export const createReservation = async (req, res) => {
       encoding: 'utf8'
     })
 
+    console.log(diningDate)
+    console.log(utcDiningTime)
+    console.group(requiredSeats)
     const stringifyAvailableSeat = await cache.executeLuaScript(
       updateLockScript,
       [
-        `restaurant:1:availableDate:2023-12-25:availableTime:04:00:00:seatQty:2`,
+        `restaurant:${restaurantId}:availableDate:${diningDate}:availableTime:${utcDiningTime}:seatQty:${requiredSeats}`,
         `restaurant:${restaurantId}:availableDate:${diningDate}:lock`
       ],
       []
@@ -195,7 +198,7 @@ export const createReservation = async (req, res) => {
       adult,
       child,
       diningDate,
-      diningTime: availableSeat.available_time,
+      diningTime: utcDiningTime,
       tableId: availableSeat.table_id,
       tableName: availableSeat.table_name,
       name,
@@ -205,7 +208,8 @@ export const createReservation = async (req, res) => {
       purpose,
       note
     }
-
+    console.log(111)
+    console.log(diningDate)
     await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
     res.status(200).json({ message: 'Making reservation successfully' })

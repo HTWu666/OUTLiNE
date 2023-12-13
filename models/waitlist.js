@@ -156,7 +156,9 @@ export const callNumber = async (restaurantId) => {
     await conn.query(
       `
       UPDATE waitlist
-      SET status = 'no_show'
+      SET
+        status = 'no_show',
+        updated_at = NOW()
       WHERE restaurant_id = $1
         AND number < $2
         AND status = 'waiting'
@@ -228,7 +230,9 @@ export const confirm = async (waitingId) => {
   await pool.query(
     `
     UPDATE waitlist
-    SET status = 'seated'
+    SET
+      status = 'seated',
+      updated_at = NOW()
     WHERE id = $1
     `,
     [waitingId]

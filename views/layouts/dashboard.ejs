@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./global.ejs') %>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+    <div class="flex min-h-screen">
+        <%- include('../partials/sidebar.ejs') %>
+        <div class="flex-grow p-10">
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-4xl font-bold text-gray-700">流量報表</div>
+            </div>
+            <%- body %>
+        </div>
+    </div>
+</body>
+</html>

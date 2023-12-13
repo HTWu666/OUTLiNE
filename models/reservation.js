@@ -1,5 +1,4 @@
 import pool from './databasePool.js'
-import * as cache from '../utils/cache.js'
 
 export const createReservation = async (
   restaurantId,
@@ -120,10 +119,12 @@ export const cancelReservation = async (reservationId) => {
     const { rows: reservationDetails } = await conn.query(
       `
       UPDATE reservations
-      SET status = CASE
-        WHEN dining_date <= CURRENT_DATE AND dining_time < NOW()::time THEN 'no_show'
-        ELSE 'canceled'
-      END
+      SET
+        status = CASE
+          WHEN dining_date <= CURRENT_DATE AND dining_time < NOW()::time THEN 'no_show'
+          ELSE 'canceled'
+        END,
+        updated_at = NOW()
       WHERE id = $1
       RETURNING *
       `,
@@ -161,7 +162,9 @@ export const confirmReservation = async (reservationId) => {
   const { rows } = await pool.query(
     `
     UPDATE reservations
-    SET status = 'seated'
+    SET 
+      status = 'seated',
+      updated_at = NOW()
     WHERE id = $1
     RETURNING *
     `,

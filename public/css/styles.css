@@ -1,0 +1,73 @@
+@import "tailwindcss/base";
+
+@import "tailwindcss/components";
+
+@import "tailwindcss/utilities";
+
+.user-message {
+  @apply w-auto max-w-xs ml-auto bg-blue-100 text-left p-2 rounded break-words;
+}
+
+.server-message {
+  @apply w-auto max-w-xs mr-auto bg-gray-100 text-left p-2 rounded break-words;
+}
+
+@keyframes slide-up-first {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slide-up-second {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slide-up-third {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+  .number-box {
+    @apply relative w-16 h-24 bg-white flex items-center justify-center rounded-lg shadow-md;
+    overflow: hidden; /* 保持数字在框内滑动 */
+  }
+
+  .number {
+    @apply absolute top-0 text-4xl font-bold text-orange-500 w-full h-full flex items-center justify-center;
+    transition: transform 0.5s;
+  }
+
+  .slide-up {
+    transform: translateY(-100%);
+  }
+
+  @keyframes popIn {
+    from {
+        transform: scale(0.5) translateX(100%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateX(0) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes popOut {
+    from {
+        transform: scale(1) translateX(0) translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0.5) translateX(100%) translateY(100%);
+        opacity: 0;
+    }
+}
+
+.chat-pop-in {
+    animation: popIn 0.3s forwards;
+}
+
+.chat-pop-out {
+    animation: popOut 0.3s forwards;
+}
+

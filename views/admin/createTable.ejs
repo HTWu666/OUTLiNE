@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增座位 - Outline</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container mx-auto mt-10">
+        <form id="tableForm" class="p-4 rounded">
+            <div class="mb-4">
+                <label for="tableName" class="block text-gray-700 text-base font-bold mb-2">桌號:</label>
+                <input type="text" id="tableName" name="tableName" required placeholder="ex: A1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="seatQty" class="block text-gray-700 text-base font-bold mb-2">座位數量:</label>
+                <input type="number" id="seatQty" name="seatQty" required placeholder="ex: 4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div id="availableTimeContainer" class="mb-4">
+                <label class="block text-gray-700 text-base font-bold mb-2">可訂位時間:</label>
+                <div class="time-entry">
+                    <input type="time" name="availableTime" required class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <button type="button" class="removeTime ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">移除</button>
+                </div>
+            </div>
+            <button type="button" id="addTime" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">新增時間</button>
+            <br>
+            <button type="submit" class="bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mt-10">確定新增座位</button>
+        </form>
+    </div>
+
+    <script>
+        function addRemoveButtonEventListener(button) {
+            button.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        }
+
+        document.querySelectorAll('.removeTime').forEach(button => {
+            addRemoveButtonEventListener(button);
+        });
+
+        document.getElementById('addTime').addEventListener('click', function() {
+            const newTimeDiv = document.createElement('div');
+            newTimeDiv.className = 'time-entry mt-2';
+            newTimeDiv.innerHTML = `<input type="time" name="availableTime" required class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                    <button type="button" class="removeTime ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">移除</button>`;
+            document.getElementById('availableTimeContainer').appendChild(newTimeDiv);
+            addRemoveButtonEventListener(newTimeDiv.querySelector('.removeTime'));
+        });
+
+        document.getElementById('tableForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {
+                tableName: formData.get('tableName'),
+                seatQty: parseInt(formData.get('seatQty'), 10),
+                availableTime: formData.getAll('availableTime')
+            };
+
+            try {
+                const response = await axios({
+                    method: 'post',
+                    url: `/api/restaurant/${restaurantId}/tables`,
+                    data: data,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                alert('新增座位成功！');
+                window.location.reload()
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.response.data.error);
+            }
+        });
+    </script>
+</body>
+</html>

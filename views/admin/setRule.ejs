@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>規則管理 - Outline</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container mx-6 my-8">
+        <form id="booking-rules-form" class="w-fullp-10">
+            <!-- 每組最大人數 -->
+            <div class="mb-6">
+                <label class="block text-gray-700 text-lg font-bold mb-2" for="max-person-per-group">
+                    每組最大人數
+                </label>
+                <input class="appearance-none block w-11/12 bg-gray-100 text-gray-700 border border-transparent rounded py-4 px-4 mb-3 leading-tight focus:outline-none focus:border-gray-500" id="max-person-per-group" type="number" placeholder="例如：4">
+            </div>
+
+            <!-- 最少提前訂位天數 -->
+            <div class="mb-6">
+                <label class="block text-gray-700 text-lg font-bold mb-2" for="min-booking-day">
+                    最少提前訂位天數
+                </label>
+                <input class="appearance-none block w-11/12 bg-gray-100 text-gray-700 border border-transparent rounded py-4 px-4 leading-tight focus:outline-none focus:border-gray-500" id="min-booking-day" type="number" placeholder="例如：1">
+            </div>
+
+            <!-- 最多提前訂位天數 -->
+            <div class="mb-6">
+                <label class="block text-gray-700 text-lg font-bold mb-2" for="max-booking-day">
+                    最多提前訂位天數
+                </label>
+                <input class="appearance-none block w-11/12 bg-gray-100 text-gray-700 border border-transparent rounded py-4 px-4 leading-tight focus:outline-none focus:border-gray-500" id="max-booking-day" type="number" placeholder="例如：30">
+            </div>
+
+            <!-- 更新訂位時間 -->
+            <div class="mb-6">
+                <label class="block text-gray-700 text-lg font-bold mb-2" for="update-booking-time">
+                    更新訂位時間
+                </label>
+                <input class="appearance-none block w-11/12 bg-gray-100 text-gray-700 border border-transparent rounded py-4 px-4 leading-tight focus:outline-none focus:border-gray-500" id="update-booking-time" type="time">
+            </div>
+
+            <!-- 保存按鈕 -->
+            <div>
+                <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" id="save-button">
+                    儲存
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const bookingRulesForm = document.getElementById('booking-rules-form');
+        const saveButton = document.getElementById('save-button');
+
+        // 載入現有的訂位規則
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await axios.get(`/api/restaurant/${restaurantId}/rules`)
+                const rules = response.data.data
+                document.getElementById('max-person-per-group').value = rules.max_person_per_group;
+                document.getElementById('min-booking-day').value = rules.min_booking_day;
+                document.getElementById('max-booking-day').value = rules.max_booking_day;
+                document.getElementById('update-booking-time').value = rules.update_booking_time;
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        })
+
+        // 監聽儲存按鈕的點擊事件
+        saveButton.addEventListener('click', async () => {
+            try {
+                const updatedRules = {
+                    maxPersonPerGroup: parseInt(document.getElementById('max-person-per-group').value, 10),
+                    minBookingDay: parseInt(document.getElementById('min-booking-day').value, 10),
+                    maxBookingDay: parseInt(document.getElementById('max-booking-day').value, 10),
+                    updateBookingTime: document.getElementById('update-booking-time').value.substring(0, 5)
+                };
+
+                // 發送PUT請求更新訂位規則
+                const response = await axios.put(`/api/restaurant/${restaurantId}/rules`, updatedRules)
+                alert('Update rule successfully')
+                window.location.reload()
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        });
+    </script>
+</body>
+</html>

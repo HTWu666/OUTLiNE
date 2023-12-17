@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>訂位確認信</title>
+</head>
+<body style="background-color: #f7fafc; font-family: sans-serif;">
+    <div style="max-width: 20rem; margin: 2rem auto 2rem auto; padding: 1.5rem; background-color: white; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);">
+        <div id="restaurant-name" style="font-size: 1.5rem; text-align: center; font-weight: 600; color: #2d3748; margin-bottom: 1rem;">
+            <%= restaurantName %>
+        </div>
+
+        <div id="customer-name" style="font-size: 1rem; text-align: center; color: #4a5568; margin-bottom: 0.5rem;">
+            <%= customerName %> <%= gender %>您好
+        </div>
+
+        <div style="text-align: center; color: #718096; margin-bottom: 1.5rem;">
+            已為您安排訂位
+        </div>
+
+        <div id="dining-info" style="text-align: center;">
+
+            <div id="dining-date" style="font-size: 1.125rem; color: #ed8936;">
+                <%= diningDate %> <%= dayOfWeek %>
+            </div>
+
+            <div id="dining-time" style="font-size: 2.25rem; color: #dd6b20; margin: 0.5rem 0;">
+                <%= diningTime %>
+            </div>
+
+            <div id="person" style="font-size: 1rem; margin-bottom: 1.5rem;">
+                <%= adult %> 大 <%= child %> 小
+            </div>
+
+            <div id="check-more-btn" style="margin-bottom: 1rem;">
+                <a href="<%= link %>" style="text-decoration: none; color: white; background-color: #ed8936; padding: 0.5rem 1rem; border-radius: 0.25rem; font-weight: 700; display: inline-block;">
+                    查看更多
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

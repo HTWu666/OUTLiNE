@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>確認候位 - Outline</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+    <main class="w-full">
+        <div id="content" class="flex-grow overflow-auto">
+            <div id="waiting-list" class="p-4">
+                <table class="w-full text-left bg-white shadow-md rounded-lg overflow-hidden">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 w-1/12 text-center align-middle">姓名</th>
+                            <th class="py-3 w-1/6 text-center align-middle">電話</th>
+                            <th class="py-3 w-1/12 text-center align-middle">大人</th>
+                            <th class="py-3 w-1/12 text-center align-middle">小孩</th>
+                            <th class="py-3 w-1/12 text-center align-middle">號碼</th>
+                            <th class="py-3 w-1/12 text-center align-middle">確認入座</th>
+                            <th class="py-3 w-1/12 text-center align-middle">取消候位</th>
+                        </tr>
+                    </thead>
+                    <tbody id="waiting-list-body" class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer section with fixed positioning -->
+        <div class="p-4 fixed bottom-0 bg-white w-auto">
+            <div class="flex justify-between items-center">
+                <div class="flex space-x-4 mr-10">
+                    <div>目前號碼：</div>
+                    <div id="show-current-number" class="font-bold text-lg text-orange-500">0</div>
+                </div>
+                <div class="flex space-x-4 mr-10">
+                    <div>總候位數：</div>
+                    <div id="show-total-waiting" class="font-bold text-lg text-orange-500">0</div>
+                </div>
+                <div class="flex space-x-2 ml-auto">
+                    <button id="reset-number" class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded transition duration-200 ease-in-out mr-10">重置號碼</button>
+                    <button id="call-number" class="bg-orange-500 hover:bg-orange-700 text-white py-2 px-4 rounded transition duration-200 ease-in-out">叫號</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const showCurrentNumber = document.querySelector('#show-current-number')
+        const showTotalWaiting = document.querySelector('#show-total-waiting')
+        let totalWaiting = 0
+        document.addEventListener('DOMContentLoaded', async () => {
+            const response = await axios.get(`/api/restaurant/${restaurantId}/waitlist`, {
+                headers: {
+                            "Authorization": `Bearer ${token}`
+                }
+            });
+            const waitingList = response.data.data;
+            const waitingListBody = document.getElementById('waiting-list-body');
+            if (waitingList.length === 0) {
+                const noDataTr = document.createElement('tr')
+                noDataTr.innerHTML = `<td class="text-center align-middle py-6" colspan="10">目前沒有人在候位</td>`
+                waitingListBody.appendChild(noDataTr)
+            } else {
+                waitingList.forEach(item => {
+                    totalWaiting++
+                    const row = document.createElement('tr');
+                    row.id = `waitlist-item-${item.id}`;
+                    row.innerHTML = `
+                        <td class="text-center align-middle py-3">${item.name}</td>
+                        <td class="text-center align-middle py-3">${item.phone}</td>
+                        <td class="text-center align-middle py-3">${item.adult}</td>
+                        <td class="text-center align-middle py-3">${item.child}</td>
+                        <td class="text-center align-middle py-3">${item.number}</td>
+                        <td class="text-center align-middle py-3"><button onclick="confirmSeat('${item.id}')" class="bg-emerald-500 hover:bg-emerald-700 text-white py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out">確認入座</button></td>
+                        <td class="text-center align-middle py-3"><button onclick="cancelWaitlist('${item.id}')" class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded hover:shadow-lg transition duration-200 ease-in-out">取消候位</button></td>
+                        `;
+                    waitingListBody.appendChild(row);
+                });
+            }
+
+            const currentNumberResponse = await axios.get(`/api/restaurant/${restaurantId}/waitlist/currentNumber`)
+            showCurrentNumber.textContent = currentNumberResponse.data.data.currentNumber
+
+            showTotalWaiting.textContent = totalWaiting
+        });
+
+        async function confirmSeat(waitingId) {
+            try {
+                const response = await axios.put(`/api/restaurant/${restaurantId}/waitlist/${waitingId}`);
+                removeWaitlistItem(waitingId);
+                totalWaiting--;
+                showTotalWaiting.textContent = totalWaiting;
+                alert('Confirm successfully');
+            } catch (err) {
+                console.log(err)
+                alert(err.response.data.error);
+            }
+        }
+
+        async function cancelWaitlist(waitingId) {
+            try {
+                const response = await axios.delete(`/api/restaurant/${restaurantId}/waitlist/${waitingId}`);
+                removeWaitlistItem(waitingId);
+                totalWaiting--;
+                showTotalWaiting.textContent = totalWaiting;0
+                alert('Cancel successfully');
+            } catch (err) {
+                alert(err.response.data.error);
+            }
+        }
+
+        function removeWaitlistItem(waitingId) {
+            const itemToRemove = document.getElementById(`waitlist-item-${waitingId}`);
+            if (itemToRemove) {
+                itemToRemove.remove();
+            }
+        }
+
+        const socket = io()
+        socket.on('numberCalled', (newNumber) => {
+            showCurrentNumber.textContent = newNumber
+        });
+
+        document.querySelector('#reset-number').addEventListener('click', async () => {
+            try {
+                const response = await axios.post(`/api/restaurant/${restaurantId}/waitlist/resetNumber`)
+                showCurrentNumber.textContent = 0
+                alert('reset number')
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        })
+
+        document.querySelector('#call-number').addEventListener('click', async () => {
+            try {
+                const response = await axios.put(`/api/restaurant/${restaurantId}/waitlist`)
+                alert('called number')
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        })
+    </script>
+</body>
+</html>

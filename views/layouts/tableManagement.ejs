@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./global.ejs') %>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+    <div class="flex min-h-screen">
+        <%- include('../partials/sidebar.ejs') %>
+        <div class="flex-grow p-10">
+            <div class="flex justify-between items-center">
+                <div class="text-4xl font-bold">座位管理</div>
+                <div class="flex items-center space-x-4">
+                    <a id="createTableLink" class="bg-cyan-500 text-white px-4 py-2 rounded shadow hover:bg-cyan-600 transition duration-200">新增座位</a>
+                    <a id="checkTableLink" class="bg-cyan-500 text-white px-4 py-2 rounded shadow hover:bg-cyan-600 transition duration-200">查看座位</a>
+                </div>
+            </div>
+            <%- body %>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const createTableLink = document.getElementById('createTableLink');
+            createTableLink.href = `/restaurant/${restaurantId}/admin/createTable`;
+
+            const checkTableLink = document.getElementById('checkTableLink');
+            checkTableLink.href = `/restaurant/${restaurantId}/admin/checkTable`;
+        })
+    </script>
+</body>
+</html>

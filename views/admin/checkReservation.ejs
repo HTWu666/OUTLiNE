@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>確認訂位 - Outline</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body>
+    <div id="date-field" class="flex-grow p-6">
+        <input type="date" id="date-selector" class="border border-gray-300 w-full h-10 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+    </div>
+
+    <div id="reservations-list" class="p-6">
+        <table class="min-w-full leading-normal shadow rounded-lg overflow-hidden">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">姓名</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">電話</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">大人</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">小孩</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">桌號</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">用餐時間</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">狀態</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">確認入座</th>
+                    <th class="w-1/12 py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">取消訂位</th>
+                </tr>
+            </thead>
+            <tbody id="reservations-body" class="bg-white divide-y divide-gray-200"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const maxBookingDay = <%- JSON.stringify(maxBookingDay) %>;
+        const dateSelector = document.getElementById('date-selector');
+        const today = new Date();
+        dateSelector.valueAsDate = today;
+        dateSelector.min = today.toISOString().split('T')[0];
+        const maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + maxBookingDay);
+        dateSelector.max = maxDate.toISOString().split('T')[0];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const dateSelector = document.getElementById('date-selector');
+            const adultSelector = document.getElementById('adult-selector');
+            const childSelector = document.getElementById('child-selector');
+            const timeField = document.getElementById('time-field');
+            let availableSeatsData
+            const today = new Date().toISOString().split('T')[0];
+            dateSelector.value = today;
+        })
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            async function fetchReservations() {
+                try {
+                    const date = document.querySelector('#date-selector').value
+                    const response = await axios.get(`/api/restaurant/${restaurantId}/reservation?date=${date}`, {
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    })
+
+                    const reservations = response.data.data;
+                    const tbody = document.getElementById('reservations-body');
+                    tbody.innerHTML = '';
+                    if (reservations.length === 0) {
+                        const noDataTr = document.createElement('tr')
+                        noDataTr.innerHTML = `<td class="text-center align-middle py-6" colspan="10">這天沒有人訂位</td>`
+                        tbody.appendChild(noDataTr)
+                    } else {
+                        reservations.forEach((reservation, index) => {
+                            const tr = document.createElement('tr');
+                            tr.id = `reservation${reservation.id}`;
+                            tr.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50');
+                            tr.innerHTML = `
+                                <td class="text-center align-middle py-3">${reservation.name}</td>
+                                <td class="text-center align-middle py-3">${reservation.phone}</td>
+                                <td class="text-center align-middle py-3">${reservation.adult}</td>
+                                <td class="text-center align-middle py-3">${reservation.child}</td>
+                                <td class="text-center align-middle py-3">${reservation.table_name}</td>
+                                <td class="text-center align-middle py-3">${reservation.dining_time}</td>
+                                <td class="text-center align-middle py-3">${reservation.status}</td>
+                            `;
+                            tbody.appendChild(tr);
+                            const confirmBtnTd = document.createElement('td');
+                            confirmBtnTd.classList.add("text-center", "align-middle");
+                            const confirmBtn = document.createElement('button');
+                            confirmBtn.textContent = '確認入座';
+                            confirmBtn.classList.add("bg-emerald-500", "hover:bg-emerald-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
+                            confirmBtn.onclick = () => sendConfirmRequest(reservation.id);
+                            confirmBtnTd.appendChild(confirmBtn);
+                            tr.appendChild(confirmBtnTd);
+
+                            const cancelBtnTd = document.createElement('td');
+                            cancelBtnTd.classList.add("text-center", "align-middle");
+                            const cancelBtn = document.createElement('button');
+                            cancelBtn.textContent = '取消訂位';
+                            cancelBtn.classList.add("bg-rose-500", "hover:bg-rose-700", "text-white", "py-2", "px-4", "rounded", "hover:shadow-lg", "transition", "duration-200", "ease-in-out");
+                            cancelBtn.onclick = () => sendCancelRequest(reservation.id);
+                            cancelBtnTd.appendChild(cancelBtn);
+                            tr.appendChild(cancelBtnTd);
+                        });
+                    }
+                } catch (err) {
+                    alert(err.response.data.error)
+                }
+            }
+            dateSelector.addEventListener('change', fetchReservations);
+            fetchReservations();
+            
+        })
+
+        async function sendConfirmRequest(reservationId) {
+            try {
+                const response = await axios.put(`/api/restaurant/${restaurantId}/reservation/${reservationId}`, {}, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                alert(response.data.message)
+                document.querySelector(`#reservation${reservationId}`).remove()
+            } catch (err) {
+                alert(err.response.data.error)
+            }
+        }
+
+        async function sendCancelRequest(reservationId) {
+            try {
+                const response = await axios.delete(`/api/restaurant/${restaurantId}/reservation/${reservationId}`, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                alert(response.data.message)
+                document.querySelector(`#reservation${reservationId}`).remove()
+            } catch (err) {
+                console.log(err)
+                alert(err.response.data.error)
+            }
+        }
+    </script>
+</body>
+</html>

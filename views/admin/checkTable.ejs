@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>確認座位 - Outline</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="tableContainer" class="container mx-auto mt-10 p-6 bg-white rounded-lg">
+        <table class="min-w-full leading-normal shadow rounded-lg overflow-hidden">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider w-1/12">
+                        桌號
+                    </th>
+                    <th class="py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider w-1/12">
+                        座位數
+                    </th>
+                    <th class="border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider">
+                        可訂位時間
+                    </th>
+                    <th class="py-3 border-b-2 border-gray-200 text-center align-middle text-base font-semibold text-gray-700 uppercase tracking-wider w-1/12">
+                        操作
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-gray-200 bg-white odd:bg-gray-50">
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await axios.get(`/api/restaurant/${restaurantId}/tables`)
+                const tableData = response.data.data
+                const tableContainer = document.getElementById('tableContainer');
+                const table = document.createElement('table');
+                table.className = 'table-auto w-full text-left whitespace-no-wrap';
+                tableContainer.appendChild(table);
+
+                // Creating body rows
+                const tbody = document.getElementById('tableBody');
+            
+                if (tableData.length === 0) {
+                // 如果没有可显示的数据，显示提示信息
+                    const emptyRow = `<tr>
+                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center align-middle text-base font-medium text-gray-900">
+                                            目前還沒有建立開放給線上訂位的座位，趕快建立一個座位吧！
+                                        </td>
+                                    </tr>`;
+                    tbody.innerHTML = emptyRow;
+                } else {
+                    // 有数据时，创建表格行
+                    tableData.forEach((tableInfo, index) => {
+                        const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                        const row = `<tr class="${bgClass}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-center align-middle text-base font-medium text-gray-900">${tableInfo.tableName}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center align-middle text-base">${tableInfo.seatQty}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-base">${tableInfo.availableTime.join(', ')}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-base font-medium">
+                                            <button onclick="deleteTable(${tableInfo.id})" class="text-white bg-red-600 hover:bg-red-800 px-3 py-1 rounded-md text-base font-medium">刪除座位</button>
+                                        </td>
+                                    </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
+            } catch (err) {
+                console.log(err)
+            }
+        });
+
+        async function deleteTable(tableId) {
+            try {
+                await axios.delete(`/api/restaurant/${restaurantId}/tables/${tableId}`)
+                alert("刪除座位成功")
+                window.location.reload()
+            } catch (err) {
+                console.log(err)
+                alert(err.response.data.error)
+            }
+        }
+    </script>
+</body>
+</html>

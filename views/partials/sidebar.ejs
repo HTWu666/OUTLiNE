@@ -1,0 +1,43 @@
+<div class="w-16 md:w-64 bg-gray-900 text-blue-100">
+    <div class="w-16 md:w-64 h-screen bg-gray-900 text-blue-100">
+        <div class="py-8 px-5 text-orange-500 font-bold text-5xl shadow-md">Outline</div>
+        <a id="bookingManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/booking.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">訂位管理</span>
+        </a>
+        <a id="tableManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/table.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">座位管理</span>
+        </a>
+        <a id="ruleManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/rule.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">規則管理</span>
+        </a>
+        <a id="dashboardLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/dashboard.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">流量報表</span>
+        </a>
+        <a id="userManagementLink" class="flex items-center space-x-4 py-4 px-5 hover:bg-cyan-500">
+            <span><img src="/images/user.png" style="filter: brightness(0) invert(1)" class="w-10"></span>
+            <span class="text-xl">使用者管理</span>
+        </a>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+            const bookingManagementLink = document.getElementById('bookingManagementLink');
+            bookingManagementLink.href = `/restaurant/${restaurantId}/admin/checkReservation`;
+
+            const tableManagementLink = document.getElementById('tableManagementLink');
+            tableManagementLink.href = `/restaurant/${restaurantId}/admin/checkTable`;
+
+            const ruleManagementLink = document.getElementById('ruleManagementLink');
+            ruleManagementLink.href = `/restaurant/${restaurantId}/admin/rule`;
+
+            const dashboardLink = document.getElementById('dashboardLink');
+            dashboardLink.href = `/restaurant/${restaurantId}/admin/dashboard`;
+
+            const userManagementLink = document.getElementById('userManagementLink');
+            userManagementLink.href = `/restaurant/${restaurantId}/admin/profile`;
+        })
+</script>

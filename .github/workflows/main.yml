@@ -19,6 +19,9 @@ jobs:
             echo "Hello from github action, start deploy main to ec2!"
             cd /home/ubuntu/outline-github
             git switch main
-            git pull origin main
+            git pull origin main --force
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            npm --help
             npm install
             npx pm2 restart outline

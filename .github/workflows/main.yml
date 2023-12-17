@@ -12,8 +12,8 @@ jobs:
       - name: deploy to ec2
         uses: appleboy/ssh-action@master
         with:
-          host: '${{ secrets.HOST_DNS }}'
-          username: '${{ secrets.EC2_USERNAME }}'
+          host: ${{ secrets.HOST_DNS }}
+          username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "Hello from github action, start deploy main to ec2!"
@@ -25,3 +25,11 @@ jobs:
             npm --help
             npm install
             npx pm2 restart outline
+
+      - name: Create EC2 AMI
+        run: |
+          aws ec2 create-image --instance-id i-05e338685b9dd505c --name "outline-image" --no-reboot
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ AWS_DEFAULT_REGION }}

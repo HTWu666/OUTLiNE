@@ -39,6 +39,62 @@ const fileFilter = (req, file, cb) => {
     return cb(err, false)
   }
 
+  const { name } = req.body
+  if (typeof name !== 'string') {
+    const err = new Error('Restaurant name should be a string')
+    err.status = 400
+    return cb(err, false)
+  }
+  if (name.length > 100) {
+    const err = new Error('Restaurant name should be less than 100 characters')
+    err.status = 400
+    return cb(err, false)
+  }
+
+  const { address } = req.body
+  if (typeof address !== 'string') {
+    const err = new Error('Restaurant address should be a string')
+    err.status = 400
+    return cb(err, false)
+  }
+  if (address.length > 500) {
+    const err = new Error('Restaurant address should be less than 500 characters')
+    err.status = 400
+    return cb(err, false)
+  }
+
+  const { phone } = req.body
+  const phoneRegex = /^0\d{9}$/
+  if (!phoneRegex.test(phone)) {
+    const err = new Error('Phone format is wrong')
+    err.status = 400
+    return cb(err, false)
+  }
+
+  const { parking } = req.body
+  if (typeof parking !== 'string') {
+    const err = new Error('Parking address should be a string')
+    err.status = 400
+    return cb(err, false)
+  }
+  if (parking.length > 500) {
+    const err = new Error('Parking address should be less than 500 characters')
+    err.status = 400
+    return cb(err, false)
+  }
+
+  const { payment } = req.body
+  if (typeof payment !== 'string') {
+    const err = new Error('Payment should be a string')
+    err.status = 400
+    return cb(err, false)
+  }
+  if (payment.length > 500) {
+    const err = new Error('Payment should be less than 500 characters')
+    err.status = 400
+    return cb(err, false)
+  }
+
   const kidChair = req.body['kids-chair']
   if (kidChair !== 'yes' && kidChair !== 'no') {
     const err = new Error(`Please choose yes or no for kids chair`)

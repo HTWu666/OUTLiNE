@@ -34,35 +34,44 @@ const validateSignUp = (contentType, name, email, password) => {
     return { valid: false, error: 'Password must be a string' }
   }
 
+  if (!validator.isLength(name, { max: 100 })) {
+    return { valid: false, error: 'Name must be less than 100 characters' }
+  }
+
+  const allowedCharactersRegex = /^[a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]+$/
   // Verify the email format
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
   const isValidEmail = emailPattern.test(email)
-
-  if (!isValidEmail) {
+  const isEmailContainChinese = allowedCharactersRegex.test(email)
+  if (!isValidEmail || !isEmailContainChinese) {
     return { valid: false, error: 'Invalid email format' }
+  }
+  if (!validator.isLength(email, { max: 320 })) {
+    return { valid: false, error: 'Email must be less than 320 characters' }
   }
 
   // Verify the password
-  if (!validator.isLength(password, { min: 8 })) {
-    return { valid: false, error: 'The password must be at least 8 characters' }
+  if (!validator.isLength(password, { min: 8, max: 500 })) {
+    return {
+      valid: false,
+      error: 'The password must be at least 8 characters and less than 500 characters'
+    }
   }
-
   if (!/[A-Z]/.test(password)) {
     return { valid: false, error: 'The password must contain at least one uppercase letter' }
   }
-
   if (!/[a-z]/.test(password)) {
     return { valid: false, error: 'The password must contain at least one lowercase letter' }
   }
-
   if (!/[0-9]/.test(password)) {
     return { valid: false, error: 'The password must contain at least one number' }
   }
-
   if (!/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password)) {
     return { valid: false, error: 'The password must contain at least one special character' }
   }
-
+  if (!allowedCharactersRegex.test(password)) {
+    return { valid: false, error: 'Invalid password' }
+  }
   return { valid: true }
 }
 
@@ -135,13 +144,49 @@ const validateSignIn = (contentType, email, password) => {
   let missingField = ''
   if (!email) {
     missingField = 'Email'
-  } else if (!password) {
+  }
+  if (!password) {
     missingField = 'Password'
   }
   if (missingField) {
     return { valid: false, error: `${missingField} is required` }
   }
 
+  if (typeof email !== 'string') {
+    return { valid: false, error: 'Email must be a string' }
+  }
+  if (typeof password !== 'string') {
+    return { valid: false, error: 'Password must be a string' }
+  }
+  const allowedCharactersRegex = /^[a-zA-Z0-9!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]+$/
+  // Verify the email format
+  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+  const isValidEmail = emailPattern.test(email)
+  const isEmailContainChinese = allowedCharactersRegex.test(email)
+
+  if (!isValidEmail || !isEmailContainChinese) {
+    return { valid: false, error: 'Invalid email format' }
+  }
+
+  // Verify the password
+  if (!validator.isLength(password, { min: 8 })) {
+    return { valid: false, error: 'The password must be at least 8 characters' }
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, error: 'The password must contain at least one uppercase letter' }
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, error: 'The password must contain at least one lowercase letter' }
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, error: 'The password must contain at least one number' }
+  }
+  if (!/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password)) {
+    return { valid: false, error: 'The password must contain at least one special character' }
+  }
+  if (!allowedCharactersRegex.test(password)) {
+    return { valid: false, error: 'Invalid password' }
+  }
   return { valid: true }
 }
 

@@ -40,8 +40,8 @@ export const getRule = async (restaurantId) => {
 
   const rule = rows[0]
   rule.update_booking_time = moment
-    .tz(rule.update_booking_time, 'HH:mm', 'Asia/Taipei')
-    .utc()
+    .utc(rule.update_booking_time, 'HH:mm')
+    .tz('Asia/Taipei')
     .format('HH:mm')
 
   return rule

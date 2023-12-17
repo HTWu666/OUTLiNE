@@ -5,7 +5,7 @@ import * as adjustAvailableSeats from '../utils/adjustAvailableSeats.js'
 import scheduleRemindForDiningJob from '../jobs/remindForDiningJob.js'
 import scheduleDeleteExpiredBookingDateJob from '../jobs/deleteExpiredBookingDateJob.js'
 
-const validateCreateRule = (
+const validateRuleInput = (
   contentType,
   restaurantId,
   maxPersonPerGroup,
@@ -65,7 +65,7 @@ export const createRule = async (req, res) => {
     const contentType = req.headers['content-type']
     const restaurantId = parseInt(req.params.restaurantId, 10)
     const { maxPersonPerGroup, minBookingDay, maxBookingDay, updateBookingTime } = req.body
-    const validation = validateCreateRule(
+    const validation = validateRuleInput(
       contentType,
       restaurantId,
       maxPersonPerGroup,
@@ -122,42 +122,14 @@ export const getRule = async (req, res) => {
   }
 }
 
-const validateUpdateRule = (
-  contentType,
-  maxPersonPerGroup,
-  minBookingDay,
-  maxBookingDay,
-  updateBookingTime
-) => {
-  if (contentType !== 'application/json') {
-    return { valid: false, error: 'Wrong content type' }
-  }
-
-  // verify data type
-  if (maxPersonPerGroup && typeof maxPersonPerGroup !== 'number') {
-    return { valid: false, error: 'Max person per group must be a number' }
-  }
-  if (minBookingDay && typeof minBookingDay !== 'number') {
-    return { valid: false, error: 'Min booking day must be a number' }
-  }
-  if (maxBookingDay && typeof maxBookingDay !== 'number') {
-    return { valid: false, error: 'Max booking day must be a number' }
-  }
-
-  const updateBookingTimeRegex = /^(?:[01]\d|2[0-3]):[0-5]\d$/
-  if (updateBookingTime && !updateBookingTimeRegex.test(updateBookingTime)) {
-    return { valid: false, error: 'Update booking time must be in the form of HH:MM' }
-  }
-
-  return { valid: true }
-}
-
 export const updateRule = async (req, res) => {
   try {
     const contentType = req.headers['content-type']
     const { maxPersonPerGroup, minBookingDay, maxBookingDay, updateBookingTime } = req.body
-    const validation = validateUpdateRule(
+    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const validation = validateRuleInput(
       contentType,
+      restaurantId,
       maxPersonPerGroup,
       minBookingDay,
       maxBookingDay,
@@ -166,7 +138,7 @@ export const updateRule = async (req, res) => {
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+
     const connection = await pool.connect()
     try {
       const oldRule = await ruleModel.getRule(restaurantId)
@@ -232,6 +204,8 @@ export const updateRule = async (req, res) => {
       }
 
       await scheduleUpdateBookingDateJob(restaurantId, maxBookingDay, updateBookingTime)
+
+      await connection.query('COMMIT')
 
       res.status(200).json({ message: 'Update rule successfully' })
     } catch (err) {

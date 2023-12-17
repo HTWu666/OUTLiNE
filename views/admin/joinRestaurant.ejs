@@ -53,11 +53,11 @@
             try {
                 const restaurantId = document.getElementById('restaurant-id').value
                 const response = await axios.post('/api/restaurant/join', { restaurantId })
-                alert(`申請加入成功, 請等待餐廳管理員審核, 會以信件通知審核結果。\n您申請的餐廳 ID: ${restaurantId}`)
+                alert(`申請加入成功, 請等待餐廳管理員審核。\n您申請的餐廳 ID: ${restaurantId}`)
                 window.location.reload()
             } catch (err) {
                 console.error(err)
-                alert(err.response.data.error)
+                alert(`Failed: ${err.response.data.error}`)
             }
         })
 

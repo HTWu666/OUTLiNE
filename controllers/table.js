@@ -1,8 +1,9 @@
 import moment from 'moment-timezone'
 import * as tableModel from '../models/table.js'
 import * as cache from '../utils/cache.js'
+import * as ruleModel from '../models/rule.js'
 
-const validateCreateTable = (contentType, tableName, seatQty, availableTime) => {
+const validateCreateTable = (contentType, tableName, seatQty, availableTime, maxPersonPerGroup) => {
   if (contentType !== 'application/json') {
     return { valid: false, error: 'Wrong content type' }
   }
@@ -27,9 +28,17 @@ const validateCreateTable = (contentType, tableName, seatQty, availableTime) => 
   if (typeof seatQty !== 'number') {
     return { valid: false, error: 'Seat quantity must be a number' }
   }
-
+  if (tableName.length > 4) {
+    return { valid: false, error: 'Table number should be less than 5 characters' }
+  }
   if (seatQty <= 0) {
     return { valid: false, error: 'Seat quantity must be greater than 1' }
+  }
+  if (seatQty > maxPersonPerGroup) {
+    return {
+      valid: false,
+      error: 'Seat quantity should be less than the max person per group set in the rule'
+    }
   }
 
   const availableTimeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
@@ -51,13 +60,20 @@ const validateCreateTable = (contentType, tableName, seatQty, availableTime) => 
 export const createTable = async (req, res) => {
   try {
     const contentType = req.headers['content-type']
+    const restaurantId = parseInt(req.params.restaurantId, 10)
     const { tableName, seatQty, availableTime } = req.body
-    const validation = validateCreateTable(contentType, tableName, seatQty, availableTime)
+    const { max_person_per_group: maxPersonPerGroup } = await ruleModel.getRule(restaurantId)
+    const validation = validateCreateTable(
+      contentType,
+      tableName,
+      seatQty,
+      availableTime,
+      maxPersonPerGroup
+    )
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
 
-    const restaurantId = parseInt(req.params.restaurantId, 10)
     const keys = await cache.getKeys(`restaurant:${restaurantId}:availableDate:*`)
     if (keys) {
       await cache.deleteKeys(keys)

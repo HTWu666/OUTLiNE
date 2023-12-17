@@ -1,12 +1,9 @@
 import moment from 'moment-timezone'
-import jwt from 'jsonwebtoken'
 import { fileURLToPath } from 'url'
 import path from 'path'
 import { readFile } from 'fs/promises'
-import * as fs from 'fs'
 import * as reservationModel from '../models/reservation.js'
 import * as restaurantModel from '../models/restaurant.js'
-import * as ruleModel from '../models/rule.js'
 import pool from '../models/databasePool.js'
 import * as SQS from '../utils/SQS.js'
 import * as cache from '../utils/cache.js'
@@ -141,10 +138,10 @@ export const createReservation = async (req, res) => {
       note,
       restaurantId
     )
-
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }
+
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     // check whether the person exceed the limit

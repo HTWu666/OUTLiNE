@@ -17,10 +17,104 @@ export const resetNumber = async (req, res) => {
   }
 }
 
+const validateWaittingInput = (
+  contentType,
+  restaurantId,
+  adult,
+  child,
+  name,
+  gender,
+  phone,
+  purpose,
+  note
+) => {
+  if (contentType !== 'application/json') {
+    return { valid: false, error: 'Wrong content type' }
+  }
+
+  let missingField = ''
+  if (!adult) {
+    missingField = 'Number of adult'
+  } else if (!name) {
+    missingField = 'Name'
+  } else if (!gender) {
+    missingField = 'Gender'
+  } else if (!phone) {
+    missingField = 'Phone'
+  }
+  if (missingField) {
+    return { valid: false, error: `${missingField} is required` }
+  }
+
+  // verify data type
+  if (typeof adult !== 'number') {
+    return { valid: false, error: 'Number of adult must be a number' }
+  }
+  if (adult <= 0) {
+    return { valid: false, error: 'Number of adult must be greater than 0' }
+  }
+  if (typeof child !== 'number') {
+    return { valid: false, error: 'Number of child must be a number' }
+  }
+  if (child <= 0) {
+    return { valid: false, error: 'Number of child must be greater than 0' }
+  }
+  if (typeof restaurantId !== 'number') {
+    return { valid: false, error: 'Restaurant Id query string must be a number' }
+  }
+  if (restaurantId <= 0) {
+    return { valid: false, error: 'Number of restaurantId must be greater than 0' }
+  }
+  if (typeof name !== 'string') {
+    return { valid: false, error: 'Name must be a string' }
+  }
+  if (name.length > 100) {
+    return { valid: false, error: 'The length of name should be less than 100 characters' }
+  }
+  if (!['先生', '小姐', '其他'].includes(gender)) {
+    return { valid: false, error: 'Gender must be 先生, 小姐, 其他' }
+  }
+  const phoneRegex = /^09\d{8}$/
+  if (!phoneRegex.test(phone)) {
+    return { valid: false, error: 'Phone format is wrong' }
+  }
+  if (typeof phone !== 'string') {
+    return { valid: false, error: 'Phone must be a string' }
+  }
+  if (
+    purpose &&
+    !['生日', '家庭聚餐', '情人約會', '結婚紀念', '朋友聚餐', '商務聚餐'].includes(purpose)
+  ) {
+    return { valid: false, error: 'Purpose is wrong' }
+  }
+  if (note && typeof note !== 'string') {
+    return { valid: false, error: 'Note must be a string' }
+  }
+  if (note.length > 500) {
+    return { valid: false, error: 'The length of note should be less than 500 characters' }
+  }
+  return { valid: true }
+}
+
 export const createWaiting = async (req, res) => {
   try {
+    const contentType = req.headers['content-type']
     const restaurantId = parseInt(req.params.restaurantId, 10)
     const { adult, child, name, gender, phone, purpose, note } = req.body
+    const validation = validateWaittingInput(
+      contentType,
+      restaurantId,
+      adult,
+      child,
+      name,
+      gender,
+      phone,
+      purpose,
+      note
+    )
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error })
+    }
 
     const { waitingId, number } = await waitlistModel.createWaiting(
       restaurantId,

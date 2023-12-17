@@ -7,7 +7,7 @@ import * as restaurantModel from '../models/restaurant.js'
 import * as roleModel from '../models/role.js'
 import { updateAutoScalingSchedule } from '../utils/autoScaling.js'
 
-const validateCreateRestaurant = (name, address, phone) => {
+const validateCreateRestaurant = (name, address, phone, parking, payment, kidChair, vegetarian) => {
   let missingField = ''
   if (!name) {
     missingField = 'Name'
@@ -20,13 +20,40 @@ const validateCreateRestaurant = (name, address, phone) => {
     return { valid: false, error: `${missingField} is required` }
   }
 
+  if (typeof name !== 'string') {
+    return { valid: false, error: 'Restaurant name should be a string' }
+  }
+  if (name.length > 100) {
+    return { valid: false, error: 'Restaurant name should be less than 100 characters' }
+  }
+  if (typeof address !== 'string') {
+    return { valid: false, error: 'Restaurant address should be a string' }
+  }
+  if (address.length > 500) {
+    return { valid: false, error: 'Restaurant address should be less than 500 characters' }
+  }
+  const phoneRegex = /^0\d{9}$/
+  if (!phoneRegex.test(phone)) {
+    return { valid: false, error: 'Phone format is wrong' }
+  }
+  if (typeof parking !== 'string') {
+    return { valid: false, error: 'Parking address should be a string' }
+  }
+  if (parking.length > 500) {
+    return { valid: false, error: 'Parking address should be less than 500 characters' }
+  }
+  if (typeof payment !== 'string') {
+    return { valid: false, error: 'Payment should be a string' }
+  }
+  if (payment.length > 500) {
+    return { valid: false, error: 'Payment should be less than 500 characters' }
+  }
   return { valid: true }
 }
 
 export const createRestaurant = async (req, res) => {
   try {
     const { userId } = res.locals
-    const contentType = req.headers['content-type']
     const {
       name,
       address,
@@ -110,10 +137,24 @@ export const createRestaurant = async (req, res) => {
   }
 }
 
+const validateJoinRestaurantInput = (restaurantId) => {
+  const IdRegex = /\d{64}$/
+  if (IdRegex.test(restaurantId)) {
+    return { valid: false, error: 'Restaurant Id should be less than 64 digits' }
+  }
+
+  return { valid: true }
+}
+
 export const joinRestaurant = async (req, res) => {
   try {
     const { userId } = res.locals
     const { restaurantId } = req.body
+    const validation = validateJoinRestaurantInput(restaurantId)
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error })
+    }
+
     const userRoleId = await roleModel.createRole(userId, restaurantId)
 
     res.status(200).json(userRoleId)

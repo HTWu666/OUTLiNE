@@ -9,7 +9,7 @@
 <body>
     <main class="w-full">
         <div id="content" class="flex-grow overflow-auto">
-            <div id="waiting-list" class="p-4">
+            <div id="waiting-list" class="p-4 mb-8">
                 <table class="w-full text-left bg-white shadow-md rounded-lg overflow-hidden">
                     <thead class="bg-gray-100">
                         <tr>
@@ -28,8 +28,8 @@
         </div>
 
         <!-- Footer section with fixed positioning -->
-        <div class="p-4 fixed bottom-0 bg-white w-auto">
-            <div class="flex justify-between items-center">
+        <div class="p-4 fixed bottom-0 bg-white w-full">
+            <div class="flex items-center">
                 <div class="flex space-x-4 mr-10">
                     <div>目前號碼：</div>
                     <div id="show-current-number" class="font-bold text-lg text-orange-500">0</div>
@@ -38,7 +38,7 @@
                     <div>總候位數：</div>
                     <div id="show-total-waiting" class="font-bold text-lg text-orange-500">0</div>
                 </div>
-                <div class="flex space-x-2 ml-auto">
+                <div class="flex space-x-2 ml-10">
                     <button id="reset-number" class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded transition duration-200 ease-in-out mr-10">重置號碼</button>
                     <button id="call-number" class="bg-orange-500 hover:bg-orange-700 text-white py-2 px-4 rounded transition duration-200 ease-in-out">叫號</button>
                 </div>

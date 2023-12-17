@@ -21,7 +21,7 @@ jobs:
           script: |
             echo "Hello from github action, start deploy main to ec2"
             cd /home/ubuntu/outline-github
-            git switch main
+            git checkout main
             git pull
             npm install
-            npx pm2 restart outline
+            pm2 restart outline

@@ -1,33 +1,79 @@
 import pool from './databasePool.js'
 
-export const createTable = async (restaurantId, tableName, seatQty) => {
-  const { rows } = await pool.query(
-    `
-    INSERT INTO tables (restaurant_id, name, seat_qty)
-    VALUES ($1, $2, $3) RETURNING id
-    `,
-    [restaurantId, tableName, seatQty]
-  )
+export const createTable = async (restaurantId, tableName, seatQty, availableTimeData) => {
+  const conn = await pool.connect()
+  try {
+    await conn.query('BEGIN')
 
-  return rows[0].id
-}
+    const transfferedTableName = `${restaurantId}_${tableName}`
 
-export const createAvailableTime = async (availableTimeData) => {
-  const placeholders = availableTimeData
-    .map((_, index) => `($${index * 2 + 1}, $${index * 2 + 2})`)
-    .join(', ')
-  const values = availableTimeData.flatMap((data) => [data.tableId, data.utcAvailableTime])
+    // Insert table
+    const { rows: tableId } = await conn.query(
+      `
+      INSERT INTO tables (restaurant_id, name, seat_qty)
+      VALUES ($1, $2, $3) RETURNING id
+      `,
+      [restaurantId, transfferedTableName, seatQty]
+    )
 
-  const { rows } = await pool.query(
-    `
+    const placeholders = availableTimeData
+      .map((_, index) => `($${index * 2 + 1}, $${index * 2 + 2})`)
+      .join(', ')
+
+    const values = availableTimeData.flatMap((data) => [tableId[0].id, data])
+
+    await conn.query(
+      `
       INSERT INTO table_available_time (table_id, available_time)
       VALUES ${placeholders}
       RETURNING id
-    `,
-    values
-  )
+      `,
+      values
+    )
 
-  return rows[0].id
+    const { rows: ruleData } = await conn.query(
+      `
+      SELECT min_booking_day, max_booking_day
+      FROM rules
+      WHERE restaurant_id = $1
+      `,
+      [restaurantId]
+    )
+
+    const minBookingDay = ruleData[0].min_booking_day
+    const maxBookingDay = ruleData[0].max_booking_day
+    const availableSeatsQueries = []
+    for (let i = minBookingDay; i <= maxBookingDay; i++) {
+      availableTimeData.forEach((item) => {
+        availableSeatsQueries.push(
+          conn.query(
+            `
+            INSERT INTO available_seats (restaurant_id, table_id, table_name, seat_qty, available_date, available_time)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id
+            `,
+            [
+              restaurantId,
+              tableId[0].id,
+              tableName,
+              seatQty,
+              new Date(new Date().setDate(new Date().getDate() + i)),
+              item
+            ]
+          )
+        )
+      })
+    }
+
+    await Promise.all(availableSeatsQueries)
+
+    await conn.query('COMMIT')
+  } catch (err) {
+    await conn.query('ROLLBACK')
+    throw err
+  } finally {
+    conn.release()
+  }
 }
 
 export const getTable = async (restaurantId) => {
@@ -78,6 +124,16 @@ export const deleteTable = async (tableId) => {
   try {
     await conn.query('BEGIN')
 
+    // Delete associated records in available_seats table
+    await conn.query(
+      `
+      DELETE FROM available_seats
+      WHERE table_id = $1
+      `,
+      [tableId]
+    )
+
+    // Delete record from table_available_time table
     await conn.query(
       `
       DELETE FROM table_available_time
@@ -86,6 +142,7 @@ export const deleteTable = async (tableId) => {
       [tableId]
     )
 
+    // Delete record from tables table
     await conn.query(
       `
       DELETE FROM tables

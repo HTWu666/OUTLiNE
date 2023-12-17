@@ -4,6 +4,7 @@ import express from 'express'
 import fs from 'fs'
 import morganBody from 'morgan-body'
 import expressLayouts from 'express-ejs-layouts'
+import { Redis } from 'ioredis'
 
 dotenv.config({ path: '../.env' })
 const app = express()
@@ -34,6 +35,14 @@ const pool = new Pool({
   }
 })
 
+const cache = new Redis({
+  port: 6379,
+  host: process.env.REDIS_HOST,
+  password: process.env.REDIS_PASSWORD,
+  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
+  // tls: {}
+})
+
 const deleteExpiredBookingDate = async (restaurantId) => {
   const today = new Date().toISOString().split('T')[0]
 
@@ -45,6 +54,9 @@ const deleteExpiredBookingDate = async (restaurantId) => {
     `,
     [restaurantId, today]
   )
+
+  const keys = await cache.keys(`restaurant:${restaurantId}:availableDate:${today}`)
+  await cache.del(...keys)
 }
 
 app.post('/api/deleteExpiredBookingDate', async (req, res) => {

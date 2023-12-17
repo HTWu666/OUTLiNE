@@ -53,11 +53,20 @@ const validateCreateReservation = (
   if (typeof adult !== 'number') {
     return { valid: false, error: 'Number of adult must be a number' }
   }
+  if (adult <= 0) {
+    return { valid: false, error: 'Number of adult must be greater than 0' }
+  }
   if (typeof child !== 'number') {
     return { valid: false, error: 'Number of child must be a number' }
   }
+  if (child <= 0) {
+    return { valid: false, error: 'Number of child must be greater than 0' }
+  }
   if (typeof restaurantId !== 'number') {
     return { valid: false, error: 'Restaurant Id query string must be a number' }
+  }
+  if (restaurantId <= 0) {
+    return { valid: false, error: 'Number of restaurantId must be greater than 0' }
   }
 
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/
@@ -71,19 +80,25 @@ const validateCreateReservation = (
   if (typeof name !== 'string') {
     return { valid: false, error: 'Name must be a string' }
   }
+  if (name.length > 100) {
+    return { valid: false, error: 'The length of name should be less than 100 characters' }
+  }
   if (!['先生', '小姐', '其他'].includes(gender)) {
     return { valid: false, error: 'Gender must be 先生, 小姐, 其他' }
   }
   const phoneRegex = /^09\d{8}$/
   if (!phoneRegex.test(phone)) {
-    return { valid: false, error: '電話號碼格式錯誤' }
+    return { valid: false, error: 'Phone format is wrong' }
   }
   if (typeof phone !== 'string') {
     return { valid: false, error: 'Phone must be a string' }
   }
   const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
   if (!emailPattern.test(email)) {
-    return { valid: false, error: '信箱格式錯誤' }
+    return { valid: false, error: 'Email format is wrong' }
+  }
+  if (email.length > 320) {
+    return { valid: false, error: 'The length of email should be less than 320 characters' }
   }
   if (
     purpose &&
@@ -94,7 +109,9 @@ const validateCreateReservation = (
   if (note && typeof note !== 'string') {
     return { valid: false, error: 'Note must be a string' }
   }
-
+  if (note.length > 500) {
+    return { valid: false, error: 'The length of note should be less than 500 characters' }
+  }
   return { valid: true }
 }
 
@@ -176,9 +193,6 @@ export const createReservation = async (req, res) => {
       encoding: 'utf8'
     })
 
-    console.log(diningDate)
-    console.log(utcDiningTime)
-    console.group(requiredSeats)
     const stringifyAvailableSeat = await cache.executeLuaScript(
       updateLockScript,
       [
@@ -208,8 +222,7 @@ export const createReservation = async (req, res) => {
       purpose,
       note
     }
-    console.log(111)
-    console.log(diningDate)
+
     await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
     res.status(200).json({ message: 'Making reservation successfully' })

@@ -26,7 +26,6 @@
                 </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-gray-200 bg-white odd:bg-gray-50">
-                <!-- 表格数据行将通过JavaScript动态填充 -->
             </tbody>
         </table>
     </div>
@@ -44,18 +43,29 @@
                 // Creating body rows
                 const tbody = document.getElementById('tableBody');
             
-                tableData.forEach((tableInfo, index) => {
-                    const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
-                    const row = `<tr class="${bgClass}">
-                                    <td class="px-6 py-4 whitespace-nowrap text-center align-middle text-base font-medium text-gray-900">${tableInfo.tableName}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center align-middle text-base">${tableInfo.seatQty}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-base">${tableInfo.availableTime.join(', ')}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-base font-medium">
-                                        <button onclick="deleteTable(${tableInfo.id})" class="text-white bg-red-600 hover:bg-red-800 px-3 py-1 rounded-md text-base font-medium">刪除座位</button>
-                                    </td>
-                                </tr>`;
-                    tbody.innerHTML += row;
-                });
+                if (tableData.length === 0) {
+                // 如果没有可显示的数据，显示提示信息
+                    const emptyRow = `<tr>
+                                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center align-middle text-base font-medium text-gray-900">
+                                            目前還沒有建立開放給線上訂位的座位，趕快建立一個座位吧！
+                                        </td>
+                                    </tr>`;
+                    tbody.innerHTML = emptyRow;
+                } else {
+                    // 有数据时，创建表格行
+                    tableData.forEach((tableInfo, index) => {
+                        const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                        const row = `<tr class="${bgClass}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-center align-middle text-base font-medium text-gray-900">${tableInfo.tableName}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center align-middle text-base">${tableInfo.seatQty}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-base">${tableInfo.availableTime.join(', ')}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-base font-medium">
+                                            <button onclick="deleteTable(${tableInfo.id})" class="text-white bg-red-600 hover:bg-red-800 px-3 py-1 rounded-md text-base font-medium">刪除座位</button>
+                                        </td>
+                                    </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
             } catch (err) {
                 console.log(err)
             }
@@ -64,7 +74,8 @@
         async function deleteTable(tableId) {
             try {
                 await axios.delete(`/api/restaurant/${restaurantId}/tables/${tableId}`)
-                alert("Delete table successfully")
+                alert("刪除座位成功")
+                window.location.reload()
             } catch (err) {
                 console.log(err)
                 alert(err.response.data.error)

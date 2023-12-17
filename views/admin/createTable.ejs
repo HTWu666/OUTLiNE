@@ -67,11 +67,12 @@
                     data: data,
                     headers: { 'Content-Type': 'application/json' }
                 });
-                console.log('Success:', response.data);
-                alert('桌子資料提交成功！');
+                
+                alert('新增座位成功！');
+                window.location.reload()
             } catch (error) {
                 console.error('Error:', error);
-                alert('提交桌子資料失敗。');
+                alert(error.response.data.error);
             }
         });
     </script>

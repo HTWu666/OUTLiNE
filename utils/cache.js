@@ -162,3 +162,30 @@ export const executeLuaScript = async (luaScript, keys, args) => {
     return null
   }
 }
+
+export const getKeys = async (pattern) => {
+  try {
+    const results = await cache.keys(pattern)
+
+    if (results.length > 0) {
+      return results
+    }
+    return null
+  } catch (err) {
+    console.error(err)
+    return null
+  }
+}
+
+export const deleteKeys = async (keys) => {
+  try {
+    if (keys && keys.length > 0) {
+      const result = await cache.del(...keys)
+      return result
+    }
+    return null
+  } catch (err) {
+    console.error(err)
+    return null
+  }
+}

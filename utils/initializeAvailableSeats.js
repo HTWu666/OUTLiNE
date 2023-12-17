@@ -25,12 +25,12 @@ const createAvailableSeats = async (restaurantId, updatedDate) => {
   const { rows: availableSeatIds } = await pool.query(
     `
     INSERT INTO available_seats (
-        restaurant_id,
-        table_id,
-        table_name,
-        seat_qty,
-        available_date,
-        available_time
+      restaurant_id,
+      table_id,
+      table_name,
+      seat_qty,
+      available_date,
+      available_time
     ) VALUES ${placeholders}
     `,
     values
@@ -42,9 +42,9 @@ const createAvailableSeats = async (restaurantId, updatedDate) => {
 const initializeAvailableSeats = async (restaurantId) => {
   const { rows } = await pool.query(
     `
-        SELECT min_booking_day, max_booking_day
-        FROM rules
-        WHERE restaurant_id = $1
+      SELECT min_booking_day, max_booking_day
+      FROM rules
+      WHERE restaurant_id = $1
     `,
     [restaurantId]
   )

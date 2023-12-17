@@ -1,7 +1,6 @@
 import QRCode from 'qrcode'
 import jwt from 'jsonwebtoken'
 import * as waitlistModel from '../models/waitlist.js'
-import * as restaurantModel from '../models/restaurant.js'
 
 export const resetNumber = async (req, res) => {
   try {
@@ -34,8 +33,6 @@ export const createWaiting = async (req, res) => {
       note
     )
 
-    /* 用 id 來產生 token, 前端掃描連結要先解析 token 取得 id 用來取得客人的候位資訊,
-    render 一個頁面, 該頁面會有一個監聽事件, 聽後端叫號往前時會觸發 */
     const payload = { waitingId }
     const upn = jwt.sign(payload, process.env.JWT_KEY)
     const url = `${process.env.DOMAIN}/restaurant/${restaurantId}/waitlist?upn=${upn}`

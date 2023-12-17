@@ -129,7 +129,7 @@
             try {
                 const response = await axios.post('/api/restaurant', formData);
                 alert('成功建立餐廳！');
-                window.location.reload()
+                window.location.href='/admin/chooseRestaurant'
             } catch (err) {
                 console.error(err);
                 alert('建立餐廳失敗！');

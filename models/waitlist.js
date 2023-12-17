@@ -6,10 +6,10 @@ export const resetNumber = async (restaurantId) => {
     await conn.query('BEGIN')
     const { rows: waitlist } = await conn.query(
       `
-    SELECT * FROM waitlist
-    WHERE restaurant_id = $1
-      AND status = 'waiting'
-    `,
+      SELECT * FROM waitlist
+      WHERE restaurant_id = $1
+        AND status = 'waiting'
+      `,
       [restaurantId]
     )
 
@@ -36,7 +36,7 @@ export const resetNumber = async (restaurantId) => {
         INSERT INTO waitlist_number (restaurant_id)
         VALUES ($1)
         RETURNING id
-        `,
+      `,
       [restaurantId]
     )
 
@@ -73,31 +73,45 @@ export const createWaiting = async (restaurantId, adult, child, name, gender, ph
       `
         SELECT * FROM waitlist_number
         WHERE restaurant_id = $1
-            AND status = TRUE
+          AND status = TRUE
         FOR UPDATE
-    `,
+      `,
       [restaurantId]
     )
+
+    if (waitlistNumber.length === 0) {
+      const { rows: waitlist } = await conn.query(
+        `
+          INSERT INTO waitlist_number (restaurant_id)
+          VALUES ($1)
+          RETURNING id
+        `,
+        [restaurantId]
+      )
+
+      await conn.query('COMMIT')
+      return waitlist[0].id
+    }
 
     // 候位組數 + 1 並更新 waitlist_number
     const number = parseInt(waitlistNumber[0].total_waiting_number, 10) + 1
     await conn.query(
       `
-        UPDATE waitlist_number
-        SET total_waiting_number = $1
-        WHERE restaurant_id = $2
-            AND status = TRUE
-        `,
+      UPDATE waitlist_number
+      SET total_waiting_number = $1
+      WHERE restaurant_id = $2
+        AND status = TRUE
+      `,
       [number, restaurantId]
     )
 
     // 新增候位資料
     const { rows: waitlist } = await conn.query(
       `
-        INSERT INTO waitlist (restaurant_id, number, adult, child, name, gender, phone, note)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id
-    `,
+      INSERT INTO waitlist (restaurant_id, number, adult, child, name, gender, phone, note)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id
+      `,
       [restaurantId, number, adult, child, name, gender, phone, note]
     )
 
@@ -149,7 +163,7 @@ export const callNumber = async (restaurantId) => {
       WHERE restaurant_id = $2
         AND status = TRUE
       RETURNING current_number
-    `,
+      `,
       [currentNumber, restaurantId]
     )
 

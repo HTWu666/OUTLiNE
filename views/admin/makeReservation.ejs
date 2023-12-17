@@ -191,7 +191,6 @@
                 try {
                     const response = await axios.get(`/api/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
                     availableSeatsData = response.data.data;
-
                     updateAvailableTimes();
                 } catch (err) {
                     console.log(err);
@@ -270,8 +269,45 @@
                 const gender = document.querySelector('input[name="title"]:checked').value
                 const phone = document.querySelector('#phone').value
                 const email = document.querySelector('#email').value
-                const purpose = document.querySelector('input[name="purpose"]:checked').value
+                const purposeRadio = document.querySelector('input[name="purpose"]:checked').value
                 const note = document.querySelector('#note').value
+
+                if (!name) {
+                    alert('請填寫訂位人姓名');
+                    return;
+                }
+                if (!genderRadio) {
+                    alert('請選擇稱謂');
+                    return;
+                }
+                if (!phone) {
+                    alert('請填寫手機號碼');
+                    return;
+                }
+                const phoneRegex = /^09\d{8}$/
+                if (!phoneRegex.test(phone)) {
+                    alert('手機號碼格式不正確')
+                    return
+                }
+                if (!email) {
+                    alert('請填寫 Email');
+                    return;
+                }
+                const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+                if (!emailPattern.test(email)) {
+                    alert('信箱格式不正確')
+                    return
+                }
+                if (!diningTimeRadio) {
+                    alert('請選擇用餐時段');
+                    return;
+                }
+                
+                let purpose = null
+                if (purposeRadio) {
+                    purpose = purposeRadio.value
+                }
+
                 const response = await axios.post(`/api/restaurant/${restaurantId}/reservation`,{
                     "adult": adult,
                     "child": child,
@@ -284,7 +320,7 @@
                     "purpose": purpose,
                     "note": note
                 });
-                alert('Making reservation successfully')
+                alert('訂位成功！')
             } catch (err) {
                 console.log(err)
                 alert(err.response.data.error)

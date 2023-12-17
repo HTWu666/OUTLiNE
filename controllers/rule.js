@@ -47,6 +47,11 @@ const validateCreateRule = (
     return { valid: false, error: 'Max booking day must be a number' }
   }
 
+  // verify number
+  if (restaurantId <= 0 || maxPersonPerGroup <= 0 || minBookingDay <= 0 || maxBookingDay <= 0) {
+    return { valid: false, error: 'Number should be greater than 0' }
+  }
+
   const updateBookingTimeRegex = /^(?:[01]\d|2[0-3]):[0-5]\d$/
   if (!updateBookingTimeRegex.test(updateBookingTime)) {
     return { valid: false, error: 'Update booking time must be in the form of HH:MM' }
@@ -55,7 +60,6 @@ const validateCreateRule = (
   return { valid: true }
 }
 
-// 只有 outline admin 可新增規則 (初始化), 業者只能更新規則
 export const createRule = async (req, res) => {
   try {
     const contentType = req.headers['content-type']

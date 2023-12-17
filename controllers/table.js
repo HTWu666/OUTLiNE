@@ -52,7 +52,7 @@ export const createTable = async (req, res) => {
   try {
     const contentType = req.headers['content-type']
     const { tableName, seatQty, availableTime } = req.body
-    const validation = validateCreateTable(contentType, tableName, seatQty)
+    const validation = validateCreateTable(contentType, tableName, seatQty, availableTime)
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error })
     }

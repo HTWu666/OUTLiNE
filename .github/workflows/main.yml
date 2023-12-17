@@ -15,8 +15,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
           cache: npm
+      - name: Install pm2
+        run: npm install -g pm2
       - name: deploy to ec2
         uses: appleboy/ssh-action@master
         with:

@@ -24,7 +24,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/outline
 
-      - name: Deploy
+      - name: Deploy to Docker
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_DNS }}
@@ -33,5 +33,6 @@ jobs:
           script: |
             echo "Hello from github action, start deploy main to ec2!"
             cd /home/ubuntu/outline-github
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latest
-            docker run -d --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latest
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
+            docker rm -f ${{ secrets.DOCKER_HUB_USERNAME }}/outline || true
+            docker run -d --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline

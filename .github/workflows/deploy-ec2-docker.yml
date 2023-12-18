@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -32,5 +33,5 @@ jobs:
           script: |
             echo "Hello from github action, start deploy main to ec2!"
             cd /home/ubuntu/outline-github
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
-            docker run -d --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latest
+            docker run -d --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latest

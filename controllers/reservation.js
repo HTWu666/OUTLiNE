@@ -56,7 +56,7 @@ const validateCreateReservation = (
   if (typeof child !== 'number') {
     return { valid: false, error: 'Number of child must be a number' }
   }
-  if (child <= 0) {
+  if (child < 0) {
     return { valid: false, error: 'Number of child must be greater than 0' }
   }
   if (typeof restaurantId !== 'number') {

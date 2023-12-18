@@ -33,9 +33,9 @@ jobs:
           host: ${{ secrets.HOST_DNS }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
-          docker run --env-file .env -p 3000:3000 --network=host ${{ secrets.DOCKER_HUB_USERNAME }}/outline
+          script: |
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
+            docker run --env-file .env -p 3000:3000 --network=host ${{ secrets.DOCKER_HUB_USERNAME }}/outline
 
 # - name: Set up Docker
 #   uses: actions/setup-docker@v2

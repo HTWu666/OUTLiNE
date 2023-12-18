@@ -27,6 +27,7 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/outline
+
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:

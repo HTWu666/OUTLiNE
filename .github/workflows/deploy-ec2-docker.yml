@@ -35,24 +35,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            echo "Hello from github action, start deploy main to ec2!"
+            cd /home/ubuntu/outline-github
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
             docker run --env-file .env -p 3000:3000 --network=host ${{ secrets.DOCKER_HUB_USERNAME }}/outline
-
-# - name: Set up Docker
-#   uses: actions/setup-docker@v2
-#   with:
-#     dockerfile: Dockerfile
-
-# - name: Build the Docker image
-#   run: docker build -t huitingwu/outline
-
-# - name: Log in to Docker Hub
-#   run: docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-# - name: Push the docker image
-#   run: docker push huitingwu/outline
-
-# - name: deploy
-#   run: |
-#     docker pull huitingwu/outline
-#     docker run --env-file .env -p 3000:3000 --network=host huitingwu/outline

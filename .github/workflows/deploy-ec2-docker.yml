@@ -31,7 +31,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "Hello from github action, start deploy main to ec2!"
+            echo "Hello from github action, start deploy main to ec2"
             cd /home/ubuntu/outline-github
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latest
             docker rm -f ${{ secrets.DOCKER_HUB_USERNAME }}/outline || true

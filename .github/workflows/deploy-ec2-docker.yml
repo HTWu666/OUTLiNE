@@ -32,7 +32,7 @@ jobs:
         run: |
           ssh ubuntu@${{ secrets.HOST_DNS }} '
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
-            docker run --env-file .env -p 3000:3000 --network=host huitingwu/outline
+            docker run --env-file .env -p 3000:3000 --network=host ${{ secrets.DOCKER_HUB_USERNAME }}/outline
           '
 
       # - name: Set up Docker

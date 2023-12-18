@@ -28,6 +28,7 @@ import tablePageRouter from './routes/admin/table.js'
 import superuserRestaurantPage from './routes/superuser/restaurant.js'
 import dashboardRouter from './routes/dashboard.js'
 import dashboardPageRouter from './routes/admin/dashboard.js'
+import rateLimiter from './middlewares/rateLimiter.js'
 
 dotenv.config()
 const app = express()
@@ -63,7 +64,7 @@ morganBody(app, {
   stream: log
 })
 
-app.use('/api', [
+app.use('/api', rateLimiter, [
   userRouter,
   restaurantRouter,
   tableRouter,
@@ -75,7 +76,7 @@ app.use('/api', [
   dashboardRouter
 ])
 
-app.use('/', [
+app.use('/', rateLimiter, [
   reservationPageRouter,
   checkReservationPageRouter,
   userPageRouter,

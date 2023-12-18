@@ -7,7 +7,7 @@
     <title>流量報表 - Outline</title>
 </head>
 <body>
-    <div class="mr-3 flex items-center">
+    <div class="mb-5 flex items-center">
         <div class="field-label mr-4 text-lg">過去天數</div>
         <input type="number" id="day-selector" name="day-selector" required value="7" class="mr-4 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         <button type="submit" id="day-selector-btn" class="bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">抓取資料</button>
@@ -168,8 +168,13 @@
 
         retrieveDataBtn.addEventListener('click', async () => {
             const day = dayInput.value
-            await getWeeklyFootTraficByHour(day)
-            await getWeeklyFootTrafficDistribution(day);
+            if (day > 0) {
+                await getWeeklyFootTraficByHour(day);
+                await getWeeklyFootTrafficDistribution(day);
+            } else {
+                alert('請輸入大於零的數字');
+                dayInput.value = 7
+            }
         })
     </script>
 </body>

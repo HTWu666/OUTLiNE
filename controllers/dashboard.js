@@ -4,6 +4,9 @@ export const getWeeklyFootTrafficByHour = async (req, res) => {
   try {
     const { restaurantId } = req.params
     const { lastDays } = req.query
+    if (lastDays <= 0) {
+      return res.status(400).json({ error: 'Past days should be a positive number' })
+    }
     const data = await dashboardModel.getWeeklyFootTrafficByHour(restaurantId, lastDays)
 
     res.status(200).json({ data })

@@ -32,10 +32,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "Hello from github action, start deploy main to ec2!"
-            docker stop outline || true
-            docker rm outline || true
+            docker rm -f outline || true
             cd /home/ubuntu/outline-github
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
-            docker rm -f outline || true
             docker run -d --name outline --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline
             docker image prune -a -f --filter "label!=latest"

@@ -33,6 +33,6 @@ jobs:
           script: |
             echo "Hello from github action, start deploy main to ec2!"
             cd /home/ubuntu/outline-github
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latest
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/outline
             docker rm -f ${{ secrets.DOCKER_HUB_USERNAME }}/outline || true
-            docker run -d --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline:latestd
+            docker run -d --restart=always --env-file .env -p 3000:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/outline

@@ -144,9 +144,4 @@ dist
 
 /test
 .dockerignore
-deleteExpiredBookingDateDockerfile
-docker-compose.yml
-notifyMakingReservationSuccessDockerfile
-remindForDiningDockerfile
-updateAvailableReservationDateDockerfile
 /uploads

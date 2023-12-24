@@ -4,6 +4,10 @@ import pool from '../models/databasePool.js'
 import * as adjustAvailableSeats from '../utils/adjustAvailableSeats.js'
 import scheduleRemindForDiningJob from '../jobs/remindForDiningJob.js'
 import scheduleDeleteExpiredBookingDateJob from '../jobs/deleteExpiredBookingDateJob.js'
+import {
+  createAvailableSeatsForPeriod,
+  deleteAvailableSeatsForPeriod
+} from '../models/availableSeat.js'
 
 const validateRuleInput = (
   contentType,
@@ -162,7 +166,7 @@ export const updateRule = async (req, res) => {
         endDateObj.setDate(endDateObj.getDate() + newRule.max_booking_day)
         const endDate = endDateObj.toISOString().split('T')[0]
 
-        adjustAvailableSeats.createAvailableSeatsForPeriod(restaurantId, startDate, endDate)
+        createAvailableSeatsForPeriod(restaurantId, startDate, endDate)
       }
 
       // 調小最大可訂位天數, 刪除可訂位時間, call adjustAvailableSeats.delete
@@ -175,7 +179,7 @@ export const updateRule = async (req, res) => {
         endDateObj.setDate(endDateObj.getDate() + oldRule.max_booking_day)
         const endDate = endDateObj.toISOString().split('T')[0]
 
-        adjustAvailableSeats.deleteAvailableSeatsForPeriod(restaurantId, startDate, endDate)
+        deleteAvailableSeatsForPeriod(restaurantId, startDate, endDate)
       }
       // 調大最小可訂位天數, 刪除可訂位時間, call adjustAvailableSeats.delete
       if (newRule.min_booking_day - oldRule.min_booking_day > 0) {
@@ -187,7 +191,7 @@ export const updateRule = async (req, res) => {
         endDateObj.setDate(endDateObj.getDate() + newRule.min_booking_day - 1)
         const endDate = endDateObj.toISOString().split('T')[0]
 
-        adjustAvailableSeats.deleteAvailableSeatsForPeriod(restaurantId, startDate, endDate)
+        deleteAvailableSeatsForPeriod(restaurantId, startDate, endDate)
       }
 
       // 調小最小可訂位天數, 新增可訂位時間, call adjustAvailableSeats.create
@@ -200,7 +204,7 @@ export const updateRule = async (req, res) => {
         endDateObj.setDate(endDateObj.getDate() + oldRule.min_booking_day - 1)
         const endDate = endDateObj.toISOString().split('T')[0]
 
-        adjustAvailableSeats.createAvailableSeatsForPeriod(restaurantId, startDate, endDate)
+        createAvailableSeatsForPeriod(restaurantId, startDate, endDate)
       }
 
       await scheduleUpdateBookingDateJob(restaurantId, maxBookingDay, updateBookingTime)

@@ -39,9 +39,8 @@ export const getWeeklyFootTrafficByHour = async (restaurantId, dataPeriod) => {
       const fullDate = `${date}T${item.dining_time}`
       hour = moment.utc(fullDate).tz('Asia/Taipei').format('HH')
     } else if (item.updated_at) {
-      const updatedDateTime = new Date(item.updated_at)
-      ;[date] = updatedDateTime.toISOString().split('T')
-      hour = updatedDateTime.getUTCHours().toString().padStart(2, '0')
+      hour = moment(item.updated_at).utc().tz('Asia/Taipei').format('HH')
+      date = moment(item.updated_at).utc().tz('Asia/Taipei').format('YYYY-MM-DD')
     }
 
     if (date && hour) {
@@ -76,7 +75,7 @@ export const getWeeklyFootTrafficByHour = async (restaurantId, dataPeriod) => {
       const item = groupedDataArray.find(
         (item) => item.dayOfWeek === dayOfWeek && item.hour === hour
       )
-      return item ? item.person : 0
+      return item ? item.person : null
     })
   }))
 
@@ -144,7 +143,7 @@ export const getWeeklyFootTrafficDistribution = async (restaurantId, dataPeriod)
     {
       label: '用餐人數',
       data: daysOfWeek.map((day) => aggregatedDataByDay[day]),
-      backgroundColor, // Set the array of colors
+      backgroundColor,
       borderColor,
       borderWidth: 1.5
     }

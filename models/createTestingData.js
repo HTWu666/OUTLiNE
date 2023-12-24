@@ -43,5 +43,3 @@ const bulkCreate = async () => {
 
 await bulkCreate()
 console.log('create done')
-//   .then((res) => console.log('create done'))
-//   .catch((err) => console.error(err))

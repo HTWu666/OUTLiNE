@@ -1,8 +1,15 @@
-import express from 'express'
+import { Router } from 'express'
+import { param } from 'express-validator'
+import handleValidationResult from '../middlewares/validator.js'
 import chatBot from '../controllers/customerService.js'
 
-const router = express.Router()
+const router = Router()
 
-router.post('/restaurant/:restaurantId(\\d+)/customerService', chatBot)
+router.post(
+  '/v1/restaurant/:restaurantId(\\d+)/customerService',
+  param('restaurantId').isInt({ min: 1 }),
+  handleValidationResult,
+  chatBot
+)
 
 export default router

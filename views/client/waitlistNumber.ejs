@@ -39,7 +39,7 @@
 
                 document.querySelector('#cancelBtn').addEventListener('click', async () => {
                     try {
-                        const response = await axios.delete(`/api/waitlist/${waitingId}`)
+                        const response = await axios.delete(`/api/v1/waitlist/${waitingId}`)
                         alert(response.data.message)
                         location.reload()
                     } catch (err) {
@@ -48,7 +48,7 @@
                 })
 
                 const restaurantId = <%- JSON.stringify(restaurantId) %>
-                const response = await axios.get(`/api/restaurant/${restaurantId}/waitlist/currentNumber`)
+                const response = await axios.get(`/api/v1/restaurant/${restaurantId}/waitlist/currentNumber`)
                 initializeNumberDisplay(number - response.data.data.currentNumber);
             } else if (status === 'canceled') {
                 document.querySelector('#details').innerHTML = 

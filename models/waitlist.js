@@ -79,7 +79,7 @@ export const createWaiting = async (restaurantId, adult, child, name, gender, ph
       [restaurantId]
     )
 
-    if (waitlistNumber.length === 0) {
+    if (!waitlistNumber.length) {
       const { rows: waitlist } = await conn.query(
         `
           INSERT INTO waitlist_number (restaurant_id)

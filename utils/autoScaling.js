@@ -24,10 +24,7 @@ const getScheduledAction = async (scheduledUTCHour, scheduledUTCMinute) => {
 
   try {
     const response = await autoScalingClient.send(command)
-    console.log(222)
-    console.log(response)
     const matchedAction = response.ScheduledUpdateGroupActions[0]
-    console.log(matchedAction)
     return matchedAction ?? null
   } catch (err) {
     console.error(err)
@@ -105,14 +102,3 @@ export const deleteAutoScalingSchedule = async (scaleUpUTCHour, scaleUpUTCMinute
     throw err
   }
 }
-
-// action = {
-//   "AutoScalingGroupName": "example-auto-scaling-group",
-//   "ScheduledActionName": "example-scheduled-action",
-//   "Recurrence": "30 8 * * *",
-//   "MinSize": 1,
-//   "MaxSize": 3,
-//   "DesiredCapacity": 2,
-//   "StartTime": "2023-01-01T08:30:00Z",
-//   "EndTime": "2023-01-01T09:30:00Z"
-// }

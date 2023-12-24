@@ -82,7 +82,7 @@ export const updateRule = async (
     values.push(updateBookingTimeInUTC)
   }
 
-  if (updates.length === 0) {
+  if (!updates.length) {
     throw new Error('No fields to update')
   }
 

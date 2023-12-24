@@ -77,7 +77,7 @@ export const createRestaurant = async (req, res) => {
       pictureUrl
     )
     if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
+      return res.status(400).json({ errors: validation.error })
     }
 
     // create restaurant
@@ -133,7 +133,7 @@ export const createRestaurant = async (req, res) => {
     res.status(200).json({ restaurantId, userRoleId, ruleId })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Create restaurant failed' })
+    res.status(500).json({ errors: 'Create restaurant failed' })
   }
 }
 
@@ -152,7 +152,7 @@ export const joinRestaurant = async (req, res) => {
     const { restaurantId } = req.body
     const validation = validateJoinRestaurantInput(restaurantId)
     if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
+      return res.status(400).json({ errors: validation.error })
     }
 
     const userRoleId = await roleModel.createRole(userId, restaurantId)
@@ -161,9 +161,9 @@ export const joinRestaurant = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Join restaurant failed' })
+    res.status(500).json({ errors: 'Join restaurant failed' })
   }
 }
 
@@ -176,8 +176,8 @@ export const deleteRestaurant = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Delete restaurant failed' })
+    res.status(500).json({ errors: 'Delete restaurant failed' })
   }
 }

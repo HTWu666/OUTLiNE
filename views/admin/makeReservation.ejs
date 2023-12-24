@@ -189,7 +189,7 @@
 
             async function fetchAndUpdateAvailableTimes() {
                 try {
-                    const response = await axios.get(`/api/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
+                    const response = await axios.get(`/api/v1/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
                     availableSeatsData = response.data.data;
                     updateAvailableTimes();
                 } catch (err) {
@@ -308,7 +308,7 @@ console.log(child)
                     purpose = purposeRadio.value
                 }
 
-                const response = await axios.post(`/api/restaurant/${restaurantId}/reservation`,{
+                const response = await axios.post(`/api/v1/restaurant/${restaurantId}/reservation`,{
                     "adult": parseInt(adult, 10),
                     "child": parseInt(child, 10),
                     "diningDate": diningDate,
@@ -324,7 +324,7 @@ console.log(child)
                 window.location.reload()
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
     </script>

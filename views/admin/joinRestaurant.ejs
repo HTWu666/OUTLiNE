@@ -1,7 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('../layouts/global.ejs') %>
+    <script>
+        let token
+        document.addEventListener('DOMContentLoaded', async () => {
+            const cookies = document.cookie.split('; ')
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=')
+                if (name === 'token') {
+                    token = value
+                    break
+                }
+            }
+
+            if (token === undefined) {
+                window.location.href = '/'
+            }
+        })
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>加入餐廳 - Outline</title>
@@ -31,13 +47,13 @@
 
         <div class="mb-5">
             <button id="jump-to-signin-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
-                登入餐廳
+                登入我的餐廳
             </button>
         </div>
         
         <div class="mb-5">
             <button id="jump-to-create-restaurant-btn" class="form-btn bg-orange-300 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="button">
-                建立餐廳
+                建立新的餐廳
             </button>
         </div>
 
@@ -52,12 +68,12 @@
         document.querySelector('#sign-up-btn').addEventListener('click', async () => {
             try {
                 const restaurantId = document.getElementById('restaurant-id').value
-                const response = await axios.post('/api/restaurant/join', { restaurantId })
+                const response = await axios.post('/api/v1/restaurant/join', { restaurantId })
                 alert(`申請加入成功, 請等待餐廳管理員審核。\n您申請的餐廳 ID: ${restaurantId}`)
                 window.location.reload()
             } catch (err) {
                 console.error(err)
-                alert(`Failed: ${err.response.data.error}`)
+                alert(`Failed: ${err.response.data.errors}`)
             }
         })
 
@@ -82,7 +98,7 @@
         })
 
         document.querySelector('#log-out-btn').addEventListener('click', async () => {
-            await axios.post('/api/user/signout')
+            await axios.post('/api/v1/user/signout')
             window.location.href = '/'
         })
     </script>    

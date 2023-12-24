@@ -4,113 +4,9 @@ import path from 'path'
 import { readFile } from 'fs/promises'
 import * as reservationModel from '../models/reservation.js'
 import * as restaurantModel from '../models/restaurant.js'
-import pool from '../models/databasePool.js'
+import { getTable } from '../models/table.js'
 import * as SQS from '../utils/SQS.js'
 import * as cache from '../utils/cache.js'
-
-const validateCreateReservation = (
-  contentType,
-  adult,
-  child,
-  diningDate,
-  diningTime,
-  name,
-  gender,
-  phone,
-  email,
-  purpose,
-  note,
-  restaurantId
-) => {
-  if (contentType !== 'application/json') {
-    return { valid: false, error: 'Wrong content type' }
-  }
-
-  let missingField = ''
-  if (!adult) {
-    missingField = 'Number of adult'
-  } else if (!diningDate) {
-    missingField = 'Dining date'
-  } else if (!diningTime) {
-    missingField = 'Dining time'
-  } else if (!name) {
-    missingField = 'Name'
-  } else if (!gender) {
-    missingField = 'Gender'
-  } else if (!phone) {
-    missingField = 'Phone'
-  } else if (!email) {
-    missingField = 'Email'
-  }
-  if (missingField) {
-    return { valid: false, error: `${missingField} is required` }
-  }
-
-  // verify data type
-  if (typeof adult !== 'number') {
-    return { valid: false, error: 'Number of adult must be a number' }
-  }
-  if (adult <= 0) {
-    return { valid: false, error: 'Number of adult must be greater than 0' }
-  }
-  if (typeof child !== 'number') {
-    return { valid: false, error: 'Number of child must be a number' }
-  }
-  if (child < 0) {
-    return { valid: false, error: 'Number of child must be greater than 0' }
-  }
-  if (typeof restaurantId !== 'number') {
-    return { valid: false, error: 'Restaurant Id query string must be a number' }
-  }
-  if (restaurantId <= 0) {
-    return { valid: false, error: 'Number of restaurantId must be greater than 0' }
-  }
-
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
-  if (!dateRegex.test(diningDate)) {
-    return { valid: false, error: 'Dining date must be a date' }
-  }
-  const regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
-  if (!regex.test(diningTime)) {
-    return { valid: false, error: 'Dining time must be in the form of hh:mm' }
-  }
-  if (typeof name !== 'string') {
-    return { valid: false, error: 'Name must be a string' }
-  }
-  if (name.length > 100) {
-    return { valid: false, error: 'The length of name should be less than 100 characters' }
-  }
-  if (!['先生', '小姐', '其他'].includes(gender)) {
-    return { valid: false, error: 'Gender must be 先生, 小姐, 其他' }
-  }
-  const phoneRegex = /^09\d{8}$/
-  if (!phoneRegex.test(phone)) {
-    return { valid: false, error: 'Phone format is wrong' }
-  }
-  if (typeof phone !== 'string') {
-    return { valid: false, error: 'Phone must be a string' }
-  }
-  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
-  if (!emailPattern.test(email)) {
-    return { valid: false, error: 'Email format is wrong' }
-  }
-  if (email.length > 320) {
-    return { valid: false, error: 'The length of email should be less than 320 characters' }
-  }
-  if (
-    purpose &&
-    !['生日', '家庭聚餐', '情人約會', '結婚紀念', '朋友聚餐', '商務聚餐'].includes(purpose)
-  ) {
-    return { valid: false, error: 'Purpose is wrong' }
-  }
-  if (note && typeof note !== 'string') {
-    return { valid: false, error: 'Note must be a string' }
-  }
-  if (note.length > 500) {
-    return { valid: false, error: 'The length of note should be less than 500 characters' }
-  }
-  return { valid: true }
-}
 
 const CACHE_WRITE_BACK_QUEUE_URL =
   'https://sqs.ap-southeast-2.amazonaws.com/179428986360/redis-writeback-queue'
@@ -118,44 +14,18 @@ const CACHE_WRITE_BACK_QUEUE_URL =
 // for customer and business
 export const createReservation = async (req, res) => {
   try {
-    const contentType = req.headers['content-type']
     const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
       req.body
     const restaurantId = parseInt(req.params.restaurantId, 10)
-
-    // validate
-    const validation = validateCreateReservation(
-      contentType,
-      adult,
-      child,
-      diningDate,
-      diningTime,
-      name,
-      gender,
-      phone,
-      email,
-      purpose,
-      note,
-      restaurantId
-    )
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
-    }
-
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     // check whether the person exceed the limit
     const person = adult + child
     const rawSeatQty = await cache.get(`restaurant:${restaurantId}:seatQty`)
     let seatQty = JSON.parse(rawSeatQty)
+
     if (!seatQty) {
-      const { rows: seats } = await pool.query(
-        `
-        SELECT seat_qty FROM tables
-        WHERE restaurant_id = $1
-        `,
-        [restaurantId]
-      )
+      const { rows: seats } = await getTable(restaurantId)
 
       seatQty = []
       seats.forEach((seat) => {
@@ -181,15 +51,16 @@ export const createReservation = async (req, res) => {
         start = mid + 1
       }
     }
+
     if (requiredSeats === -1) {
       throw new Error('Exceed the limit of max person per reservation')
     }
+
     const filename = fileURLToPath(import.meta.url)
     const dirname = path.dirname(filename)
     const updateLockScript = await readFile(path.join(dirname, '../utils/updateLock.lua'), {
       encoding: 'utf8'
     })
-
     const stringifyAvailableSeat = await cache.executeLuaScript(
       updateLockScript,
       [
@@ -202,6 +73,7 @@ export const createReservation = async (req, res) => {
     if (!stringifyAvailableSeat) {
       return res.status(200).json({ message: 'no available seats' })
     }
+
     const availableSeat = JSON.parse(stringifyAvailableSeat)
     const writeBackData = {
       availableSeatId: availableSeat.id,
@@ -226,9 +98,9 @@ export const createReservation = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Create reservation failed' })
+    res.status(500).json({ errors: 'Create reservation failed' })
   }
 }
 
@@ -266,9 +138,9 @@ export const cancelReservationByCustomer = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get reservations failed' })
+    res.status(500).json({ errors: 'Get reservations failed' })
   }
 }
 
@@ -287,9 +159,9 @@ export const getReservations = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get reservations failed' })
+    res.status(500).json({ errors: 'Get reservations failed' })
   }
 }
 
@@ -303,9 +175,9 @@ export const cancelReservationByVendor = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Cancel reservation failed' })
+    res.status(500).json({ errors: 'Cancel reservation failed' })
   }
 }
 
@@ -314,15 +186,15 @@ export const confirmReservation = async (req, res) => {
   try {
     const reservationId = parseInt(req.params.reservationId, 10)
     const results = await reservationModel.confirmReservation(reservationId)
-    if (results.length === 0) {
+    if (!results.length) {
       throw new Error('Confirm reservation failed')
     }
     res.status(200).json({ message: 'Confirm reservation successfully' })
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Confirm reservations failed' })
+    res.status(500).json({ errors: 'Confirm reservations failed' })
   }
 }

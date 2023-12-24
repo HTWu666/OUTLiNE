@@ -3,7 +3,7 @@ const rulePage = async (req, res) => {
     res.status(200).render('./admin/setRule', { layout: './layouts/ruleManagement' })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Get rule page failed' })
+    res.status(500).json({ errors: 'Get rule page failed' })
   }
 }
 

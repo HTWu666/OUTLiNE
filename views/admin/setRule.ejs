@@ -58,14 +58,14 @@
         // 載入現有的訂位規則
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await axios.get(`/api/restaurant/${restaurantId}/rules`)
+                const response = await axios.get(`/api/v1/restaurant/${restaurantId}/rules`)
                 const rules = response.data.data
                 document.getElementById('max-person-per-group').value = rules.max_person_per_group;
                 document.getElementById('min-booking-day').value = rules.min_booking_day;
                 document.getElementById('max-booking-day').value = rules.max_booking_day;
                 document.getElementById('update-booking-time').value = rules.update_booking_time;
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         })
 
@@ -80,11 +80,11 @@
                 };
 
                 // 發送PUT請求更新訂位規則
-                const response = await axios.put(`/api/restaurant/${restaurantId}/rules`, updatedRules)
+                const response = await axios.put(`/api/v1/restaurant/${restaurantId}/rules`, updatedRules)
                 alert('Update rule successfully')
                 window.location.reload()
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         });
     </script>

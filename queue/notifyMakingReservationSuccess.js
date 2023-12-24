@@ -83,9 +83,6 @@ const sendMakingReservationSuccessfullyMail = async (
   console.log({ info })
 }
 
-const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
-
 // 寄成功訂位通知信
 const worker = async () => {
   try {
@@ -94,7 +91,9 @@ const worker = async () => {
     )
 
     while (true) {
-      const message = await SQS.receiveMessage(NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL)
+      const message = await SQS.receiveMessage(
+        process.env.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL
+      )
       if (message) {
         const {
           restaurantId,

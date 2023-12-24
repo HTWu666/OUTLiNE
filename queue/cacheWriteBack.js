@@ -17,9 +17,6 @@ const pool = new Pool({
   }
 })
 
-const CACHE_WRITE_BACK_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/redis-writeback-queue'
-
 const writeBackToDB = async (
   availableSeatId,
   restaurantId,
@@ -95,21 +92,18 @@ const writeBackToDB = async (
   }
 
   await SQS.sendMessage(
-    NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
+    process.env.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
     JSON.stringify(mailMessage)
   )
 
   return reservationId
 }
 
-const NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-notify-making-reservation-success-queue'
-
 const worker = async () => {
   try {
     console.log('[*] Waiting for messages in writeBackToDB. To exit press CTRL+C')
     while (true) {
-      const message = await SQS.receiveMessage(CACHE_WRITE_BACK_QUEUE_URL)
+      const message = await SQS.receiveMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL)
       if (message) {
         console.log(`messagebody: ${message.Body}`)
         const {
@@ -128,7 +122,7 @@ const worker = async () => {
           purpose,
           note
         } = JSON.parse(message.Body)
-        console.log(diningTime)
+
         const reservationId = await writeBackToDB(
           availableSeatId,
           restaurantId,

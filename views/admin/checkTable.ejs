@@ -33,7 +33,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await axios.get(`/api/restaurant/${restaurantId}/tables`)
+                const response = await axios.get(`/api/v1/restaurant/${restaurantId}/tables`)
                 const tableData = response.data.data
                 const tableContainer = document.getElementById('tableContainer');
                 const table = document.createElement('table');
@@ -43,7 +43,7 @@
                 // Creating body rows
                 const tbody = document.getElementById('tableBody');
             
-                if (tableData.length === 0) {
+                if (!tableData.length) {
                 // 如果没有可显示的数据，显示提示信息
                     const emptyRow = `<tr>
                                         <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center align-middle text-base font-medium text-gray-900">
@@ -73,12 +73,12 @@
 
         async function deleteTable(tableId) {
             try {
-                await axios.delete(`/api/restaurant/${restaurantId}/tables/${tableId}`)
+                await axios.delete(`/api/v1/restaurant/${restaurantId}/tables/${tableId}`)
                 alert("刪除座位成功")
                 window.location.reload()
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
     </script>

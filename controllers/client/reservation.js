@@ -21,9 +21,9 @@ export const reservationPage = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get reservation page failed' })
+    res.status(500).json({ errors: 'Get reservation page failed' })
   }
 }
 
@@ -62,8 +62,8 @@ export const getReservation = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get reservations failed' })
+    res.status(500).json({ errors: 'Get reservations failed' })
   }
 }

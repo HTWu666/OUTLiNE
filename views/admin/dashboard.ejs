@@ -31,7 +31,7 @@
                     getWeeklyFootTraficByHourChart.destroy();
                 }
 
-                const response = await axios.get(`/api/restaurant/${restaurantId}/dashboard/getWeeklyFootTrafficByHour?lastDays=${day}`)
+                const response = await axios.get(`/api/v1/restaurant/${restaurantId}/dashboard/getWeeklyFootTrafficByHour?lastDays=${day}`)
                 const data = response.data.data
                 const ctx = document.getElementById('get-weekly-foot-traffic-by-hour').getContext('2d');
                 getWeeklyFootTraficByHourChart = new Chart(ctx, {
@@ -56,6 +56,7 @@
                                 },
                             },
                             y: {
+                                beginAtZero: true,
                                 title: {
                                     display: true,
                                     text: '用餐人數',
@@ -66,7 +67,9 @@
                                 ticks: {
                                     font: {
                                         size: 16
-                                    }
+                                    },
+                                    stepSize: 1,
+                                    precision: 0,
                                 },
                             }
                         },
@@ -82,7 +85,7 @@
                                 labels: {
                                     font: {
                                         size: 16
-                                    }
+                                    },                                    
                                 }
                             }
                         }
@@ -90,7 +93,7 @@
                 });
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
 
@@ -100,7 +103,7 @@
                     getWeeklyFootTrafficDistributionChart.destroy();
                 }
                 
-                const response = await axios.get(`/api/restaurant/${restaurantId}/dashboard/getWeeklyFootTrafficDistribution?lastDays=${day}`)
+                const response = await axios.get(`/api/v1/restaurant/${restaurantId}/dashboard/getWeeklyFootTrafficDistribution?lastDays=${day}`)
                 const data = response.data.data
                 
                 const ctx = document.getElementById('get-weekly-foot-traffic-distribution').getContext('2d');
@@ -147,7 +150,7 @@
                 });
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
         
@@ -156,6 +159,7 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const day = document.getElementById('day-selector').value
+
             await getWeeklyFootTraficByHour(day);
             await getWeeklyFootTrafficDistribution(day);
             dayInput.addEventListener('keypress', (event) => {
@@ -168,6 +172,7 @@
 
         retrieveDataBtn.addEventListener('click', async () => {
             const day = dayInput.value
+
             if (day > 0) {
                 await getWeeklyFootTraficByHour(day);
                 await getWeeklyFootTrafficDistribution(day);

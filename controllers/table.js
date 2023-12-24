@@ -1,77 +1,19 @@
 import moment from 'moment-timezone'
+import pkg from 'pg'
 import * as tableModel from '../models/table.js'
 import * as cache from '../utils/cache.js'
 import * as ruleModel from '../models/rule.js'
+import { ValidationError } from '../utils/errorHandler.js'
 
-const validateCreateTable = (contentType, tableName, seatQty, availableTime, maxPersonPerGroup) => {
-  if (contentType !== 'application/json') {
-    return { valid: false, error: 'Wrong content type' }
-  }
-
-  let missingField = ''
-  if (!tableName) {
-    missingField = 'Table name'
-  } else if (!seatQty) {
-    missingField = 'Seat quantity'
-  }
-  if (missingField) {
-    return { valid: false, error: `${missingField} is required` }
-  }
-  if (!(typeof availableTime === 'string' || Array.isArray(availableTime))) {
-    return { valid: false, error: 'Available time must be a string or an array' }
-  }
-
-  // verify data type
-  if (typeof tableName !== 'string') {
-    return { valid: false, error: 'Table name must be a string' }
-  }
-  if (typeof seatQty !== 'number') {
-    return { valid: false, error: 'Seat quantity must be a number' }
-  }
-  if (tableName.length > 4) {
-    return { valid: false, error: 'Table number should be less than 5 characters' }
-  }
-  if (seatQty <= 0) {
-    return { valid: false, error: 'Seat quantity must be greater than 1' }
-  }
-  if (seatQty > maxPersonPerGroup) {
-    return {
-      valid: false,
-      error: 'Seat quantity should be less than the max person per group set in the rule'
-    }
-  }
-
-  const availableTimeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
-  if (typeof availableTime === 'string') {
-    if (!availableTimeRegex.test(availableTime)) {
-      return { valid: false, error: 'Available time must be in the form of hh:mm' }
-    }
-  } else {
-    availableTime.forEach((time) => {
-      if (!availableTimeRegex.test(time)) {
-        return { valid: false, error: 'Available time must be in the form of hh:mm' }
-      }
-    })
-  }
-
-  return { valid: true }
-}
+const { DatabaseError } = pkg
 
 export const createTable = async (req, res) => {
   try {
-    const contentType = req.headers['content-type']
     const restaurantId = parseInt(req.params.restaurantId, 10)
     const { tableName, seatQty, availableTime } = req.body
     const { max_person_per_group: maxPersonPerGroup } = await ruleModel.getRule(restaurantId)
-    const validation = validateCreateTable(
-      contentType,
-      tableName,
-      seatQty,
-      availableTime,
-      maxPersonPerGroup
-    )
-    if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
+    if (seatQty > maxPersonPerGroup) {
+      throw new ValidationError(`invalid seat quantity`)
     }
 
     const keys = await cache.getKeys(`restaurant:${restaurantId}:availableDate:*`)
@@ -92,18 +34,23 @@ export const createTable = async (req, res) => {
       await tableModel.createTable(restaurantId, tableName, seatQty, formattedAvailableTime)
     }
 
-    res.status(200).json({ message: 'done' })
+    res.status(200).json({ message: 'Create table successfully' })
   } catch (err) {
     console.error(err)
-    if (err instanceof Error) {
-      if ((err.message = 'duplicate key value violates unique constraint "name_unique"')) {
+    if (err instanceof DatabaseError) {
+      if (err.message === 'duplicate key value violates unique constraint "name_unique"') {
         return res
           .status(400)
-          .json({ error: '桌號重覆，請確認是否輸入正確。\n若要新增時間，請先將桌子刪除後重新建立' })
+          .json({
+            errors: '桌號重覆，請確認是否輸入正確。\n若要新增時間，請先將桌子刪除後重新建立'
+          })
       }
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Create table failed' })
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ errors: err.message })
+    }
+    res.status(500).json({ errors: 'Create table failed' })
   }
 }
 
@@ -149,7 +96,7 @@ export const getTables = async (req, res) => {
     res.status(200).json({ data })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Get tables failed' })
+    res.status(500).json({ errors: 'Get tables failed' })
   }
 }
 
@@ -166,8 +113,8 @@ export const deleteTable = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Delete table failed' })
+    res.status(500).json({ errors: 'Delete table failed' })
   }
 }

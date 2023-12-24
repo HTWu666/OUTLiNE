@@ -41,7 +41,7 @@ const getAvailableSeats = async (req, res) => {
 
     if (!availableSeats) {
       availableSeats = await availableSeatsModel.getAvailableSeats(restaurantId, date)
-      if (availableSeats.length === 0) {
+      if (!availableSeats.length) {
         await cache.set(`restaurant:${restaurantId}:availableDate:${date}:lock`, 'noData')
         return res.status(200).json({ data: availableSeats })
       }
@@ -116,9 +116,9 @@ const getAvailableSeats = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get available seats failed' })
+    res.status(500).json({ errors: 'Get available seats failed' })
   }
 }
 

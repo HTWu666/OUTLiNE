@@ -66,7 +66,7 @@ export const getRestaurantByUserId = async (userId) => {
     [userId]
   )
 
-  if (restaurantIds.length === 0) {
+  if (!restaurantIds.length) {
     return null
   }
 

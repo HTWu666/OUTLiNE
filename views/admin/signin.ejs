@@ -74,7 +74,7 @@
             signInPassword.value = ''
         
         try {
-            const response = await axios.post('/api/user/signin', {
+            const response = await axios.post('/api/v1/user/signin', {
                 email,
                 password
             })
@@ -85,7 +85,7 @@
             document.cookie = `token=${encodeURIComponent(response.data.data.access_token)}; expires=${expires.toUTCString()};`
             window.location.href = '/admin/chooseRestaurant'
         } catch (err) {
-            alert(`Failed: ${err.response.data.error}`)
+            alert(`Failed: ${err.response.data.errors}`)
         }
     })
     </script>

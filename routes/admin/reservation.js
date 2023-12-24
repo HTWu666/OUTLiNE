@@ -1,20 +1,20 @@
-import express from 'express'
+import { Router } from 'express'
+import { param } from 'express-validator'
 import { checkReservationPage, makeReservationPage } from '../../controllers/admin/reservation.js'
 import authenticate from '../../middlewares/authenticate.js'
-import authByRestaurantId from '../../middlewares/authByRestaurantId.js'
 
-const router = express.Router()
+const router = Router()
 
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/checkReservation',
   authenticate,
-  authByRestaurantId,
+  param('restaurantId').isInt({ min: 1 }),
   checkReservationPage
 )
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/makeReservation',
   authenticate,
-  authByRestaurantId,
+  param('restaurantId').isInt({ min: 1 }),
   makeReservationPage
 )
 

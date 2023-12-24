@@ -211,7 +211,7 @@
 
             async function fetchAndUpdateAvailableTimes() {
                 try {
-                    const response = await axios.get(`/api/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
+                    const response = await axios.get(`/api/v1/restaurant/${restaurantId}/availableSeats?date=${dateSelector.value}`);
                     availableSeatsData = response.data.data;
 
                     updateAvailableTimes();
@@ -293,7 +293,7 @@
                 const phone = document.querySelector('#phone').value;
                 const email = document.querySelector('#email').value;
                 const purposeRadio = document.querySelector('input[name="purpose"]:checked');
-                const note = document.querySelector('#note').value;
+                const noteValue = document.querySelector('#note').value;
 
                 // Check if all required fields are filled out
                 if (!name) {
@@ -326,13 +326,10 @@
                     alert('請選擇用餐時段');
                     return;
                 }
-                
-                let purpose = null
-                if (purposeRadio) {
-                    purpose = purposeRadio.value
-                }
+                let purpose = purposeRadio?.value ?? "";
+                let note = noteValue || "";
 
-                const response = await axios.post(`/api/restaurant/${restaurantId}/reservation/click`,{
+                const response = await axios.post(`/api/v1/restaurant/${restaurantId}/reservation`,{
                     "adult": parseInt(adult, 10),
                     "child": parseInt(child, 10),
                     "diningDate": diningDate,
@@ -347,14 +344,16 @@
                 alert(response.data.message)
                 location.href = location.href
             } catch (err) {
-                alert(err.response.data.error)
+                console.log(err.response.data.errors)
+                const errorMessage = err.response.data.errors.join('\n');
+                alert(errorMessage);
             }
         }
 
         // chat bot
         async function callCustomerService(userInput) {
             try {
-                const response = await axios.post(`/api/restaurant/${restaurantId}/customerService`, {
+                const response = await axios.post(`/api/v1/restaurant/${restaurantId}/customerService`, {
                     restaurantId,
                     userInput,
                 })
@@ -363,7 +362,7 @@
                     handleServerResponse(response.data.message);
                 }
             } catch (err) {
-                console.log(err.response.data.error)
+                console.log(err.response.data.errors)
             }
         }
 

@@ -1,7 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%- include('../layouts/global.ejs') %>
+    <script>
+        let token
+        document.addEventListener('DOMContentLoaded', async () => {
+            const cookies = document.cookie.split('; ')
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=')
+                if (name === 'token') {
+                    token = value
+                    break
+                }
+            }
+
+            if (token === undefined) {
+                window.location.href = '/'
+            }
+        })
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>建立餐廳 - Outline</title>
@@ -127,7 +143,7 @@
                 formData.append('photo', fileInput.files[0]);
             }
             try {
-                const response = await axios.post('/api/restaurant', formData);
+                const response = await axios.post('/api/v1/restaurant', formData);
                 alert('成功建立餐廳！');
                 window.location.href='/admin/chooseRestaurant'
             } catch (err) {
@@ -146,7 +162,7 @@
         })
 
         document.querySelector('#log-out-btn').addEventListener('click', async () => {
-            await axios.post('/api/user/signout')
+            await axios.post('/api/v1/user/signout')
             window.location.href = '/'
         })
     </script>

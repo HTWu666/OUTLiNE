@@ -1,16 +1,16 @@
-import express from 'express'
+import { Router } from 'express'
+import { param } from 'express-validator'
 import authenticate from '../../middlewares/authenticate.js'
-import authByRestaurantId from '../../middlewares/authByRestaurantId.js'
 import dashboardPage from '../../controllers/admin/dashboard.js'
 import authorize from '../../middlewares/authorize.js'
 
-const router = express.Router()
+const router = Router()
 
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/dashboard',
   authenticate,
-  authByRestaurantId,
-  authorize('admin'),
+  param('restaurantId').isInt({ min: 1 }),
+  authorize(['admin']),
   dashboardPage
 )
 

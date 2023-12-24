@@ -74,7 +74,7 @@ export const createRule = async (req, res) => {
       updateBookingTime
     )
     if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
+      return res.status(400).json({ errors: validation.error })
     }
 
     // create rule
@@ -101,9 +101,9 @@ export const createRule = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Create rule failed' })
+    res.status(500).json({ errors: 'Create rule failed' })
   }
 }
 
@@ -116,9 +116,9 @@ export const getRule = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get rule failed' })
+    res.status(500).json({ errors: 'Get rule failed' })
   }
 }
 
@@ -136,7 +136,7 @@ export const updateRule = async (req, res) => {
       updateBookingTime
     )
     if (!validation.valid) {
-      return res.status(400).json({ error: validation.error })
+      return res.status(400).json({ errors: validation.error })
     }
 
     const connection = await pool.connect()
@@ -217,8 +217,8 @@ export const updateRule = async (req, res) => {
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get rule failed' })
+    res.status(500).json({ errors: 'Get rule failed' })
   }
 }

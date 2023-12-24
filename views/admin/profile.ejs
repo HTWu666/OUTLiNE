@@ -38,7 +38,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await axios.get(`/api/user/restaurant/${restaurantId}/profile`, {
+                const response = await axios.get(`/api/v1/user/restaurant/${restaurantId}/profile`, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
@@ -49,17 +49,17 @@
                 document.getElementById('restaurant-id').textContent = profileData.restaurantId
                 document.getElementById('role').textContent = profileData.role
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         })
         document.getElementById('logoutButton').addEventListener('click', async () => {
             try {
                 document.cookie = 'token=; Max-Age=0; path=/';
                 localStorage.removeItem('restaurantId');
-                const response = await axios.post('/api/user/signout');
+                const response = await axios.post('/api/v1/user/signout');
                 window.location.href = '/';
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         });
         document.getElementById('booking-link').href = `/reservation/${restaurantId}`

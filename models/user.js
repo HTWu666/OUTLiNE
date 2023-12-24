@@ -20,7 +20,7 @@ export const findUserByEmail = async (email) => {
     `,
     [email]
   )
-  if (rows.length === 0) {
+  if (!rows.length) {
     throw new Error('帳號或密碼錯誤')
   }
 

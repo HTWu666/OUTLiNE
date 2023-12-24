@@ -1,16 +1,17 @@
 import pool from './databasePool.js'
 
-export const isUserHasRole = async (userId, roleName) => {
+export const isUserHasRole = async (userId, roleNames) => {
   try {
     const { rows } = await pool.query(
       `
       SELECT COUNT(role_id) as count FROM user_role
       LEFT JOIN roles
       ON user_role.role_id = roles.id
-      WHERE user_id = $1 AND roles.name = $2 AND user_role.status = 'active'
+      WHERE user_id = $1 AND roles.name = ANY($2::text[]) AND user_role.status = 'active'
       `,
-      [userId, roleName]
+      [userId, roleNames]
     )
+
     if (!Array.isArray(rows)) {
       throw new Error('invalid rows')
     }
@@ -63,7 +64,7 @@ export const createRole = async (userId, restaurantId) => {
     return userRoleId[0].id
   }
 
-  if (userRoleId.length === 0) {
+  if (!userRoleId.length) {
     throw new Error('您已經申請過了或是餐廳不存在。')
   }
 
@@ -96,7 +97,7 @@ export const getRole = async (userId, restaurantId) => {
     [userId, `%_restaurantId_${restaurantId}`]
   )
 
-  if (rows.length === 0) {
+  if (!rows.length) {
     throw new Error('角色不存在')
   }
 

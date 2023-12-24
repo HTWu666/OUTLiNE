@@ -25,10 +25,10 @@ import waitlistNumberPageRouter from './routes/client/waitlist.js'
 import adminRestaurantPageRouter from './routes/admin/restaurant.js'
 import rulePageRouter from './routes/admin/rule.js'
 import tablePageRouter from './routes/admin/table.js'
-import superuserRestaurantPage from './routes/superuser/restaurant.js'
 import dashboardRouter from './routes/dashboard.js'
 import dashboardPageRouter from './routes/admin/dashboard.js'
 import rateLimiter from './middlewares/rateLimiter.js'
+import { errorHandler } from './utils/errorHandler.js'
 
 dotenv.config()
 const app = express()
@@ -85,7 +85,6 @@ app.use('/', rateLimiter, [
   adminRestaurantPageRouter,
   rulePageRouter,
   tablePageRouter,
-  superuserRestaurantPage,
   dashboardPageRouter
 ])
 
@@ -94,14 +93,13 @@ app.all('*', (req, res) => {
 })
 
 // Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack)
-})
+app.use(errorHandler)
 
 server.listen(process.env.PORT, () => {
   console.log(`Server is listening on ${process.env.PORT}`)
 })
 
+// logger
 const outputLogStream = fs.createWriteStream('./logs/console/console.log', {
   flags: 'a'
 })

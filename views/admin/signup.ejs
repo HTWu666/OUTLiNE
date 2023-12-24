@@ -91,7 +91,7 @@
         }
 
         try {
-            const response = await axios.post('/api/user/signup', {
+            const response = await axios.post('/api/v1/user/signup', {
                 name,
                 email,
                 password
@@ -104,7 +104,7 @@
             document.getElementById('choose-next-step').classList.remove('hidden');
         } catch (err) {
             console.log(err)
-            alert(err.response.data.error)
+            alert(err.response.data.errors)
         }   
     });
 

@@ -184,7 +184,7 @@
                 const purposeElement = document.querySelector('input[name="purpose"]:checked');
                 const purpose = purposeElement ? purposeElement.value : null;
                 const note = document.querySelector('#note').value
-                const response = await axios.post(`/api/restaurant/${restaurantId}/waitlist`,{
+                const response = await axios.post(`/api/v1/restaurant/${restaurantId}/waitlist`,{
                     "adult": adult,
                     "child": child,
                     "name": name,
@@ -205,7 +205,7 @@
                 document.getElementById('qrcode-modal').classList.remove('hidden');
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
 

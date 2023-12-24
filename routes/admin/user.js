@@ -6,7 +6,7 @@ import {
   reviewApplicationPage
 } from '../../controllers/admin/user.js'
 import authenticate from '../../middlewares/authenticate.js'
-import authByRestaurantId from '../../middlewares/authByRestaurantId.js'
+import authorize from '../../middlewares/authorize.js'
 
 const router = express.Router()
 
@@ -15,13 +15,13 @@ router.get('/signup', signupPage)
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/profile',
   authenticate,
-  authByRestaurantId,
+  authorize(['admin', 'user']),
   profilePage
 )
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/reviewApplication',
   authenticate,
-  authByRestaurantId,
+  authorize(['admin']),
   reviewApplicationPage
 )
 

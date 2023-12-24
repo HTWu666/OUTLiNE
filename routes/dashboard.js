@@ -1,26 +1,32 @@
-import express from 'express'
+import { Router } from 'express'
+import { param, query } from 'express-validator'
 import authenticate from '../middlewares/authenticate.js'
 import authorize from '../middlewares/authorize.js'
+import handleValidationResult from '../middlewares/validator.js'
 import {
   getWeeklyFootTrafficByHour,
   getWeeklyFootTrafficDistribution
 } from '../controllers/dashboard.js'
-import authByRestaurantId from '../middlewares/authByRestaurantId.js'
 
-const router = express.Router()
+const router = Router()
 
 router.get(
-  '/restaurant/:restaurantId(\\d+)/dashboard/getWeeklyFootTrafficByHour',
+  '/v1/restaurant/:restaurantId(\\d+)/dashboard/getWeeklyFootTrafficByHour',
   authenticate,
-  authByRestaurantId,
-  authorize('admin'),
+  param('restaurantId').isInt({ min: 1 }),
+  query('lastDays').isInt({ min: 1 }),
+  handleValidationResult,
+  authorize(['admin']),
   getWeeklyFootTrafficByHour
 )
+
 router.get(
-  '/restaurant/:restaurantId(\\d+)/dashboard/getWeeklyFootTrafficDistribution',
+  '/v1/restaurant/:restaurantId(\\d+)/dashboard/getWeeklyFootTrafficDistribution',
   authenticate,
-  authByRestaurantId,
-  authorize('admin'),
+  param('restaurantId').isInt({ min: 1 }),
+  query('lastDays').isInt({ min: 1 }),
+  handleValidationResult,
+  authorize(['admin']),
   getWeeklyFootTrafficDistribution
 )
 

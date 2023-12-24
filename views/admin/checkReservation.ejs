@@ -55,7 +55,7 @@
             async function fetchReservations() {
                 try {
                     const date = document.querySelector('#date-selector').value
-                    const response = await axios.get(`/api/restaurant/${restaurantId}/reservation?date=${date}`, {
+                    const response = await axios.get(`/api/v1/restaurant/${restaurantId}/reservation?date=${date}`, {
                         headers: {
                             "Authorization": `Bearer ${token}`
                         }
@@ -64,7 +64,7 @@
                     const reservations = response.data.data;
                     const tbody = document.getElementById('reservations-body');
                     tbody.innerHTML = '';
-                    if (reservations.length === 0) {
+                    if (!reservations.length) {
                         const noDataTr = document.createElement('tr')
                         noDataTr.innerHTML = `<td class="text-center align-middle py-6" colspan="10">這天沒有人訂位</td>`
                         tbody.appendChild(noDataTr)
@@ -103,7 +103,7 @@
                         });
                     }
                 } catch (err) {
-                    alert(err.response.data.error)
+                    alert(err.response.data.errors)
                 }
             }
             dateSelector.addEventListener('change', fetchReservations);
@@ -113,7 +113,7 @@
 
         async function sendConfirmRequest(reservationId) {
             try {
-                const response = await axios.put(`/api/restaurant/${restaurantId}/reservation/${reservationId}`, {}, {
+                const response = await axios.put(`/api/v1/restaurant/${restaurantId}/reservation/${reservationId}`, {}, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
@@ -122,13 +122,13 @@
                 alert(response.data.message)
                 document.querySelector(`#reservation${reservationId}`).remove()
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
 
         async function sendCancelRequest(reservationId) {
             try {
-                const response = await axios.delete(`/api/restaurant/${restaurantId}/reservation/${reservationId}`, {
+                const response = await axios.delete(`/api/v1/restaurant/${restaurantId}/reservation/${reservationId}`, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
@@ -138,7 +138,7 @@
                 document.querySelector(`#reservation${reservationId}`).remove()
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         }
     </script>

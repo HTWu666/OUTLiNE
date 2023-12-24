@@ -5,7 +5,7 @@ export const getWeeklyFootTrafficByHour = async (req, res) => {
     const { restaurantId } = req.params
     const { lastDays } = req.query
     if (lastDays <= 0) {
-      return res.status(400).json({ error: 'Past days should be a positive number' })
+      return res.status(400).json({ errors: 'Past days should be a positive number' })
     }
     const data = await dashboardModel.getWeeklyFootTrafficByHour(restaurantId, lastDays)
 
@@ -13,9 +13,9 @@ export const getWeeklyFootTrafficByHour = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get weekly foot trafic by hour data failed' })
+    res.status(500).json({ errors: 'Get weekly foot trafic by hour data failed' })
   }
 }
 
@@ -29,8 +29,8 @@ export const getWeeklyFootTrafficDistribution = async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Get weekly foot trafic distribution data failed' })
+    res.status(500).json({ errors: 'Get weekly foot trafic distribution data failed' })
   }
 }

@@ -11,7 +11,7 @@ export const createWaitlistPage = async (req, res) => {
     })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Get create waitlist page failed' })
+    res.status(500).json({ errors: 'Get create waitlist page failed' })
   }
 }
 
@@ -20,6 +20,6 @@ export const checkWaitlistPage = async (req, res) => {
     res.status(200).render('./admin/checkWaitlist', { layout: 'layouts/bookingManagement' })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Get check waitlist page failed' })
+    res.status(500).json({ errors: 'Get check waitlist page failed' })
   }
 }

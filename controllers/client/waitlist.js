@@ -23,7 +23,7 @@ const waitlistNumberPage = async (req, res) => {
     })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Get waitlist number page failed' })
+    res.status(500).json({ errors: 'Get waitlist number page failed' })
   }
 }
 

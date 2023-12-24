@@ -1,4 +1,5 @@
-import express from 'express'
+import { Router } from 'express'
+import { body, query, param, header } from 'express-validator'
 import {
   getReservations,
   cancelReservationByCustomer,
@@ -7,26 +8,59 @@ import {
   createReservation
 } from '../controllers/reservation.js'
 import authenticate from '../middlewares/authenticate.js'
-import { parseUpnForReservation } from '../middlewares/parseUpn.js'
+import handleValidationResult from '../middlewares/validator.js'
+import parseUpn from '../middlewares/parseUpn.js'
 
-const router = express.Router()
+const router = Router()
 
-// for business
-router.post('/restaurant/:restaurantId(\\d+)/reservation', authenticate, createReservation)
-router.get('/restaurant/:restaurantId(\\d+)/reservation', authenticate, getReservations)
-router.put(
-  '/restaurant/:restaurantId(\\d+)/reservation/:reservationId(\\d+)',
+router.post(
+  '/v1/restaurant/:restaurantId(\\d+)/reservation',
+  param('restaurantId').isInt(),
+  header('Content-Type').equals('application/json'),
+  body('adult').notEmpty().isInt({ min: 1 }),
+  body('child').notEmpty().isInt({ min: 0 }),
+  body('diningDate').matches(/^\d{4}-\d{2}-\d{2}$/),
+  body('diningTime').matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  body('name').notEmpty().isString().isLength({ max: 100 }),
+  body('gender').isIn(['先生', '小姐', '其他']),
+  body('phone').matches(/^09\d{8}$/),
+  body('email').isEmail().isLength({ max: 320 }),
+  body('purpose')
+    .optional()
+    .isIn(['', '生日', '家庭聚餐', '情人約會', '結婚紀念', '朋友聚餐', '商務聚餐']),
+  body('note').optional().isString().isLength({ max: 500 }),
+  handleValidationResult,
+  createReservation
+)
+
+router.get(
+  '/v1/restaurant/:restaurantId(\\d+)/reservation',
   authenticate,
+  param('restaurantId').isInt({ min: 1 }),
+  query('date').matches(/^\d{4}-\d{2}-\d{2}$/),
+  handleValidationResult,
+  getReservations
+)
+
+router.put(
+  '/v1/restaurant/:restaurantId(\\d+)/reservation/:reservationId(\\d+)',
+  authenticate,
+  param('restaurantId').isInt({ min: 1 }),
+  param('reservationId').isInt({ min: 1 }),
+  handleValidationResult,
   confirmReservation
 )
+
 router.delete(
-  '/restaurant/:restaurantId(\\d+)/reservation/:reservationId(\\d+)',
+  '/v1/restaurant/:restaurantId(\\d+)/reservation/:reservationId(\\d+)',
   authenticate,
+  param('restaurantId').isInt({ min: 1 }),
+  param('reservationId').isInt({ min: 1 }),
+  handleValidationResult,
   cancelReservationByVendor
 )
 
-// for customer
-router.post('/restaurant/:restaurantId(\\d+)/reservation/click', createReservation) // 前端從 url 取得餐廳 id, 再回傳
-router.delete('/reservation/click', parseUpnForReservation, cancelReservationByCustomer)
+// for customer to cancel
+router.delete('/v1/reservation/click', parseUpn('reservation'), cancelReservationByCustomer)
 
 export default router

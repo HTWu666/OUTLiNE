@@ -21,9 +21,6 @@ const pool = new Pool({
   }
 })
 
-const DINING_REMINDER_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/outline-dining-reminder-queue'
-
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -100,7 +97,7 @@ const worker = async () => {
   try {
     console.log('[*] Waiting for messages in diningReminderWorker. To exit press CTRL+C')
     while (true) {
-      const message = await SQS.receiveMessage(DINING_REMINDER_QUEUE_URL)
+      const message = await SQS.receiveMessage(process.env.DINING_REMINDER_QUEUE_URL)
       if (message) {
         const restaurantId = message.Body
         await sendReminderForDiningMail(restaurantId)

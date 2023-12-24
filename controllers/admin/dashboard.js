@@ -3,7 +3,7 @@ const dashboardPage = (req, res) => {
     res.status(200).render('./admin/dashboard', { layout: 'layouts/dashboard' })
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: 'Get dashboard page failed' })
+    res.status(500).json({ errors: 'Get dashboard page failed' })
   }
 }
 

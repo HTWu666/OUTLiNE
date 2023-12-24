@@ -1,11 +1,47 @@
-import express from 'express'
+import { Router } from 'express'
+import { param, header, body } from 'express-validator'
 import authenticate from '../middlewares/authenticate.js'
+import authorize from '../middlewares/authorize.js'
 import { createRule, getRule, updateRule } from '../controllers/rule.js'
 
-const router = express.Router()
+const router = Router()
 
-router.post('/restaurant/:restaurantId(\\d+)/rules', authenticate, createRule)
-router.get('/restaurant/:restaurantId(\\d+)/rules', authenticate, getRule)
-router.put('/restaurant/:restaurantId(\\d+)/rules', authenticate, updateRule)
+const validateRuleInput = [
+  param('restaurantId').isInt({ min: 1 }),
+  header('Content-Type').equals('application/json'),
+  body('maxPersonPerGroup')
+    .isInt({ min: 1 })
+    .withMessage('Max person per group must be a positive integer'),
+  body('minBookingDay').isInt({ min: 1 }).withMessage('Min booking day must be a positive integer'),
+  body('maxBookingDay').isInt({ min: 1 }).withMessage('Max booking day must be a positive integer'),
+  body('updateBookingTime')
+    .matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage('Update booking time must be in the form of HH:MM')
+]
+
+router.post(
+  '/v1/restaurant/:restaurantId(\\d+)/rules',
+  authenticate,
+  param('restaurantId').isInt({ min: 1 }),
+  authorize(['admin']),
+  ...validateRuleInput,
+  createRule
+)
+
+router.get(
+  '/v1/restaurant/:restaurantId(\\d+)/rules',
+  authenticate,
+  param('restaurantId').isInt({ min: 1 }),
+  getRule
+)
+
+router.put(
+  '/v1/restaurant/:restaurantId(\\d+)/rules',
+  authenticate,
+  param('restaurantId').isInt({ min: 1 }),
+  authorize(['admin']),
+  ...validateRuleInput,
+  updateRule
+)
 
 export default router

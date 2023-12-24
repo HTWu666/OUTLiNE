@@ -68,9 +68,9 @@ app.post('/api/deleteExpiredBookingDate', async (req, res) => {
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {
-      return res.status(400).json({ error: err.message })
+      return res.status(400).json({ errors: err.message })
     }
-    res.status(500).json({ error: 'Delete expired booking date failed' })
+    res.status(500).json({ errors: 'Delete expired booking date failed' })
   }
 })
 

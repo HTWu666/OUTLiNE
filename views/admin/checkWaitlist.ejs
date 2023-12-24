@@ -52,14 +52,14 @@
         const showTotalWaiting = document.querySelector('#show-total-waiting')
         let totalWaiting = 0
         document.addEventListener('DOMContentLoaded', async () => {
-            const response = await axios.get(`/api/restaurant/${restaurantId}/waitlist`, {
+            const response = await axios.get(`/api/v1/restaurant/${restaurantId}/waitlist`, {
                 headers: {
                             "Authorization": `Bearer ${token}`
                 }
             });
             const waitingList = response.data.data;
             const waitingListBody = document.getElementById('waiting-list-body');
-            if (waitingList.length === 0) {
+            if (!waitingList.length) {
                 const noDataTr = document.createElement('tr')
                 noDataTr.innerHTML = `<td class="text-center align-middle py-6" colspan="10">目前沒有人在候位</td>`
                 waitingListBody.appendChild(noDataTr)
@@ -81,7 +81,7 @@
                 });
             }
 
-            const currentNumberResponse = await axios.get(`/api/restaurant/${restaurantId}/waitlist/currentNumber`)
+            const currentNumberResponse = await axios.get(`/api/v1/restaurant/${restaurantId}/waitlist/currentNumber`)
             showCurrentNumber.textContent = currentNumberResponse.data.data.currentNumber
 
             showTotalWaiting.textContent = totalWaiting
@@ -89,26 +89,26 @@
 
         async function confirmSeat(waitingId) {
             try {
-                const response = await axios.put(`/api/restaurant/${restaurantId}/waitlist/${waitingId}`);
+                const response = await axios.put(`/api/v1/restaurant/${restaurantId}/waitlist/${waitingId}`);
                 removeWaitlistItem(waitingId);
                 totalWaiting--;
                 showTotalWaiting.textContent = totalWaiting;
                 alert('Confirm successfully');
             } catch (err) {
                 console.log(err)
-                alert(err.response.data.error);
+                alert(err.response.data.errors);
             }
         }
 
         async function cancelWaitlist(waitingId) {
             try {
-                const response = await axios.delete(`/api/restaurant/${restaurantId}/waitlist/${waitingId}`);
+                const response = await axios.delete(`/api/v1/restaurant/${restaurantId}/waitlist/${waitingId}`);
                 removeWaitlistItem(waitingId);
                 totalWaiting--;
                 showTotalWaiting.textContent = totalWaiting;0
                 alert('Cancel successfully');
             } catch (err) {
-                alert(err.response.data.error);
+                alert(err.response.data.errors);
             }
         }
 
@@ -126,20 +126,20 @@
 
         document.querySelector('#reset-number').addEventListener('click', async () => {
             try {
-                const response = await axios.post(`/api/restaurant/${restaurantId}/waitlist/resetNumber`)
+                const response = await axios.post(`/api/v1/restaurant/${restaurantId}/waitlist/resetNumber`)
                 showCurrentNumber.textContent = 0
                 alert('reset number')
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         })
 
         document.querySelector('#call-number').addEventListener('click', async () => {
             try {
-                const response = await axios.put(`/api/restaurant/${restaurantId}/waitlist`)
+                const response = await axios.put(`/api/v1/restaurant/${restaurantId}/waitlist`)
                 alert('called number')
             } catch (err) {
-                alert(err.response.data.error)
+                alert(err.response.data.errors)
             }
         })
     </script>

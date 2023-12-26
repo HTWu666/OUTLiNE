@@ -8,7 +8,8 @@
     "start": "concurrently \"npm:watch-css\" \"npm:server\" ",
     "watch-css": "tailwindcss -i ./public/css/styles.css -o ./public/css/output.css --watch",
     "build-css": "tailwindcss build public/css/styles.css -o public/css/output.css",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -29,7 +30,6 @@
     "express-ejs-layouts": "^2.5.1",
     "express-validator": "^7.0.1",
     "ioredis": "^5.3.2",
-    "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.43",
     "morgan-body": "^2.6.9",
@@ -57,6 +57,7 @@
     "k6": "^0.0.0",
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
-    "tailwindcss": "^3.3.5"
+    "tailwindcss": "^3.3.5",
+    "vitest": "^1.1.0"
   }
 }

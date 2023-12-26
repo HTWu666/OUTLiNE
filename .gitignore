@@ -145,3 +145,4 @@ dist
 /test
 .dockerignore
 /uploads
+jest.config.js

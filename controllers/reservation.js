@@ -8,15 +8,12 @@ import { getTable } from '../models/table.js'
 import * as SQS from '../utils/SQS.js'
 import * as cache from '../utils/cache.js'
 
-const CACHE_WRITE_BACK_QUEUE_URL =
-  'https://sqs.ap-southeast-2.amazonaws.com/179428986360/redis-writeback-queue'
-
 // for customer and business
 export const createReservation = async (req, res) => {
   try {
     const { adult, child, diningDate, diningTime, name, gender, phone, email, purpose, note } =
       req.body
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
     // check whether the person exceed the limit
@@ -92,7 +89,7 @@ export const createReservation = async (req, res) => {
       note
     }
 
-    await SQS.sendMessage(CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
+    await SQS.sendMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
     res.status(200).json({ message: 'Making reservation successfully' })
   } catch (err) {
@@ -147,7 +144,7 @@ export const cancelReservationByCustomer = async (req, res) => {
 // for business
 export const getReservations = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const { date } = req.query
     const reservations = await reservationModel.getReservations(restaurantId, date)
     const formattedReservations = reservations.map((item) => ({
@@ -168,7 +165,7 @@ export const getReservations = async (req, res) => {
 // for business
 export const cancelReservationByVendor = async (req, res) => {
   try {
-    const reservationId = parseInt(req.params.reservationId, 10)
+    const { reservationId } = req.params
     await reservationModel.cancelReservation(reservationId)
 
     res.status(200).json({ message: 'Cancel reservation successfully' })
@@ -184,7 +181,7 @@ export const cancelReservationByVendor = async (req, res) => {
 // for business
 export const confirmReservation = async (req, res) => {
   try {
-    const reservationId = parseInt(req.params.reservationId, 10)
+    const { reservationId } = req.params
     const results = await reservationModel.confirmReservation(reservationId)
     if (!results.length) {
       throw new Error('Confirm reservation failed')

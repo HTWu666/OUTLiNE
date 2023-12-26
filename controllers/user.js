@@ -1,6 +1,5 @@
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
-import validator from 'validator'
 import * as userModel from '../models/user.js'
 import * as restaurantModel from '../models/restaurant.js'
 import * as roleModel from '../models/role.js'

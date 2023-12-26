@@ -22,12 +22,11 @@ const tableName = 'A6'
 const seatQty = 2
 const availableDate = '2023-12-25'
 const availableTime = '04:00'
-const availability = true // 确保这个布尔值在您的数据库中能被正确处理
+const availability = true
 
 const bulkCreate = async () => {
   const values = []
   for (let i = 0; i < num; i++) {
-    // 正确格式化每个值
     values.push(
       `(${restaurantId}, ${tableId}, '${tableName}', ${seatQty}, '${availableDate}', '${availableTime}', ${availability})`
     )

@@ -11,6 +11,7 @@ router.get(
   param('restaurantId').isInt({ min: 1 }),
   checkReservationPage
 )
+
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/makeReservation',
   authenticate,

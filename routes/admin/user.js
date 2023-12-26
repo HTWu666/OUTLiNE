@@ -1,4 +1,5 @@
 import express from 'express'
+import { param } from 'express-validator'
 import {
   signinPage,
   profilePage,
@@ -15,12 +16,13 @@ router.get('/signup', signupPage)
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/profile',
   authenticate,
-  authorize(['admin', 'user']),
+  param('restaurantId').isInt({ min: 1 }),
   profilePage
 )
 router.get(
   '/restaurant/:restaurantId(\\d+)/admin/reviewApplication',
   authenticate,
+  param('restaurantId').isInt({ min: 1 }),
   authorize(['admin']),
   reviewApplicationPage
 )

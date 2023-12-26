@@ -7,50 +7,6 @@ import * as restaurantModel from '../models/restaurant.js'
 import * as roleModel from '../models/role.js'
 import { updateAutoScalingSchedule } from '../utils/autoScaling.js'
 
-const validateCreateRestaurant = (name, address, phone, parking, payment, kidChair, vegetarian) => {
-  let missingField = ''
-  if (!name) {
-    missingField = 'Name'
-  } else if (!address) {
-    missingField = 'Address'
-  } else if (!phone) {
-    missingField = 'Phone'
-  }
-  if (missingField) {
-    return { valid: false, error: `${missingField} is required` }
-  }
-
-  if (typeof name !== 'string') {
-    return { valid: false, error: 'Restaurant name should be a string' }
-  }
-  if (name.length > 100) {
-    return { valid: false, error: 'Restaurant name should be less than 100 characters' }
-  }
-  if (typeof address !== 'string') {
-    return { valid: false, error: 'Restaurant address should be a string' }
-  }
-  if (address.length > 500) {
-    return { valid: false, error: 'Restaurant address should be less than 500 characters' }
-  }
-  const phoneRegex = /^0\d{9}$/
-  if (!phoneRegex.test(phone)) {
-    return { valid: false, error: 'Phone format is wrong' }
-  }
-  if (typeof parking !== 'string') {
-    return { valid: false, error: 'Parking address should be a string' }
-  }
-  if (parking.length > 500) {
-    return { valid: false, error: 'Parking address should be less than 500 characters' }
-  }
-  if (typeof payment !== 'string') {
-    return { valid: false, error: 'Payment should be a string' }
-  }
-  if (payment.length > 500) {
-    return { valid: false, error: 'Payment should be less than 500 characters' }
-  }
-  return { valid: true }
-}
-
 export const createRestaurant = async (req, res) => {
   try {
     const { userId } = res.locals
@@ -64,21 +20,6 @@ export const createRestaurant = async (req, res) => {
       'vegetarian-option': vegetarian
     } = req.body
     const pictureUrl = `${req.file.filename}`
-
-    // validate
-    const validation = validateCreateRestaurant(
-      name,
-      address,
-      phone,
-      parking,
-      payment,
-      kidChair,
-      vegetarian,
-      pictureUrl
-    )
-    if (!validation.valid) {
-      return res.status(400).json({ errors: validation.error })
-    }
 
     // create restaurant
     const restaurantId = await restaurantModel.createRestaurant(
@@ -100,7 +41,7 @@ export const createRestaurant = async (req, res) => {
     const maxPersonPerGroup = 8
     const minBookingDay = 1
     const maxBookingDay = 30
-    const updateBookingTime = '18:32'
+    const updateBookingTime = '00:00'
     const ruleId = await ruleModel.createRule(
       restaurantId,
       maxPersonPerGroup,

@@ -4,7 +4,7 @@ import * as waitlistModel from '../models/waitlist.js'
 
 export const resetNumber = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const waitlistId = await waitlistModel.resetNumber(restaurantId)
 
     res.status(200).json(waitlistId)
@@ -19,9 +19,9 @@ export const resetNumber = async (req, res) => {
 
 export const createWaiting = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const { adult, child, name, gender, phone, purpose, note } = req.body
-    const { waitingId, number } = await waitlistModel.createWaiting(
+    const { waitingId } = await waitlistModel.createWaiting(
       restaurantId,
       adult,
       child,
@@ -49,7 +49,7 @@ export const createWaiting = async (req, res) => {
 
 export const getCurrNumber = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const currentNumber = await waitlistModel.getCurrNumber(restaurantId)
 
     res.status(200).json({ data: { currentNumber } })
@@ -64,7 +64,7 @@ export const getCurrNumber = async (req, res) => {
 
 export const callNumber = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const nextNumber = await waitlistModel.callNumber(restaurantId)
     if (!nextNumber) {
       return res.status(200).json({ message: 'No next number' })
@@ -84,7 +84,7 @@ export const callNumber = async (req, res) => {
 
 export const cancelWaiting = async (req, res) => {
   try {
-    const waitingId = parseInt(req.params.waitingId, 10)
+    const { waitingId } = req.params
     await waitlistModel.cancelWaiting(waitingId)
 
     res.status(200).json({ message: 'Cancel waiting Successfully' })
@@ -99,7 +99,7 @@ export const cancelWaiting = async (req, res) => {
 
 export const getWaitlist = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const waitlist = await waitlistModel.getWaitlist(restaurantId)
 
     res.status(200).json({ data: waitlist })
@@ -114,7 +114,7 @@ export const getWaitlist = async (req, res) => {
 
 export const confirm = async (req, res) => {
   try {
-    const waitingId = parseInt(req.params.waitingId, 10)
+    const { waitingId } = req.params
     await waitlistModel.confirm(waitingId)
 
     res.status(200).json({ message: 'Confirm waiting successfully' })
@@ -129,7 +129,7 @@ export const confirm = async (req, res) => {
 
 export const cancelWaitingByBusiness = async (req, res) => {
   try {
-    const waitingId = parseInt(req.params.waitingId, 10)
+    const { waitingId } = req.params
     await waitlistModel.cancelWaiting(waitingId)
 
     res.status(200).json({ message: 'Cancel waiting Successfully' })

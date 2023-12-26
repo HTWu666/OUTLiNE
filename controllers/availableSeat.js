@@ -4,7 +4,7 @@ import * as cache from '../utils/cache.js'
 
 const getAvailableSeats = async (req, res) => {
   try {
-    const restaurantId = parseInt(req.params.restaurantId, 10)
+    const { restaurantId } = req.params
     const { date } = req.query
     let availableSeats = await cache.lrange(
       `restaurant:${restaurantId}:availableDate:${date}`,
@@ -19,7 +19,7 @@ const getAvailableSeats = async (req, res) => {
           `restaurant:${restaurantId}:availableDate:${date}:lock`,
           'lock'
         )
-        while (!availableSeats && isLockSet === 0) {
+        while (!availableSeats && !isLockSet) {
           availableSeats = await cache.lrange(
             `restaurant:${restaurantId}:availableDate:${date}`,
             0,
@@ -87,11 +87,10 @@ const getAvailableSeats = async (req, res) => {
       return res.status(200).json({ data: transformedData })
     }
 
-    const getAvailableSeatsPromises = availableSeats.map((availableSeatInfo) => {
-      return cache.exists(`restaurant:${restaurantId}:availableDate:${date}:${availableSeatInfo}`)
-    })
+    const getAvailableSeatsPromises = availableSeats.map((availableSeatInfo) =>
+      cache.exists(`restaurant:${restaurantId}:availableDate:${date}:${availableSeatInfo}`)
+    )
     const results = await Promise.all(getAvailableSeatsPromises)
-    const dataTransformedSet = new Set()
     const seatsMap = new Map()
     availableSeats.forEach((item, index) => {
       if (results[index] === 1) {

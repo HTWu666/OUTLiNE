@@ -81,7 +81,7 @@ This system utilizes AWS services to achieve a stateless architecture, enhancing
 
 After logging in, restaurant operators can navigate to the reservation management page. Here, they have the option to manually enter customer reservation details in the 'Add Reservation' section. Additionally, they can visit the 'Confirm Reservations' section to view all reservation information and make necessary status updates as required
 
-https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/fc746251-5eed-4c43-9455-a80571256504
+https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/30fc4e4a-7b86-42cc-a305-bc2ac18fe07c
 
 ### Waitlist
 

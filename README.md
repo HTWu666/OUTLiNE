@@ -144,7 +144,7 @@ Figure 4 CPU utilization of Redis during spike testing.
 
 ### Waitlist Architecture
 
-As illustrated in the diagram, this is the architecture of the waitlist system. Following a successful waitlisting, the server updates the number queue in real-time using Socket.IO.
+As illustrated in the diagram, this is the architecture of the waitlist system. Following a successful waitlisting, the server updates the number queue in real-time using Socket.IO. Due to the horizontal scaling of the server, Redis is employed as an adapter to facilitate the sharing of Socket.IO events across multiple nodes. This integration with Redis ensures that all server instances are synchronized, allowing real-time updates to be uniformly distributed and managed across the system.
 
 ![waitlist architecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/9c0fbebf-260a-44ad-ab5b-2e6e68eb98f6)
 Figure 5 Waitlist Architecture

@@ -133,7 +133,7 @@ For popular restaurants, the release of new available reservation times often tr
 
 2. Figure 4 indicates that the CPU utilization of Redis remains below 30% during spike testing suggests that this system architecture can withstand concurrent requests exceeding 5000 RPS. The upper limit is yet to be tested.
 
-![High Concurrent Request Arichitecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/34eb06be-363c-475c-bd4b-57013d5e0f35)
+![High Concurrent Request Arichitecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/2182ac8c-201d-445d-826e-f023199d52fa)
 Figure 2 High Concurrent Request Architecture
 
 ![EC2 Horizontal Scaling Effect on RPS](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/2eed8d53-90fd-4a78-ad92-f1be334ebbb4)
@@ -146,7 +146,7 @@ Figure 4 CPU utilization of Redis during spike testing.
 
 As illustrated in the diagram, this is the architecture of the waitlist system. Following a successful waitlisting, the server updates the number queue in real-time using Socket.IO.
 
-![waitlist architecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/fdbffd30-ce49-4059-a8a1-d4510154f3bb)
+![waitlist architecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/9c0fbebf-260a-44ad-ab5b-2e6e68eb98f6)
 Figure 5 Waitlist Architecture
 <br>
 

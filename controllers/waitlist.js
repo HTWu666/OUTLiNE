@@ -72,7 +72,7 @@ export const callNumber = async (req, res) => {
     const io = req.app.get('io')
     io.emit('numberCalled', nextNumber)
 
-    res.status(200).json(nextNumber)
+    res.status(200).json({ data: nextNumber })
   } catch (err) {
     console.error(err)
     if (err instanceof Error) {

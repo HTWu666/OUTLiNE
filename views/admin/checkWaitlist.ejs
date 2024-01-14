@@ -137,7 +137,11 @@
         document.querySelector('#call-number').addEventListener('click', async () => {
             try {
                 const response = await axios.put(`/api/v1/restaurant/${restaurantId}/waitlist`)
-                alert('called number')
+                if (response.data.data) {
+                    alert(`Calling No. ${response.data.data}`)
+                } else {
+                    alert(`${response.data.message}`)
+                }
             } catch (err) {
                 alert(err.response.data.errors)
             }

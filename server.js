@@ -9,6 +9,8 @@ import swaggerUi from 'swagger-ui-express'
 import expressLayouts from 'express-ejs-layouts'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import { createAdapter } from '@socket.io/redis-adapter'
+import Redis from 'ioredis'
 import userRouter from './routes/user.js'
 import restaurantRouter from './routes/restaurant.js'
 import tableRouter from './routes/table.js'
@@ -32,6 +34,8 @@ import { errorHandler } from './utils/errorHandler.js'
 
 dotenv.config()
 const app = express()
+
+// SocketIO
 const server = createServer(app)
 const io = new Server(server, {
   cors: {
@@ -40,7 +44,24 @@ const io = new Server(server, {
   }
 })
 
+// Redis adapter
+const pubClient = new Redis({
+  port: 6379,
+  host: process.env.REDIS_HOST,
+  password: process.env.REDIS_PASSWORD,
+  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
+  //tls: {}
+})
+const subClient = new Redis({
+  port: 6379,
+  host: process.env.REDIS_HOST,
+  password: process.env.REDIS_PASSWORD,
+  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
+  //tls: {}
+})
+io.adapter(createAdapter(pubClient, subClient))
 app.set('io', io)
+
 app.use(express.json()) // parse json
 app.use(express.urlencoded({ extended: false })) // parse urlencoded
 app.use(cookieParser()) // parse cookie

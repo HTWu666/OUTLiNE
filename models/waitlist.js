@@ -138,7 +138,7 @@ export const callNumber = async (restaurantId) => {
       `,
       [restaurantId]
     )
-    if (!waitlist[0]) {
+    if (!waitlist[0] || !waitlist[1]) {
       return null
     }
     let currentNumber = waitlist[0].number

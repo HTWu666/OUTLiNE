@@ -1,5 +1,6 @@
 import moment from 'moment-timezone'
 import * as availableSeatsModel from '../models/availableSeat.js'
+import { getRule } from '../models/rule.js'
 import * as cache from '../utils/cache.js'
 
 const getAvailableSeats = async (req, res) => {
@@ -12,12 +13,15 @@ const getAvailableSeats = async (req, res) => {
       -1
     )
 
-    if (!availableSeats) {
+    const rule = await getRule(restaurantId)
+    const ttl = rule.max_booking_day
+    if (!availableSeats && cache.status === 'ready') {
       const lockValue = await cache.get(`restaurant:${restaurantId}:availableDate:${date}:lock`)
       if (!lockValue) {
         const isLockSet = await cache.setnx(
           `restaurant:${restaurantId}:availableDate:${date}:lock`,
-          'lock'
+          'lock',
+          ttl
         )
         while (!availableSeats && !isLockSet) {
           availableSeats = await cache.lrange(

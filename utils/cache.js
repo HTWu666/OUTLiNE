@@ -5,7 +5,7 @@ export const cache = new Redis({
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
   retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
-  // tls: {}
+  //tls: {}
 })
 
 export const get = async (key) => {

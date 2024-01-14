@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken'
 import pool from './databasePool.js'
 
 export const createReservation = async (
@@ -12,12 +13,17 @@ export const createReservation = async (
   phone,
   email,
   purpose,
-  note,
-  connection
+  note
 ) => {
-  // 取得可訂位的時間並 lock the row
-  const { rows: availableSeat } = await connection.query(
-    `
+  console.log(restaurantId)
+  console.log(requiredSeats)
+  console.log(diningDate)
+  console.log(diningTime)
+  const connection = await pool.connect()
+  try {
+    // 取得可訂位的時間並 lock the row
+    const { rows: availableSeat } = await connection.query(
+      `
       SELECT id, table_id, table_name
       FROM available_seats
       WHERE restaurant_id = $1
@@ -27,18 +33,18 @@ export const createReservation = async (
         AND availability = TRUE
       FOR UPDATE
       LIMIT 1
-    `,
-    [restaurantId, requiredSeats, diningDate, diningTime]
-  )
+      `,
+      [restaurantId, requiredSeats, diningDate, diningTime]
+    )
+    console.log(availableSeat)
+    if (!availableSeat[0]) {
+      throw new Error('No available seat')
+    }
 
-  if (!availableSeat[0]) {
-    throw new Error('No available seat')
-  }
-
-  const tableId = availableSeat[0].table_id
-  const tableName = availableSeat[0].table_name
-  const { rows: reservation } = await connection.query(
-    `
+    const tableId = availableSeat[0].table_id
+    const tableName = availableSeat[0].table_name
+    const { rows: reservation } = await connection.query(
+      `
       INSERT INTO reservations (
         restaurant_id,
         adult,
@@ -56,34 +62,63 @@ export const createReservation = async (
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING id
     `,
-    [
-      restaurantId,
-      adult,
-      child,
-      diningDate,
-      diningTime,
-      tableId,
-      tableName,
-      name,
-      gender,
-      phone,
-      email,
-      purpose,
-      note
-    ]
-  )
+      [
+        restaurantId,
+        adult,
+        child,
+        diningDate,
+        diningTime,
+        tableId,
+        tableName,
+        name,
+        gender,
+        phone,
+        email,
+        purpose,
+        note
+      ]
+    )
 
-  const availableSeatId = availableSeat[0].id
-  await connection.query(
-    `
+    const availableSeatId = availableSeat[0].id
+    await connection.query(
+      `
       UPDATE available_seats
       SET availability = FALSE
       WHERE id = $1
     `,
-    [availableSeatId]
-  )
+      [availableSeatId]
+    )
+    const reservationId = reservation[0].id
+    const payload = { reservationId }
+    const upn = jwt.sign(payload, process.env.JWT_KEY)
+    await connection.query(
+      `
+      UPDATE reservations
+      SET upn = $1
+      WHERE id = $2
+      `,
+      [upn, reservationId]
+    )
+    await connection.query('COMMIT')
 
-  return reservation[0].id
+    return {
+      restaurantId,
+      reservationId,
+      adult,
+      child,
+      diningDate,
+      diningTime,
+      name,
+      gender,
+      email,
+      upn
+    }
+  } catch (err) {
+    await connection.query('ROLLBACK')
+    throw err
+  } finally {
+    connection.release()
+  }
 }
 
 export const getReservations = async (restaurantId, diningDate) => {

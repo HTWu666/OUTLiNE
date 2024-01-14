@@ -22,8 +22,7 @@ export const createReservation = async (req, res) => {
     let seatQty = JSON.parse(rawSeatQty)
 
     if (!seatQty) {
-      const { rows: seats } = await getTable(restaurantId)
-
+      const seats = await getTable(restaurantId)
       seatQty = []
       seats.forEach((seat) => {
         if (!seatQty.includes(seat.seat_qty)) {
@@ -67,29 +66,55 @@ export const createReservation = async (req, res) => {
       []
     )
 
-    if (!stringifyAvailableSeat) {
+    if (!stringifyAvailableSeat && cache.status === 'ready') {
       return res.status(200).json({ message: 'no available seats' })
     }
 
-    const availableSeat = JSON.parse(stringifyAvailableSeat)
-    const writeBackData = {
-      availableSeatId: availableSeat.id,
-      restaurantId,
-      adult,
-      child,
-      diningDate,
-      diningTime: utcDiningTime,
-      tableId: availableSeat.table_id,
-      tableName: availableSeat.table_name,
-      name,
-      gender,
-      phone,
-      email,
-      purpose,
-      note
+    if (cache.status === 'ready') {
+      const availableSeat = JSON.parse(stringifyAvailableSeat)
+      const writeBackData = {
+        availableSeatId: availableSeat.id,
+        restaurantId,
+        adult,
+        child,
+        diningDate,
+        diningTime: utcDiningTime,
+        tableId: availableSeat.table_id,
+        tableName: availableSeat.table_name,
+        name,
+        gender,
+        phone,
+        email,
+        purpose,
+        note
+      }
+
+      await SQS.sendMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
+
+      res.status(200).json({ message: 'Making reservation successfully' })
     }
 
-    await SQS.sendMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
+    if (!stringifyAvailableSeat) {
+      const mailMessage = await reservationModel.createReservation(
+        restaurantId,
+        adult,
+        child,
+        requiredSeats,
+        diningDate,
+        utcDiningTime,
+        name,
+        gender,
+        phone,
+        email,
+        purpose,
+        note
+      )
+
+      await SQS.sendMessage(
+        process.env.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
+        JSON.stringify(mailMessage)
+      )
+    }
 
     res.status(200).json({ message: 'Making reservation successfully' })
   } catch (err) {

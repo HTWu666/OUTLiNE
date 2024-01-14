@@ -133,7 +133,7 @@ For popular restaurants, the release of new available reservation times often tr
 
 2. Figure 4 indicates that the CPU utilization of Redis remains below 30% during spike testing suggests that this system architecture can withstand concurrent requests exceeding 5000 RPS. The upper limit is yet to be tested.
 
-![High Concurrent Request Arichitecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/2182ac8c-201d-445d-826e-f023199d52fa)
+![High Concurrent Request Arichitecture](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/95402e1f-f97c-4927-ad34-737261cae89e)
 Figure 2 High Concurrent Request Architecture
 
 ![EC2 Horizontal Scaling Effect on RPS](https://github.com/HTWu666/Restaurant-Reservation-System-Outline/assets/126232123/2eed8d53-90fd-4a78-ad92-f1be334ebbb4)

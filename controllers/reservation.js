@@ -66,11 +66,11 @@ export const createReservation = async (req, res) => {
       []
     )
 
-    if (!stringifyAvailableSeat && cache.status === 'ready') {
+    if (!stringifyAvailableSeat && cache.isReady()) {
       return res.status(200).json({ message: 'no available seats' })
     }
 
-    if (cache.status === 'ready') {
+    if (cache.isReady()) {
       const availableSeat = JSON.parse(stringifyAvailableSeat)
       const writeBackData = {
         availableSeatId: availableSeat.id,
@@ -91,9 +91,10 @@ export const createReservation = async (req, res) => {
 
       await SQS.sendMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
-      res.status(200).json({ message: 'Making reservation successfully' })
+      return res.status(200).json({ message: 'Making reservation successfully' })
     }
 
+    // wrtie to DB
     if (!stringifyAvailableSeat) {
       const mailMessage = await reservationModel.createReservation(
         restaurantId,

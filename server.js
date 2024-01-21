@@ -49,15 +49,15 @@ const pubClient = new Redis({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
-  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD,
-  tls: {}
+  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
+  //tls: {}
 })
 const subClient = new Redis({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
-  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD,
-  tls: {}
+  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
+  //tls: {}
 })
 io.adapter(createAdapter(pubClient, subClient))
 app.set('io', io)

@@ -4,9 +4,22 @@ export const cache = new Redis({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
-  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD,
-  tls: {}
+  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD
+  // tls: {}
 })
+
+export const isReady = () => {
+  try {
+    const { status } = cache
+    if (status === 'ready') {
+      return true
+    }
+    return false
+  } catch (err) {
+    console.error(err)
+    return false
+  }
+}
 
 export const get = async (key) => {
   try {

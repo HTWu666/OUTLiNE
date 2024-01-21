@@ -94,7 +94,7 @@ export const createReservation = async (req, res) => {
       return res.status(200).json({ message: 'Making reservation successfully' })
     }
 
-    // wrtie to DB
+    // directly wrtie to DB
     if (!stringifyAvailableSeat) {
       const mailMessage = await reservationModel.createReservation(
         restaurantId,
@@ -175,6 +175,7 @@ export const getReservations = async (req, res) => {
     const reservations = await reservationModel.getReservations(restaurantId, date)
     const formattedReservations = reservations.map((item) => ({
       ...item,
+      table_name: item.table_name.split('_')[1],
       dining_time: moment.utc(item.dining_time, 'HH:mm:ss').tz('Asia/Taipei').format('HH:mm')
     }))
 

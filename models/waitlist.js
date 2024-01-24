@@ -138,10 +138,11 @@ export const callNumber = async (restaurantId) => {
       `,
       [restaurantId]
     )
-    if (!waitlist[0] || !waitlist[1]) {
+    if (!waitlist[0]) {
       return null
     }
-    let currentNumber = waitlist[0].number
+
+    const currentNumber = waitlist[0].number
     const { rows: previousNumber } = await conn.query(
       `
       SELECT current_number FROM waitlist_number
@@ -153,7 +154,7 @@ export const callNumber = async (restaurantId) => {
     )
 
     if (currentNumber === previousNumber[0].current_number) {
-      currentNumber = waitlist[1].number
+      return null
     }
 
     await conn.query(

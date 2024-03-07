@@ -8,6 +8,46 @@ import { getTable } from '../models/table.js'
 import * as SQS from '../utils/SQS.js'
 import * as cache from '../utils/cache.js'
 
+const assignSeat = async (adult, child, restaurantId) => {
+  const person = adult + child
+  const rawSeatQty = await cache.get(`restaurant:${restaurantId}:seatQty`)
+  let seatQty = JSON.parse(rawSeatQty)
+
+  // if max seat qty is not in cache then get it from DB
+  if (!seatQty) {
+    const seats = await getTable(restaurantId)
+    seatQty = []
+    seats.forEach((seat) => {
+      if (!seatQty.includes(seat.seat_qty)) {
+        seatQty.push(seat.seat_qty)
+      }
+    })
+    seatQty.sort((a, b) => a - b)
+    await cache.set(`restaurant:${restaurantId}:seatQty`, JSON.stringify(seatQty))
+  }
+
+  // assign the appropriate seat qty
+  let start = 0
+  let end = seatQty.length - 1
+  let requiredSeats = -1
+  while (start <= end) {
+    const mid = Math.floor((start + end) / 2)
+
+    if (seatQty[mid] >= person) {
+      requiredSeats = seatQty[mid]
+      end = mid - 1
+    } else {
+      start = mid + 1
+    }
+  }
+
+  if (requiredSeats === -1) {
+    throw new Error('Exceed the limit of max person per reservation')
+  }
+
+  return requiredSeats
+}
+
 // for customer and business
 export const createReservation = async (req, res) => {
   try {
@@ -16,42 +56,11 @@ export const createReservation = async (req, res) => {
     const { restaurantId } = req.params
     const timezone = 'Asia/Taipei'
     const utcDiningTime = moment.tz(diningTime, 'HH:mm', timezone).utc().format('HH:mm:ss')
-    // check whether the person exceed the limit
-    const person = adult + child
-    const rawSeatQty = await cache.get(`restaurant:${restaurantId}:seatQty`)
-    let seatQty = JSON.parse(rawSeatQty)
 
-    if (!seatQty) {
-      const seats = await getTable(restaurantId)
-      seatQty = []
-      seats.forEach((seat) => {
-        if (!seatQty.includes(seat.seat_qty)) {
-          seatQty.push(seat.seat_qty)
-        }
-      })
-      seatQty.sort((a, b) => a - b)
-      await cache.set(`restaurant:${restaurantId}:seatQty`, JSON.stringify(seatQty))
-    }
+    // assign the seat
+    const requiredSeats = await assignSeat(adult, child, restaurantId)
 
-    let start = 0
-    let end = seatQty.length - 1
-    let requiredSeats = -1
-
-    while (start <= end) {
-      const mid = Math.floor((start + end) / 2)
-
-      if (seatQty[mid] >= person) {
-        requiredSeats = seatQty[mid]
-        end = mid - 1
-      } else {
-        start = mid + 1
-      }
-    }
-
-    if (requiredSeats === -1) {
-      throw new Error('Exceed the limit of max person per reservation')
-    }
-
+    // create reservation
     const filename = fileURLToPath(import.meta.url)
     const dirname = path.dirname(filename)
     const updateLockScript = await readFile(path.join(dirname, '../utils/updateLock.lua'), {
@@ -65,59 +74,32 @@ export const createReservation = async (req, res) => {
       ],
       []
     )
-
-    if (!stringifyAvailableSeat && cache.isReady()) {
+    if (!stringifyAvailableSeat) {
       return res.status(200).json({ message: 'no available seats' })
     }
 
-    if (cache.isReady()) {
-      const availableSeat = JSON.parse(stringifyAvailableSeat)
-      const writeBackData = {
-        availableSeatId: availableSeat.id,
-        restaurantId,
-        adult,
-        child,
-        diningDate,
-        diningTime: utcDiningTime,
-        tableId: availableSeat.table_id,
-        tableName: availableSeat.table_name,
-        name,
-        gender,
-        phone,
-        email,
-        purpose,
-        note
-      }
-
-      await SQS.sendMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
-
-      return res.status(200).json({ message: 'Making reservation successfully' })
+    // cache write back
+    const availableSeat = JSON.parse(stringifyAvailableSeat)
+    const writeBackData = {
+      availableSeatId: availableSeat.id,
+      restaurantId,
+      adult,
+      child,
+      diningDate,
+      diningTime: utcDiningTime,
+      tableId: availableSeat.table_id,
+      tableName: availableSeat.table_name,
+      name,
+      gender,
+      phone,
+      email,
+      purpose,
+      note
     }
 
-    // directly wrtie to DB
-    if (!stringifyAvailableSeat) {
-      const mailMessage = await reservationModel.createReservation(
-        restaurantId,
-        adult,
-        child,
-        requiredSeats,
-        diningDate,
-        utcDiningTime,
-        name,
-        gender,
-        phone,
-        email,
-        purpose,
-        note
-      )
+    await SQS.sendMessage(process.env.CACHE_WRITE_BACK_QUEUE_URL, JSON.stringify(writeBackData))
 
-      await SQS.sendMessage(
-        process.env.NOTIFY_MAKING_RESERVATION_SUCCESSFULLY_SQS_QUEUE_URL,
-        JSON.stringify(mailMessage)
-      )
-    }
-
-    res.status(200).json({ message: 'Making reservation successfully' })
+    return res.status(200).json({ message: 'Making reservation successfully' })
   } catch (err) {
     console.error(err.stack)
     if (err instanceof Error) {

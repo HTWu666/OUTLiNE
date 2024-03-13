@@ -129,21 +129,8 @@ export const callNumber = async (restaurantId) => {
   const conn = await pool.connect()
   try {
     await conn.query('BEGIN')
-    const { rows: waitlist } = await conn.query(
-      `
-      SELECT * FROM waitlist
-      WHERE restaurant_id = $1
-        AND status = 'waiting'
-      LIMIT 2
-      `,
-      [restaurantId]
-    )
-    if (!waitlist[0]) {
-      return null
-    }
-
-    const currentNumber = waitlist[0].number
-    const { rows: previousNumber } = await conn.query(
+    // 查詢 current number
+    const { rows: currentNumberRow } = await conn.query(
       `
       SELECT current_number FROM waitlist_number
       WHERE restaurant_id = $1
@@ -152,11 +139,38 @@ export const callNumber = async (restaurantId) => {
       `,
       [restaurantId]
     )
+    const currentNumber = currentNumberRow[0].current_number
 
-    if (currentNumber === previousNumber[0].current_number) {
+    // 將 current number 之前的等待都改成過號
+    await conn.query(
+      `
+      UPDATE waitlist
+      SET
+        status = 'no_show',
+        updated_at = NOW()
+      WHERE restaurant_id = $1
+        AND number <= $2
+        AND status = 'waiting'
+      `,
+      [restaurantId, currentNumber]
+    )
+
+    // 查看下一個等待的號碼
+    const { rows: waitlist } = await conn.query(
+      `
+      SELECT * FROM waitlist
+      WHERE restaurant_id = $1
+        AND status = 'waiting'
+      LIMIT 1
+      `,
+      [restaurantId]
+    )
+    if (!waitlist[0]) {
       return null
     }
+    const nextNumber = waitlist[0].number
 
+    // 更新 current number 為 next number
     await conn.query(
       `
       UPDATE waitlist_number
@@ -165,24 +179,11 @@ export const callNumber = async (restaurantId) => {
         AND status = TRUE
       RETURNING current_number
       `,
-      [currentNumber, restaurantId]
-    )
-
-    await conn.query(
-      `
-      UPDATE waitlist
-      SET
-        status = 'no_show',
-        updated_at = NOW()
-      WHERE restaurant_id = $1
-        AND number < $2
-        AND status = 'waiting'
-      `,
-      [restaurantId, currentNumber]
+      [nextNumber, restaurantId]
     )
 
     await conn.query('COMMIT')
-    return currentNumber
+    return nextNumber
   } catch (err) {
     await conn.query('ROLLBACK')
     throw err

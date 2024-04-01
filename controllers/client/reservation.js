@@ -57,7 +57,7 @@ export const getReservation = async (req, res) => {
       adult: reservationDetails.adult,
       child: reservationDetails.child,
       status: reservationDetails.status,
-      link: `${process.env.DOMAIN}/api/reservation/click?upn=${upn}`
+      link: `${process.env.DOMAIN}/api/v1/reservation/click?upn=${upn}`
     })
   } catch (err) {
     console.error(err)

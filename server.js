@@ -52,14 +52,14 @@ const pubClient = new Redis({
   retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD,
   tls: {}
 })
-const subClient = new Redis({
-  port: 6379,
-  host: process.env.REDIS_HOST,
-  password: process.env.REDIS_PASSWORD,
-  retryStrategy: () => process.env.REDIS_RECONNECTION_PERIOD,
-  tls: {}
-})
+const subClient = pubClient.duplicate()
 io.adapter(createAdapter(pubClient, subClient))
+io.on('connection', (socket) => {
+  socket.on('joinRestaurantRoom', (restaurantId) => {
+    socket.join(`restaurant-${restaurantId}`)
+  })
+})
+
 app.set('io', io)
 
 app.use(express.json()) // parse json

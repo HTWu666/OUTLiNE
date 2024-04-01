@@ -70,7 +70,7 @@ export const callNumber = async (req, res) => {
       return res.status(200).json({ message: 'No next number' })
     }
     const io = req.app.get('io')
-    io.emit('numberCalled', nextNumber)
+    io.to(`restaurant-${restaurantId}`).emit(`numberCalled`, nextNumber)
 
     res.status(200).json({ data: nextNumber })
   } catch (err) {

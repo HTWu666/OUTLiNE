@@ -226,10 +226,10 @@
                 const totalCount = adultCount + childCount;
                 const largerTableSize = availableSeatsData
                     .map(option => option.max_person)
-                    .filter(size => size > totalCount)
+                    .filter(size => size >= totalCount)
                     .sort((a, b) => a - b)[0];
                 const suitableOption = availableSeatsData.find(option =>
-                    option.max_person >= totalCount && (!largerTableSize || option.max_person < largerTableSize)
+                    option.max_person >= totalCount && (largerTableSize || option.max_person < largerTableSize)
                 );
                 timeField.innerHTML = '';
 

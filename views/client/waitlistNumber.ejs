@@ -72,7 +72,6 @@
             }
         })
 
-        // 使用新的函数初始化数字
         function initializeNumberDisplay(groupsAhead) {
             const digits = String(groupsAhead).padStart(3, '0').split('');
             const numberContainer = document.getElementById('number-container');
@@ -83,7 +82,6 @@
             ).join('');
         }
 
-        // 更新数字的函数
         function updateNumberDisplay(groupsAhead) {
             const digits = String(groupsAhead).padStart(3, '0').split('');
             const numberBoxes = document.querySelectorAll('.number-box');
@@ -94,11 +92,9 @@
                 newDigit.className = 'number';
                 newDigit.textContent = digit;
 
-                // 插入新数字并移到底部
                 numberBox.appendChild(newDigit);
                 newDigit.style.transform = 'translateY(100%)';
 
-                // 动画滑动旧数字上移并新数字下滑
                 setTimeout(() => {
                     const currentDigit = numberBox.querySelector('.number:not(.slide-up)');
                     if (currentDigit) {
@@ -107,7 +103,6 @@
                     newDigit.style.transform = 'translateY(0)';
                 }, 20);
 
-                // 动画结束后移除旧数字
                 setTimeout(() => {
                     if (numberBox.children.length > 1) {
                         numberBox.removeChild(numberBox.children[0]);
@@ -117,8 +112,10 @@
         }
 
         if (status === 'waiting') {
+            const restaurantId = <%- JSON.stringify(restaurantId) %>
             const socket = io()
-            socket.on('numberCalled', (newNumber) => {
+            socket.emit("joinRestaurantRoom", restaurantId)
+            socket.on(`numberCalled`, (newNumber) => {
                 const groupsAhead = number - newNumber
                 if (groupsAhead < 0) {
                     window.location.reload()
